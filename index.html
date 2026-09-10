@@ -1,0 +1,3279 @@
+<!doctype html>
+<html lang="pt-BR">
+<!-- BUILD: MINI BOX 13.5.4 CORRIGIDO 2026-09-10 -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ff7a00">
+<title>Mini Box Tem Tudo</title>
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mini Box">
+
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#f4f5f7;color:#222;font-family:Arial,sans-serif}
+header{background:linear-gradient(135deg,#ff7200,#ffb000);color:#fff;padding:20px 16px 23px;border-radius:0 0 22px 22px}
+header h1{margin:0;font-size:23px}header div{font-size:13px;margin-top:5px}
+main{max-width:760px;margin:auto;padding:12px 12px 35px}
+.menu{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+button{cursor:pointer}
+.menu button,.btn{border:0;border-radius:11px;padding:12px;font-weight:800;background:#e9ecef}
+.menu button{font-size:12px}.menu .on,.primary{background:#ff8300;color:#fff}
+.green{background:#18a957;color:#fff}.red{background:#df3333;color:#fff}.blue{background:#1877d2;color:#fff}.gray{background:#e9ecef;color:#222}
+.card{background:#fff;border-radius:17px;padding:15px;margin-bottom:12px;box-shadow:0 2px 10px #0001}
+h2,h3{margin:2px 0 12px}
+input,select{width:100%;height:48px;border:1px solid #d5d8dd;border-radius:10px;padding:0 12px;font-size:16px;background:#fff}
+label{display:block;font-size:13px;font-weight:bold;margin:9px 0 5px}
+.scan{width:100%;padding:17px;font-size:18px}
+#reader{display:none;margin-top:10px;background:#111;border-radius:12px;overflow:hidden}
+#reader video{width:100%!important}
+#cameraAjustes{display:none;margin-top:8px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px}
+#cameraAjustes input[type=range]{width:100%}
+.msg{padding:10px;border-radius:10px;background:#fff3d0;margin-top:9px;font-size:14px}
+.ok{background:#e8f7ed;color:#126b32}.err{background:#fdeaea;color:#a51d1d}
+.item{padding:11px 0;border-bottom:1px solid #eee}.item:last-child{border-bottom:0}
+.between{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.small{font-size:12px;color:#777;margin-top:5px;line-height:1.45}
+.total{text-align:right;font-size:23px;font-weight:900;margin:13px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.hidden{display:none!important}
+.metric{background:#f7f7f8;border-radius:13px;padding:12px;min-height:78px}.metric small{display:block;color:#777;margin-bottom:6px}.metric b{font-size:19px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 4px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+.action{padding:7px 9px;font-size:12px;margin:2px 0}
+.badge{display:inline-block;padding:4px 7px;border-radius:8px;background:#f0f1f3;font-size:11px}
+.badge.low{background:#fdeaea;color:#a51d1d}.badge.okstock{background:#e8f7ed;color:#126b32}
+.sale-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:flex-end;justify-content:center;z-index:9999;padding:10px}
+.modalBox{background:#fff;width:100%;max-width:760px;max-height:90vh;overflow:auto;border-radius:20px 20px 12px 12px;padding:16px}
+hr{border:0;border-top:1px solid #eee;margin:14px 0}
+
+.note{font-size:12px;color:#666;line-height:1.5}
+.loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;background:linear-gradient(135deg,#ff7200,#ffb000)}
+.loginBox{width:100%;max-width:420px;background:#fff;border-radius:22px;padding:22px;box-shadow:0 12px 35px #0003}
+.loginBox h1{margin:0 0 5px}.loginBox p{color:#666;line-height:1.45}
+.userBar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #ffffff55}
+.userBar button{border:0;border-radius:9px;padding:7px 10px;font-weight:800}
+.searchBox{position:relative;margin:10px 0}.searchBox input{padding-left:38px}.searchIcon{position:absolute;left:12px;top:14px;z-index:1}
+
+@media(max-width:430px){.grid3{grid-template-columns:1fr 1fr}.menu button{font-size:11px;padding:10px 4px}main{padding:10px}.card{padding:13px}}
+
+.dashboardGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.dashboardGrid .metric{min-height:94px;border:1px solid #edf0f2}
+.metric .sub{display:block;font-size:11px;color:#888;margin-top:6px;font-weight:normal}
+.chartWrap{width:100%;overflow-x:auto;border:1px solid #edf0f2;border-radius:13px;padding:8px;background:#fff}
+.chartWrap svg{display:block;width:100%;min-width:560px;height:auto}
+.topRank{display:grid;gap:7px}
+.topRank .rankRow{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:9px;border-radius:10px;background:#f8f9fa}
+.reportTableWrap{overflow-x:auto;border:1px solid #edf0f2;border-radius:12px}
+.reportTable{min-width:650px;margin:0}.reportTable th{background:#f8f9fa;position:sticky;top:0}
+.healthGood{background:#e8f7ed;color:#126b32}.healthBad{background:#fdeaea;color:#a51d1d}.healthNeutral{background:#fff3d0;color:#7a5500}
+
+.paymentMethodsGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+.paymentMethodCard{background:#fff;border:1px solid #e8ecef;border-top:4px solid #6c757d;border-radius:12px;padding:14px 12px;text-align:center;min-width:0}
+.paymentMethodCard .pmIcon{font-size:24px;line-height:1;margin-bottom:8px}
+.paymentMethodCard .pmLabel{font-size:11px;text-transform:uppercase;color:#6b7280;min-height:28px;display:flex;align-items:center;justify-content:center}
+.paymentMethodCard .pmValue{font-size:21px;font-weight:800;margin-top:5px;white-space:nowrap}
+.paymentMethodCard .pmMeta{font-size:11px;color:#777;margin-top:5px;line-height:1.35}
+.paymentMethodCard.pmDinheiro{border-top-color:#20b26b}.paymentMethodCard.pmDebito{border-top-color:#3195e8}.paymentMethodCard.pmCredito{border-top-color:#9a55c5}.paymentMethodCard.pmPix{border-top-color:#08a88a}.paymentMethodCard.pmPixQr{border-top-color:#e59a18}.paymentMethodCard.pmFiado{border-top-color:#d96d40}.paymentMethodCard.pmOutros{border-top-color:#7c8794}
+@media(max-width:650px){.paymentMethodsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:430px){.dashboardGrid{grid-template-columns:1fr 1fr}.dashboardGrid .metric b{font-size:17px}}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div id="loginScreen" class="loginScreen">
+  <div class="loginBox">
+    <h1>🛒 Mini Box Tem Tudo</h1>
+    <p id="loginDescricao">Entre com sua conta da nuvem.</p>
+
+    <div id="loginNormal">
+      <div class="msg">☁️ Versão 13.5.4 — dados sincronizados pelo Supabase.</div>
+      <label>E-mail</label>
+      <input id="loginUsuario" type="email" autocomplete="username" placeholder="Seu e-mail">
+      <label>Senha</label>
+      <input id="loginSenha" type="password" autocomplete="current-password" placeholder="Sua senha">
+      <label style="margin-top:12px;display:flex;align-items:center;gap:8px;font-weight:700">
+        🔐 A sessão fica salva neste aparelho até você tocar em Sair.
+      </label>
+      <div class="note">O login agora é feito pelo Supabase Auth. A senha não é salva pelo Mini Box.</div>
+      <br>
+      <button id="entrarBtn" class="btn primary" style="width:100%;font-size:17px" type="button">☁️ ENTRAR NA NUVEM</button>
+      <div id="loginMsg"></div>
+    </div>
+  </div>
+</div>
+
+<header id="appHeader" class="hidden">
+  <h1>🛒 Mini Box Tem Tudo</h1>
+  <div>Gestão de vendas • estoque • lucro • caixa • nuvem • estoque • vendas • fiados • caixa • leitor preciso • caixa correto · versão 13.5.4</div>
+  <div class="userBar">
+    <span>👤 <b id="usuarioLogadoNome">—</b> <span id="usuarioLogadoPerfil"></span></span>
+    <button id="logoutBtn" type="button">Sair</button>
+  </div>
+</header>
+
+<main id="appMain" class="hidden">
+<nav class="menu">
+  <button class="on" data-tab="painel">📊<br>Painel</button>
+  <button data-tab="venda">🛒<br>Venda</button>
+  <button data-tab="produtos">📦<br>Produtos</button>
+  <button data-tab="estoque">📥<br>Estoque</button>
+  <button data-tab="vendas">📋<br>Relatórios</button>
+  <button data-tab="fiados">📒<br>Fiados</button>
+  <button data-tab="menu">⚙️<br>Menu</button>
+</nav>
+
+<div id="caixaStatusGlobal" class="msg" style="margin-bottom:12px"></div>
+
+<section id="painel">
+  <div class="card">
+    <h2>📊 Dashboard</h2>
+    <div class="dashboardGrid">
+      <div class="metric"><small>Faturamento total do ano</small><b id="dashAno">R$ 0,00</b><span class="sub">Ano atual</span></div>
+      <div class="metric"><small>Faturamento mês passado</small><b id="dashMesAnterior">R$ 0,00</b><span class="sub">Mês anterior completo</span></div>
+      <div class="metric"><small>Faturamento mês atual</small><b id="dashMesAtual">R$ 0,00</b><span class="sub">Do dia 1º até hoje</span></div>
+      <div class="metric"><small>Balanço geral do mês</small><b id="dashBalancoMes">R$ 0,00</b><span class="sub">Faturamento − compras de estoque − tarifas</span></div>
+      <div class="metric"><small>Lucro bruto do mês</small><b id="dashLucroBrutoMes">R$ 0,00</b><span class="sub">Faturamento − custo dos produtos vendidos</span></div>
+      <div class="metric"><small>Lucro líquido do mês</small><b id="dashLucroLiquidoMes">R$ 0,00</b><span class="sub">Lucro bruto − tarifas</span></div>
+      <div class="metric"><small>Total de vendas do dia</small><b id="dashTotalDia">R$ 0,00</b><span class="sub">Faturamento de hoje</span></div>
+      <div class="metric"><small>Vendas no mês</small><b id="dashQtdMes">0</b><span class="sub">Quantidade de vendas</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📈 Gráfico de vendas — mês atual</h3>
+    <div id="dashGraficoVendas" class="chartWrap"></div>
+  </div>
+
+  <div class="card">
+    <h3>🏆 Produtos com maior saída no mês</h3>
+    <div id="dashTopMes" class="topRank"></div>
+  </div>
+
+  <div class="card">
+    <h3>💰 Indicadores complementares</h3>
+    <div class="grid2">
+      <div class="metric"><small>Tarifas no mês</small><b id="dashTaxasMes">R$ 0,00</b></div>
+      <div class="metric"><small>Ticket médio do mês</small><b id="dashTicketMes">R$ 0,00</b></div>
+      <div class="metric"><small>Recebimentos de fiado no mês</small><b id="dashFiadoRecebido">R$ 0,00</b></div>
+      <div class="metric"><small>Total a receber</small><b id="dashAReceber">R$ 0,00</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🧾 Fechamentos de caixa</h3>
+    <div id="dashCaixaStatus" class="msg"></div>
+    <div id="dashFechamentosPendentes" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <h3>⚠️ Estoque baixo</h3>
+    <div class="searchBox"><span class="searchIcon">🔎</span><input id="buscaEstoqueBaixo" placeholder="Buscar produto com estoque baixo"></div>
+    <div id="resultadoBuscaEstoqueBaixo" class="small"></div>
+    <div id="dashEstoqueBaixo"></div>
+  </div>
+</section>
+
+<section id="venda" class="hidden">
+  <div class="card">
+    <button id="scanBtn" class="btn primary scan" type="button">📷 ESCANEAR PRODUTO</button>
+    <div id="reader"></div>
+    <div id="scannerStatus" class="msg hidden"></div>
+    <div id="cameraAjustes">
+      <div class="small"><b>📷 Foco da câmera:</b> mantenha o código a cerca de 12–25 cm da lente. Se ficar borrado ao aproximar, afaste um pouco e use o zoom abaixo.</div>
+      <label style="margin-top:8px">Zoom da câmera <span id="zoomValor">1,0x</span></label>
+      <input id="cameraZoom" type="range" min="1" max="1" step="0.1" value="1">
+      <div id="cameraFocoInfo" class="small"></div>
+    </div>
+    <div id="msg"></div>
+    <div class="note">Para evitar leitura errada, mantenha apenas um código de barras dentro da área da câmera e segure o celular firme por um instante.</div>
+  </div>
+
+  <div class="card">
+    <h3>Adicionar produto</h3>
+    <label>Código de barras</label>
+    <input id="codigoVenda" inputmode="numeric" placeholder="Escaneie ou digite">
+    <label>Quantidade</label>
+    <input id="qtdVenda" type="number" min="1" value="1" inputmode="numeric">
+    <br><br>
+    <button id="addBtn" class="btn primary" style="width:100%" type="button">➕ ADICIONAR À VENDA</button>
+  </div>
+
+  <div class="card">
+    <h3>Itens da venda</h3>
+    <div id="carrinho">Nenhum produto adicionado.</div>
+    <div class="total">Total: <span id="totalVenda">R$ 0,00</span></div>
+    <label>Modalidade de pagamento</label>
+    <select id="pagamento">
+      <option value="">Selecione...</option>
+      <option>Dinheiro</option><option>PIX</option><option>PIX QR Code</option><option>Cartão de débito</option>
+      <option>Cartão de crédito</option><option>Vale/Outros</option><option value="Fiado">Fiado / Pagar depois</option>
+      <option value="PIX + Dinheiro">PIX + Dinheiro</option>
+      <option value="Crédito + Débito">Crédito + Débito</option>
+      <option value="PIX + Débito">PIX + Débito</option>
+      <option value="PIX + Crédito">PIX + Crédito</option>
+    </select>
+
+    <div id="areaPagamentoDividido" class="hidden">
+      <div class="msg"><b>💰 Pagamento dividido</b> — informe quanto será pago em cada modalidade.</div>
+      <div class="grid2">
+        <div><label id="splitLabel1">Forma 1</label><input id="splitValor1" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00"></div>
+        <div><label id="splitLabel2">Forma 2</label><input id="splitValor2" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00"></div>
+      </div>
+      <div id="splitResumo" class="small">A soma deve ser igual ao valor cobrado da venda.</div>
+    </div>
+
+    <div id="areaFiadoVenda" class="hidden">
+      <div class="msg"><b>📒 Venda fiada</b> — o valor não entra no caixa até o cliente pagar.</div>
+      <label>Cliente <b style="color:#c62828">*</b></label>
+      <select id="fiadoClienteSelect"><option value="">Selecione um cliente...</option></select>
+      <div id="fiadoClienteResumo" class="small">A dívida será vinculada ao cliente selecionado.</div>
+      <label>Previsão de pagamento</label>
+      <input id="fiadoVencimento" type="date">
+    </div>
+
+    <div id="areaMaquinaVenda" class="hidden">
+      <label>Máquina / recebimento</label>
+      <select id="maquinaVenda">
+        <option value="">Sem máquina / sem tarifa</option>
+      </select>
+
+      <div id="areaParcelas" class="hidden">
+        <label>Parcelas</label>
+        <select id="parcelasVenda">
+          <option value="1">1x</option><option value="2">2x</option><option value="3">3x</option>
+          <option value="4">4x</option><option value="5">5x</option><option value="6">6x</option>
+          <option value="7">7x</option><option value="8">8x</option><option value="9">9x</option>
+          <option value="10">10x</option><option value="11">11x</option><option value="12">12x</option>
+        </select>
+      </div>
+
+      <div id="tarifaPreview" class="msg">Selecione uma máquina para calcular a tarifa.</div>
+    </div>
+
+    <br>
+    <button id="finalizarBtn" class="btn green" style="width:100%;font-size:17px" type="button">✅ REGISTRAR VENDA</button>
+  </div>
+</section>
+
+
+<section id="fiados" class="hidden">
+  <div class="card">
+    <h2>📒 Fiados / Contas a receber</h2>
+    <div class="grid3">
+      <div class="metric"><small>Total a receber</small><b id="fiadoTotalAberto">R$ 0,00</b></div>
+      <div class="metric"><small>Vencido</small><b id="fiadoTotalVencido">R$ 0,00</b></div>
+      <div class="metric"><small>Clientes devendo</small><b id="fiadoClientesDevendo">0</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>👤 Cadastrar cliente</h3>
+    <input type="hidden" id="clienteEditId">
+    <label>Nome</label><input id="clienteNome" placeholder="Nome do cliente">
+    <label>Telefone / WhatsApp (opcional)</label><input id="clienteTelefone" inputmode="tel" placeholder="Ex.: 21999999999">
+    <div class="grid2" style="margin-top:12px">
+      <button id="salvarClienteBtn" class="btn primary" type="button">💾 SALVAR CLIENTE</button>
+      <button id="cancelarClienteBtn" class="btn gray hidden" type="button">Cancelar edição</button>
+    </div>
+    <div id="clienteMsg"></div>
+  </div>
+
+  <div class="card">
+    <h3>🔎 Contas a receber</h3>
+    <div class="searchBox"><span class="searchIcon">🔎</span><input id="buscaFiados" placeholder="Buscar cliente"></div>
+    <select id="filtroFiados">
+      <option value="abertos">Pendentes</option>
+      <option value="vencidos">Vencidos</option>
+      <option value="todos">Todos</option>
+      <option value="pagos">Pagos</option>
+    </select>
+    <div id="listaFiados"></div>
+  </div>
+
+  <div class="card">
+    <h3>👥 Clientes cadastrados</h3>
+    <div class="searchBox"><span class="searchIcon">🔎</span><input id="buscaClientes" placeholder="Buscar cliente"></div>
+    <div id="listaClientes"></div>
+  </div>
+</section>
+
+<section id="produtos" class="hidden">
+  <div class="card">
+    <h2>📦 Cadastro de produtos</h2>
+    <label>Nome</label><input id="produtoNome">
+    <label>Código de barras</label><input id="produtoCodigo" inputmode="numeric">
+    <div class="grid2">
+      <div><label>Preço de custo</label><input id="produtoCusto" type="number" min="0" step="0.01"></div>
+      <div><label>Preço de venda</label><input id="produtoPreco" type="number" min="0" step="0.01"></div>
+      <div><label>Estoque atual</label><input id="produtoEstoque" type="number" step="1"></div>
+      <div><label>Alerta abaixo de</label><input id="produtoMinimo" type="number" min="0" step="1" value="3"></div>
+    </div>
+    <br>
+    <div class="grid2">
+      <button id="salvarProdutoBtn" class="btn primary" type="button">💾 SALVAR</button>
+      <button id="cancelarProdutoBtn" class="btn gray hidden" type="button">Cancelar edição</button>
+    </div>
+    <div id="produtoMsg"></div>
+  </div>
+  <div class="card">
+    <h3>Produtos cadastrados</h3>
+    <div class="searchBox"><span class="searchIcon">🔎</span><input id="buscaProdutos" placeholder="Buscar por nome ou código de barras"></div>
+    <div id="resultadoBuscaProdutos" class="small"></div>
+    <div id="listaProdutos"></div>
+  </div>
+</section>
+
+<section id="estoque" class="hidden">
+  <div class="card">
+    <h2>📥 Entrada / reposição</h2>
+    <label>Escolha o produto</label>
+    <select id="entradaProdutoSelect">
+      <option value="">Selecione um produto...</option>
+    </select>
+    <div class="msg">Você também pode informar o código de barras abaixo.</div>
+    <label>Código do produto</label><input id="entradaCodigo" inputmode="numeric" placeholder="Código de barras">
+    <div class="grid2">
+      <div><label>Quantidade recebida</label><input id="entradaQtd" type="number" min="1" step="1" value="1"></div>
+      <div><label>Custo unitário</label><input id="entradaCusto" type="number" min="0" step="0.01"></div>
+    </div>
+    <label>Fornecedor (opcional)</label><input id="entradaFornecedor" placeholder="Ex.: Atacadão">
+    <br><br>
+    <button id="registrarEntradaBtn" class="btn green" style="width:100%" type="button">📥 REGISTRAR ENTRADA</button>
+    <div id="entradaMsg"></div>
+  </div>
+  <div class="card">
+    <h3>Estoque atual</h3>
+    <div id="listaEstoque"></div>
+  </div>
+  <div class="card">
+    <h3>Últimas entradas</h3>
+    <div id="listaEntradas"></div>
+  </div>
+</section>
+
+<section id="vendas" class="hidden">
+  <div class="card">
+    <h2>📋 Relatórios de vendas</h2>
+    <label>Período da visão geral e lucro detalhado</label>
+    <select id="filtroPeriodo">
+      <option value="hoje">Hoje</option>
+      <option value="ontem">Ontem</option>
+      <option value="7">Últimos 7 dias</option>
+      <option value="mes">Mês atual</option>
+      <option value="tudo">Todo o histórico</option>
+    </select>
+    <div class="grid2" style="margin-top:10px">
+      <div class="msg">Vendas<br><b id="totalVendas">0</b></div>
+      <div class="msg">Faturamento<br><b id="faturamento">R$ 0,00</b></div>
+      <div class="msg">Lucro bruto<br><b id="lucroPeriodo">R$ 0,00</b></div>
+      <div class="msg">Tarifas<br><b id="taxasPeriodo">R$ 0,00</b></div>
+      <div class="msg">Líquido recebido<br><b id="liquidoPeriodo">R$ 0,00</b></div>
+      <div class="msg">Lucro após tarifas<br><b id="lucroLiquidoPeriodo">R$ 0,00</b></div>
+      <div class="msg">Ticket médio<br><b id="ticketPeriodo">R$ 0,00</b></div>
+      <div class="msg">Receb. de fiado<br><b id="fiadoRecebidoPeriodo">R$ 0,00</b></div>
+      <div class="msg">A receber atual<br><b id="aReceberPeriodo">R$ 0,00</b></div>
+    </div>
+    <div id="topPeriodo" class="msg"></div>
+    <button id="compartilharResumoBtn" class="btn primary" type="button" style="width:100%;margin:10px 0 4px">📲 COMPARTILHAR RESUMO DO PERÍODO</button>
+    <div id="listaVendas"></div>
+  </div>
+
+  <div class="card">
+    <h2>🔎 Relatório por período</h2>
+    <div class="small">Combine datas, horários, forma de pagamento, produto e operador. Os filtros abaixo atuam somente neste relatório.</div>
+    <div class="grid2" style="margin-top:10px">
+      <div><label>Atalho de período</label><select id="rpPreset"><option value="hoje">Hoje</option><option value="ontem">Ontem</option><option value="semana">Esta semana</option><option value="semanaAnterior">Semana passada</option><option value="7">Últimos 7 dias</option><option value="mes" selected>Mês atual</option><option value="mesAnterior">Mês passado</option><option value="30">Últimos 30 dias</option><option value="personalizado">Personalizado</option><option value="tudo">Todo o histórico</option></select></div>
+      <div><label>Forma de pagamento</label><select id="rpPagamento"><option value="">Todas</option><option>Dinheiro</option><option>PIX</option><option>PIX QR Code</option><option>Cartão de débito</option><option>Cartão de crédito</option><option>Fiado</option><option>Vale/Outros</option></select></div>
+      <div><label>Data inicial</label><input id="rpDataIni" type="date"></div>
+      <div><label>Data final</label><input id="rpDataFim" type="date"></div>
+      <div><label>Horário inicial</label><input id="rpHoraIni" type="time"></div>
+      <div><label>Horário final</label><input id="rpHoraFim" type="time"></div>
+      <div><label>Produto</label><select id="rpProduto"><option value="">Todos os produtos</option></select></div>
+      <div><label>Operador</label><select id="rpOperador"><option value="">Todos os operadores</option></select></div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="msg">Vendas<br><b id="rpQtd">0</b></div><div class="msg">Faturamento<br><b id="rpFat">R$ 0,00</b></div>
+      <div class="msg">Unidades vendidas<br><b id="rpUnidades">0</b></div><div class="msg">Ticket médio<br><b id="rpTicket">R$ 0,00</b></div>
+      <div class="msg">Custo dos produtos<br><b id="rpCmv">R$ 0,00</b></div><div class="msg">Lucro bruto<br><b id="rpLucroBruto">R$ 0,00</b></div>
+      <div class="msg">Tarifas<br><b id="rpTaxas">R$ 0,00</b></div><div class="msg">Lucro líquido<br><b id="rpLucroLiquido">R$ 0,00</b></div>
+      <div class="msg">Margem líquida<br><b id="rpMargem">0,00%</b></div><div class="msg">Mais vendido<br><b id="rpTop">—</b></div>
+    </div>
+    <div id="rpResumo" class="msg" style="margin-top:10px"></div>
+    <h3 style="margin-top:18px">💳 Métodos de Pagamento</h3>
+    <div class="small">Valores brutos vendidos em cada forma de pagamento dentro dos filtros selecionados. Pagamentos divididos são separados corretamente entre as formas.</div>
+    <div id="rpMetodosPagamento" class="paymentMethodsGrid"></div>
+    <div id="rpMetodosTotal" class="msg" style="margin-top:10px"></div>
+    <h3 style="margin-top:16px">⏰ Horários de maior movimento</h3>
+    <div id="rpHorarios" class="reportTableWrap"></div>
+    <h3 style="margin-top:16px">📋 Vendas encontradas</h3>
+    <div id="rpLista" class="reportTableWrap"></div>
+  </div>
+
+  <div class="card">
+    <h2>🩺 Saúde financeira — mês atual</h2>
+    <div id="saudeFinanceiraStatus" class="msg"></div>
+    <div class="grid2" style="margin-top:8px">
+      <div class="metric"><small>Faturamento</small><b id="saudeFat">R$ 0,00</b></div>
+      <div class="metric"><small>Custo dos produtos vendidos</small><b id="saudeCmv">R$ 0,00</b></div>
+      <div class="metric"><small>Compras de estoque</small><b id="saudeCompras">R$ 0,00</b></div>
+      <div class="metric"><small>Tarifas</small><b id="saudeTaxas">R$ 0,00</b></div>
+      <div class="metric"><small>Lucro líquido</small><b id="saudeLucro">R$ 0,00</b></div>
+      <div class="metric"><small>Margem líquida</small><b id="saudeMargem">0,00%</b></div>
+      <div class="metric"><small>Ticket médio</small><b id="saudeTicket">R$ 0,00</b></div>
+      <div class="metric"><small>Contas a receber</small><b id="saudeReceber">R$ 0,00</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>💹 Lucro detalhado</h2>
+    <div class="small">Detalhamento por produto no período selecionado acima.</div>
+    <div id="lucroDetalhado" class="reportTableWrap" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <h2>🗓️ Vendas mensais</h2>
+    <div id="vendasMensais" class="reportTableWrap"></div>
+  </div>
+
+  <div class="card">
+    <h2>📅 Vendas diárias</h2>
+    <label>Mês de referência</label>
+    <input id="relatorioMesRef" type="month">
+    <div id="vendasDiarias" class="reportTableWrap" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<section id="menu" class="hidden">
+  <div class="card">
+    <h2>💰 Fechamento de caixa</h2>
+    <label>Dia do fechamento</label><input id="caixaDataRef" type="date">
+    <div class="note">Você pode fechar o caixa de hoje ou corrigir um dia pendente anterior. O sistema usa as vendas e recebimentos do dia escolhido.</div>
+    <div id="caixaEsperado" class="msg"></div>
+    <label>Fundo / troco inicial em dinheiro</label><input id="caixaFundo" type="number" min="0" step="0.01" value="0">
+    <div class="grid2">
+      <div><label>Dinheiro contado</label><input id="caixaDinheiro" type="number" min="0" step="0.01" value="0"></div>
+      <div><label>PIX maquininha conferido</label><input id="caixaPix" type="number" min="0" step="0.01" value="0"></div>
+      <div><label>PIX QR Code conferido</label><input id="caixaPixQr" type="number" min="0" step="0.01" value="0"></div>
+      <div><label>Débito conferido</label><input id="caixaDebito" type="number" min="0" step="0.01" value="0"></div>
+      <div><label>Crédito conferido</label><input id="caixaCredito" type="number" min="0" step="0.01" value="0"></div>
+      <div><label>Vale / Outros</label><input id="caixaOutros" type="number" min="0" step="0.01" value="0"></div>
+    </div>
+    <button id="calcularCaixaBtn" class="btn blue" style="width:100%;margin-top:12px" type="button">🧮 CONFERIR CAIXA</button>
+    <div id="caixaResultado"></div>
+    <button id="salvarCaixaBtn" class="btn green" style="width:100%;margin-top:8px" type="button">💾 SALVAR FECHAMENTO</button>
+  </div>
+
+  <div class="card">
+    <h3>Últimos fechamentos</h3>
+    <div id="listaFechamentos"></div>
+  </div>
+
+  <div class="card">
+    <h2>⏰ Lembrete de fechamento</h2>
+    <div class="grid2">
+      <div><label><input id="caixaLembreteAtivo" type="checkbox" style="width:auto;margin-right:8px"> Ativar lembrete</label></div>
+      <div><label>Horário normal de fechamento</label><input id="caixaHoraLembrete" type="time" value="22:00"></div>
+    </div>
+    <button id="salvarConfigCaixaBtn" class="btn blue" style="width:100%;margin-top:10px" type="button">💾 SALVAR LEMBRETE</button>
+    <div id="configCaixaMsg"></div>
+
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid #ddd">
+      <h3>🔔 Notificação fora do app</h3>
+      <div class="note">Ative neste celular para receber uma notificação do sistema mesmo quando o Mini Box não estiver aberto. O som é o som padrão de notificações do aparelho e depende das configurações do celular.</div>
+      <div id="pushStatusCaixa" class="msg">Verificando suporte a notificações...</div>
+      <div class="grid2">
+        <button id="ativarPushCaixaBtn" class="btn green" type="button">🔔 ATIVAR NESTE APARELHO</button>
+        <button id="testarPushCaixaBtn" class="btn blue" type="button">🧪 TESTAR NOTIFICAÇÃO</button>
+      </div>
+      <button id="desativarPushCaixaBtn" class="btn gray" style="width:100%;margin-top:8px" type="button">🔕 DESATIVAR NESTE APARELHO</button>
+    </div>
+
+    <h3 style="margin-top:16px">📌 Dias pendentes</h3>
+    <div id="listaPendenciasCaixa"></div>
+  </div>
+
+  <div class="card">
+    <h2>☁️ Sincronização na nuvem</h2>
+    <div id="cloudStatus" class="msg">Verificando conexão...</div>
+    <button id="sincronizarAgoraBtn" class="btn primary" style="width:100%;margin-top:10px" type="button">🔄 SINCRONIZAR AGORA</button>
+    <button id="enviarLocalNuvemBtn" class="btn gray" style="width:100%;margin-top:8px" type="button">⬆️ ENVIAR DADOS DESTE APARELHO</button>
+    <div class="note">A sincronização é automática após alterações. “Sincronizar agora” consulta e baixa o estado mais recente da nuvem. O envio manual substitui o estado atual da nuvem pelos dados deste aparelho e deve ser usado apenas quando necessário.</div>
+  </div>
+
+  <div class="card">
+    <h2>🔐 Minha conta</h2>
+    <div id="minhaContaInfo" class="msg"></div>
+    <div id="blocoMinhaSenhaAdmin">
+      <h3>Alterar minha senha</h3>
+      <div class="note">Somente administradores podem alterar senhas pelo sistema.</div>
+      <label>Senha atual</label>
+      <input id="minhaSenhaAtual" type="password" autocomplete="current-password">
+      <label>Nova senha</label>
+      <input id="minhaSenhaNova" type="password" autocomplete="new-password">
+      <label>Confirmar nova senha</label>
+      <input id="minhaSenhaConfirmar" type="password" autocomplete="new-password">
+      <button id="alterarMinhaSenhaBtn" class="btn blue" style="width:100%;margin-top:12px" type="button">🔑 ALTERAR MINHA SENHA</button>
+      <div id="minhaSenhaMsg"></div>
+    </div>
+  </div>
+
+  <div id="cardFuncionarios" class="card hidden">
+    <h2>👥 Funcionários e acesso</h2>
+    <p class="note">Cadastre administradores e funcionários com e-mail e senha próprios. O acesso fica vinculado à mesma loja na nuvem. Somente administradores podem gerenciar esta área, alterar senhas e excluir cadastros.</p>
+
+    <input type="hidden" id="funcionarioEditId">
+
+    <label>Nome do funcionário</label>
+    <input id="funcionarioNome" placeholder="Nome completo">
+
+    <label>E-mail para login</label>
+    <input id="funcionarioUsuario" type="email" autocomplete="off" placeholder="exemplo@email.com">
+
+    <div class="grid2">
+      <div>
+        <label>Senha inicial</label>
+        <input id="funcionarioSenha" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+      </div>
+      <div>
+        <label>Perfil</label>
+        <select id="funcionarioPerfil">
+          <option value="funcionario">Funcionário</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+    </div>
+
+    <label style="margin-top:10px">
+      <input id="funcionarioAtivo" type="checkbox" checked style="width:auto;height:auto;margin-right:6px"> Acesso ativo
+    </label>
+
+    <div id="blocoPermissoesFuncionario" class="msg" style="margin-top:12px">
+      <b>🔐 O que este funcionário pode acessar</b>
+      <div class="small" style="margin:5px 0 8px">Marque manualmente as áreas liberadas. Administradores sempre têm acesso completo.</div>
+      <div class="grid2">
+        <label><input id="permPainel" type="checkbox" style="width:auto;height:auto;margin-right:6px"> Painel</label>
+        <label><input id="permVenda" type="checkbox" checked style="width:auto;height:auto;margin-right:6px"> Venda</label>
+        <label><input id="permProdutos" type="checkbox" style="width:auto;height:auto;margin-right:6px"> Produtos</label>
+        <label><input id="permEstoque" type="checkbox" checked style="width:auto;height:auto;margin-right:6px"> Estoque</label>
+        <label><input id="permRelatorios" type="checkbox" style="width:auto;height:auto;margin-right:6px"> Relatórios</label>
+        <label><input id="permFiados" type="checkbox" checked style="width:auto;height:auto;margin-right:6px"> Fiados</label>
+        <label><input id="permMenu" type="checkbox" style="width:auto;height:auto;margin-right:6px"> Menu</label>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:12px">
+      <button id="salvarFuncionarioBtn" class="btn primary" type="button">☁️ CRIAR ACESSO NA NUVEM</button>
+      <button id="cancelarFuncionarioBtn" class="btn gray hidden" type="button">Cancelar edição</button>
+    </div>
+
+    <div id="funcionarioMsg"></div>
+
+    <div class="searchBox"><span class="searchIcon">🔎</span><input id="buscaFuncionarios" placeholder="Buscar funcionário"></div>
+    <div id="listaFuncionarios"></div>
+  </div>
+
+  <div id="cardMaquinas" class="card">
+    <h2>💳 Máquinas e tarifas</h2>
+    <p class="note">Cadastre cada maquininha e as taxas cobradas. Nas vendas com PIX, débito ou crédito, o sistema calcula automaticamente a tarifa e o valor líquido.</p>
+
+    <input type="hidden" id="maquinaEditId">
+
+    <label>Nome da máquina</label>
+    <input id="maquinaNome" placeholder="Ex.: Mercado Pago, InfinitePay, PagBank">
+
+    <div class="grid2">
+      <div><label>PIX (%)</label><input id="taxaPix" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Débito (%)</label><input id="taxaDebito" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Crédito 1x (%)</label><input id="taxaCredito1" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Crédito 2x a 6x (%)</label><input id="taxaCredito26" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Crédito 7x a 12x (%)</label><input id="taxaCredito712" type="number" min="0" step="0.01" placeholder="0,00"></div>
+    </div>
+
+    <div class="grid2" style="margin-top:12px">
+      <button id="salvarMaquinaBtn" class="btn primary" type="button">💾 SALVAR MÁQUINA</button>
+      <button id="cancelarMaquinaBtn" class="btn gray hidden" type="button">Cancelar edição</button>
+    </div>
+    <div id="maquinaMsg"></div>
+    <div id="listaMaquinas" style="margin-top:10px"></div>
+  </div>
+
+  <div id="cardDadosBackup" class="card">
+    <h2>⚙️ Dados e backup</h2>
+    <div class="grid2">
+      <button id="csvBtn" class="btn" type="button">⬇ Exportar vendas</button>
+      <button id="backupBtn" class="btn" type="button">💾 Backup completo</button>
+      <button id="restoreBtn" class="btn" type="button">📂 Restaurar</button>
+      <button id="apagarBtn" class="btn red" type="button">🗑 Apagar tudo</button>
+    </div>
+    <div class="msg">Os dados ficam salvos neste navegador. Faça backup regularmente.</div>
+  </div>
+</section>
+</main>
+
+
+<div id="modalConfirmarVenda" class="modal hidden">
+  <div class="modalBox">
+    <h2>✅ Conferir venda</h2>
+    <div class="msg">Confira o valor antes de cobrar o cliente. O valor informado abaixo será o valor considerado no caixa.</div>
+    <div id="confirmarVendaItens"></div>
+    <div class="total">Total calculado: <span id="confirmarTotalCalculado">R$ 0,00</span></div>
+    <label>Valor realmente cobrado do cliente</label>
+    <input id="confirmarValorCobrado" type="number" min="0" step="0.01" inputmode="decimal">
+    <div id="confirmarVendaDiferenca" class="msg"></div>
+    <label>Observação da venda (opcional)</label>
+    <input id="confirmarVendaObs" placeholder="Ex.: desconto, arredondamento, cobrança corrigida">
+    <div id="confirmarVendaPagamento" class="small"></div>
+    <div class="grid2" style="margin-top:12px">
+      <button id="confirmarRegistrarVendaBtn" class="btn green" type="button">✅ CONFIRMAR E REGISTRAR</button>
+      <button id="cancelarConfirmarVendaBtn" class="btn gray" type="button">Voltar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalVenda" class="modal hidden">
+  <div class="modalBox">
+    <h2>✏️ Editar venda</h2>
+    <input type="hidden" id="editVendaIndex">
+    <label>Data e hora</label><input id="editData" type="datetime-local">
+    <label>Pagamento</label>
+    <select id="editPagamento">
+      <option>Dinheiro</option><option>PIX</option><option>PIX QR Code</option><option>Cartão de débito</option>
+      <option>Cartão de crédito</option><option>Vale/Outros</option><option value="Fiado">Fiado / Pagar depois</option>
+      <option value="PIX + Dinheiro">PIX + Dinheiro</option>
+      <option value="Crédito + Débito">Crédito + Débito</option>
+      <option value="PIX + Débito">PIX + Débito</option>
+      <option value="PIX + Crédito">PIX + Crédito</option>
+    </select>
+    <h3 style="margin-top:16px">Itens</h3>
+    <div id="editItens"></div>
+    <div class="total">Total calculado: <span id="editTotal">R$ 0,00</span></div>
+    <label>Valor realmente cobrado</label><input id="editValorCobrado" type="number" min="0" step="0.01">
+    <label>Observação</label><input id="editObservacao" placeholder="Observação da venda">
+    <div id="editDiferenca" class="msg"></div>
+    <div class="grid2">
+      <button id="salvarVendaEditBtn" class="btn green" type="button">💾 SALVAR ALTERAÇÕES</button>
+      <button id="fecharModalBtn" class="btn gray" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalExcluirVenda" class="modal hidden">
+  <div class="modalBox">
+    <h2>🗑 Excluir venda</h2>
+    <input type="hidden" id="deleteVendaIndex">
+    <div id="deleteVendaInfo" class="msg"></div>
+    <p><b>Ao excluir, as quantidades dos itens voltarão para o estoque.</b></p>
+    <div class="grid2">
+      <button id="confirmarExcluirVendaBtn" class="btn red" type="button">🗑 SIM, EXCLUIR</button>
+      <button id="cancelarExcluirVendaBtn" class="btn gray" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div id="modalContaCliente" class="modal hidden">
+  <div class="modalBox">
+    <h2>👤 Conta do cliente</h2>
+    <div id="contaClienteCabecalho" class="msg"></div>
+    <div id="contaClienteDividas"></div>
+    <button id="fecharContaClienteBtn" class="btn gray" style="width:100%;margin-top:12px" type="button">Fechar</button>
+  </div>
+</div>
+
+<div id="modalPagamentoFiado" class="modal hidden">
+  <div class="modalBox">
+    <h2>💰 Registrar pagamento</h2>
+    <input type="hidden" id="pagFiadoId">
+    <div id="pagFiadoInfo" class="msg"></div>
+    <label>Valor recebido</label><input id="pagFiadoValor" type="number" min="0.01" step="0.01">
+    <label>Forma de recebimento</label>
+    <select id="pagFiadoForma">
+      <option>Dinheiro</option><option>PIX</option><option>PIX QR Code</option><option>Cartão de débito</option><option>Cartão de crédito</option><option>Vale/Outros</option>
+    </select>
+    <div id="pagFiadoMaquinaArea" class="hidden">
+      <label>Máquina</label><select id="pagFiadoMaquina"><option value="">Sem máquina / sem tarifa</option></select>
+      <div id="pagFiadoParcelasArea" class="hidden"><label>Parcelas</label><select id="pagFiadoParcelas">
+        <option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option>
+        <option value="5">5x</option><option value="6">6x</option><option value="7">7x</option><option value="8">8x</option>
+        <option value="9">9x</option><option value="10">10x</option><option value="11">11x</option><option value="12">12x</option>
+      </select></div>
+      <div id="pagFiadoTaxaPreview" class="msg"></div>
+    </div>
+    <div class="grid2" style="margin-top:12px">
+      <button id="confirmarPagamentoFiadoBtn" class="btn green" type="button">✅ REGISTRAR</button>
+      <button id="cancelarPagamentoFiadoBtn" class="btn gray" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalEditarFechamento" class="modal hidden">
+  <div class="modalBox">
+    <h2>✏️ Editar fechamento de caixa</h2>
+    <input type="hidden" id="editFechamentoIndex">
+
+    <div id="editFechamentoData" class="msg"></div>
+
+    <label>Fundo / troco inicial</label>
+    <input id="editCaixaFundo" type="number" min="0" step="0.01">
+
+    <div class="grid2">
+      <div><label>Dinheiro contado</label><input id="editCaixaDinheiro" type="number" min="0" step="0.01"></div>
+      <div><label>PIX maquininha conferido</label><input id="editCaixaPix" type="number" min="0" step="0.01"></div>
+      <div><label>PIX QR Code conferido</label><input id="editCaixaPixQr" type="number" min="0" step="0.01"></div>
+      <div><label>Débito conferido</label><input id="editCaixaDebito" type="number" min="0" step="0.01"></div>
+      <div><label>Crédito conferido</label><input id="editCaixaCredito" type="number" min="0" step="0.01"></div>
+      <div><label>Vale / Outros</label><input id="editCaixaOutros" type="number" min="0" step="0.01"></div>
+    </div>
+
+    <div id="editCaixaResultado" class="msg"></div>
+
+    <div class="grid2" style="margin-top:12px">
+      <button id="salvarEdicaoFechamentoBtn" class="btn green" type="button">💾 SALVAR ALTERAÇÕES</button>
+      <button id="cancelarEdicaoFechamentoBtn" class="btn gray" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalExcluirFechamento" class="modal hidden">
+  <div class="modalBox">
+    <h2>🗑 Excluir fechamento</h2>
+    <input type="hidden" id="deleteFechamentoIndex">
+    <div id="deleteFechamentoInfo" class="msg"></div>
+    <p><b>Esta ação remove apenas o fechamento de caixa. As vendas não serão apagadas.</b></p>
+    <div class="grid2">
+      <button id="confirmarExcluirFechamentoBtn" class="btn red" type="button">🗑 SIM, EXCLUIR</button>
+      <button id="cancelarExcluirFechamentoBtn" class="btn gray" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalSenhaUsuario" class="modal hidden">
+  <div class="modalBox">
+    <h2>🔑 Alterar senha de acesso</h2>
+    <input type="hidden" id="senhaUsuarioId">
+    <div id="senhaUsuarioInfo" class="msg"></div>
+    <label>Nova senha</label>
+    <input id="senhaUsuarioNova" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+    <label>Confirmar nova senha</label>
+    <input id="senhaUsuarioConfirmar" type="password" autocomplete="new-password">
+    <div id="senhaUsuarioMsg"></div>
+    <div class="grid2" style="margin-top:12px">
+      <button id="confirmarSenhaUsuarioBtn" class="btn blue" type="button">🔑 ALTERAR SENHA</button>
+      <button id="cancelarSenhaUsuarioBtn" class="btn gray" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalLembreteCaixa" class="modal hidden">
+  <div class="modalbox">
+    <h2>⏰ Fechamento de caixa pendente</h2>
+    <div id="lembreteCaixaInfo" class="msg"></div>
+    <div class="modal-actions">
+      <button id="lembreteFecharAgoraBtn" class="btn green" type="button">💰 FECHAR AGORA</button>
+      <button id="lembreteDepoisBtn" class="btn gray" type="button">⏳ LEMBRAR EM 30 MIN</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+'use strict';
+
+const SUPABASE_URL='https://gvgifcpzwcxdkwpnlxdh.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_B1G2oLmxe3qVOG_FeyltEA_NP8-BzzW';
+const VAPID_PUBLIC_KEY='BMnphBHx6bcokjg3serDM3DPDFEU8tg9nl5piKeNZpqn1Il95VypcoAk-u6rqTvmvrLBiR8-FbM3p_yeBc24RCg';
+const PUSH_FUNCTION_NAME='mini-box-caixa-push';
+const sb=window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+}):null;
+let perfilNuvem=null, usuarioNuvem=null, lojaIdNuvem=null, aplicandoNuvem=false, timerSync=null, canalNuvem=null;
+let acessosNuvem=[];
+const sbCadastro=window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}):null;
+
+
+const PK='MB_P_V4', VK='MB_V_V4', EK='MB_E_V1', CK='MB_CX_V1', MK='MB_MAQ_V1', UK='MB_USR_V1', SK='MB_SESSION_V1', CLK='MB_CLIENTES_V1', FRK='MB_FIADOS_V1', RK='MB_REMEMBER_SESSION_V1', CXCFGK='MB_CAIXA_CONFIG_V1', CXSNOOZEK='MB_CAIXA_SNOOZE_V1';
+const $=id=>document.getElementById(id);
+const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const num=v=>{ const n=Number(v); return Number.isFinite(n)?n:0; };
+
+let produtos={}, vendas=[], entradas=[], fechamentos=[], maquinas=[], usuarios=[], clientes=[], fiados=[], carrinho=[];
+let caixaConfig={ativo:true,hora:'22:00'};
+let scanner=null, produtoEditando=null;
+let leituraCandidata='', leituraRepeticoes=0, ultimaLeituraEm=0, scannerProcessando=false;
+
+try{produtos=JSON.parse(localStorage.getItem(PK)||'{}')||{}}catch(e){produtos={}}
+try{vendas=JSON.parse(localStorage.getItem(VK)||'[]')||[]}catch(e){vendas=[]}
+try{entradas=JSON.parse(localStorage.getItem(EK)||'[]')||[]}catch(e){entradas=[]}
+try{fechamentos=JSON.parse(localStorage.getItem(CK)||'[]')||[]}catch(e){fechamentos=[]}
+try{maquinas=JSON.parse(localStorage.getItem(MK)||'[]')||[]}catch(e){maquinas=[]}
+try{usuarios=JSON.parse(localStorage.getItem(UK)||'[]')||[]}catch(e){usuarios=[]}
+try{clientes=JSON.parse(localStorage.getItem(CLK)||'[]')||[]}catch(e){clientes=[]}
+try{fiados=JSON.parse(localStorage.getItem(FRK)||'[]')||[]}catch(e){fiados=[]}
+try{caixaConfig={...caixaConfig,...(JSON.parse(localStorage.getItem(CXCFGK)||'{}')||{})}}catch(e){}
+caixaConfig.ativo=caixaConfig.ativo!==false;
+if(!/^\d{2}:\d{2}$/.test(String(caixaConfig.hora||'')))caixaConfig.hora='22:00';
+if(!Array.isArray(vendas))vendas=[];
+if(!Array.isArray(entradas))entradas=[];
+if(!Array.isArray(fechamentos))fechamentos=[];
+if(!Array.isArray(maquinas))maquinas=[];
+if(!Array.isArray(usuarios))usuarios=[];
+if(!Array.isArray(clientes))clientes=[];
+if(!Array.isArray(fiados))fiados=[];
+
+function migrarProdutos(){
+  Object.keys(produtos).forEach(c=>{
+    const p=produtos[c]||{};
+    produtos[c]={
+      nome:p.nome||'Produto',
+      preco:num(p.preco),
+      custo:num(p.custo),
+      estoque:Number.isFinite(Number(p.estoque))?Number(p.estoque):0,
+      minimo:Number.isFinite(Number(p.minimo))?Number(p.minimo):3
+    };
+  });
+}
+migrarProdutos();
+
+function persist(sincronizar=true){
+  localStorage.setItem(PK,JSON.stringify(produtos));
+  localStorage.setItem(VK,JSON.stringify(vendas));
+  localStorage.setItem(EK,JSON.stringify(entradas));
+  localStorage.setItem(CK,JSON.stringify(fechamentos));
+  localStorage.setItem(MK,JSON.stringify(maquinas));
+  localStorage.setItem(UK,JSON.stringify(usuarios));
+  localStorage.setItem(CLK,JSON.stringify(clientes));
+  localStorage.setItem(FRK,JSON.stringify(fiados));
+  localStorage.setItem(CXCFGK,JSON.stringify(caixaConfig));
+  if(sincronizar && !aplicandoNuvem && usuarioNuvem && lojaIdNuvem)agendarSyncNuvem();
+}
+persist();
+
+function usuarioAtual(){
+  return usuarioNuvem;
+}
+function ehAdmin(){
+  return !!perfilNuvem && perfilNuvem.perfil==='admin';
+}
+const CLOUD_META_KEY='MB_CLOUD_META_V1';
+let ultimoEnvioPayloadAt=null;
+function lerCloudMeta(){
+  try{return JSON.parse(localStorage.getItem(CLOUD_META_KEY)||'{}')||{};}catch(e){return {};}
+}
+function salvarCloudMeta(patch){
+  const atual={...lerCloudMeta(),...(patch||{})};
+  try{localStorage.setItem(CLOUD_META_KEY,JSON.stringify(atual));}catch(e){}
+  return atual;
+}
+function dataHoraCloud(v){
+  if(!v)return '—';
+  const d=new Date(v);
+  return Number.isNaN(d.getTime())?'—':d.toLocaleString('pt-BR');
+}
+function renderCloudStatus(status='✅ Sincronizado',tipo='ok'){
+  const el=$('cloudStatus');
+  if(!el)return;
+  const m=lerCloudMeta();
+  el.className='msg '+tipo;
+  el.innerHTML='<b>'+status+'</b><br>'+ 
+    '<span class="small">📥 Última consulta à nuvem: '+dataHoraCloud(m.ultimaConsulta)+'<br>'+ 
+    '⬆️ Último envio para a nuvem: '+dataHoraCloud(m.ultimoEnvio)+'<br>'+ 
+    '☁️ Última alteração registrada na nuvem: '+dataHoraCloud(m.ultimaAlteracaoNuvem)+'<br>'+ 
+    '🔄 Última atualização recebida em tempo real: '+dataHoraCloud(m.ultimaRecebidaRealtime)+'</span>';
+}
+function atualizarCloudStatus(texto,tipo=''){
+  const el=$('cloudStatus');
+  if(!el)return;
+  el.className='msg '+tipo;
+  el.innerHTML=texto;
+}
+function estadoLocal(){
+  return {
+    schema:13.54,
+    produtos,
+    vendas,
+    entradas,
+    fechamentos,
+    maquinas,
+    clientes,
+    fiados,
+    caixaConfig,
+    atualizadoEm:new Date().toISOString()
+  };
+}
+function temDadosLocaisRelevantes(){
+  return Object.keys(produtos||{}).length>0 ||
+    (vendas||[]).length>0 || (entradas||[]).length>0 ||
+    (fechamentos||[]).length>0 || (maquinas||[]).length>0 ||
+    (clientes||[]).length>0 || (fiados||[]).length>0;
+}
+function aplicarEstadoNuvem(d){
+  if(!d || typeof d!=='object')return;
+  aplicandoNuvem=true;
+  try{
+    produtos=d.produtos && typeof d.produtos==='object' && !Array.isArray(d.produtos)?d.produtos:{};
+    vendas=Array.isArray(d.vendas)?d.vendas:[];
+    entradas=Array.isArray(d.entradas)?d.entradas:[];
+    fechamentos=Array.isArray(d.fechamentos)?d.fechamentos:[];
+    maquinas=Array.isArray(d.maquinas)?d.maquinas:[];
+    clientes=Array.isArray(d.clientes)?d.clientes:[];
+    fiados=Array.isArray(d.fiados)?d.fiados:[];
+    caixaConfig={ativo:true,hora:'22:00',...(d.caixaConfig&&typeof d.caixaConfig==='object'?d.caixaConfig:{})};
+    caixaConfig.ativo=caixaConfig.ativo!==false;
+    if(!/^\d{2}:\d{2}$/.test(String(caixaConfig.hora||'')))caixaConfig.hora='22:00';
+    migrarProdutos();
+    persist(false);
+    atualizarTudo();
+    renderCarrinho();
+  }finally{
+    aplicandoNuvem=false;
+  }
+}
+async function obterPerfilNuvem(user){
+  const {data,error}=await sb.from('perfis')
+    .select('id,loja_id,nome,perfil,ativo,permissoes')
+    .eq('id',user.id)
+    .single();
+  if(error)throw new Error('Perfil: '+error.message);
+  if(!data?.ativo)throw new Error('Este usuário está desativado.');
+  return data;
+}
+async function baixarEstadoNuvem(){
+  atualizarCloudStatus('🔄 Consultando a nuvem...');
+  const {data,error}=await sb.from('app_state')
+    .select('dados,updated_at,updated_by')
+    .eq('loja_id',lojaIdNuvem)
+    .maybeSingle();
+  if(error)throw new Error(error.message);
+  const agora=new Date().toISOString();
+  if(!data){
+    salvarCloudMeta({ultimaConsulta:agora});
+    renderCloudStatus('ℹ️ Consulta concluída — ainda não há dados na nuvem','');
+    return null;
+  }
+  aplicarEstadoNuvem(data.dados||{});
+  salvarCloudMeta({ultimaConsulta:agora,ultimaAlteracaoNuvem:data.updated_at||null});
+  renderCloudStatus('✅ Sincronizado com a nuvem','ok');
+  return data;
+}
+async function enviarEstadoNuvem(motivo='automático'){
+  if(!sb||!usuarioNuvem||!lojaIdNuvem||aplicandoNuvem)return;
+  atualizarCloudStatus('☁️ Salvando alterações na nuvem...');
+  const agora=new Date().toISOString();
+  ultimoEnvioPayloadAt=agora;
+  const payload={
+    loja_id:lojaIdNuvem,
+    dados:estadoLocal(),
+    updated_by:usuarioNuvem.id,
+    updated_at:agora
+  };
+  const {error}=await sb.from('app_state').upsert(payload,{onConflict:'loja_id'});
+  if(error){
+    console.error('Erro ao sincronizar',error);
+    ultimoEnvioPayloadAt=null;
+    atualizarCloudStatus('⚠️ Alteração salva neste aparelho, mas a nuvem falhou: '+esc(error.message),'err');
+    return;
+  }
+  salvarCloudMeta({ultimoEnvio:new Date().toISOString(),ultimaAlteracaoNuvem:agora});
+  renderCloudStatus('✅ Dados salvos na nuvem ('+esc(motivo)+')','ok');
+}
+function agendarSyncNuvem(){
+  clearTimeout(timerSync);
+  timerSync=setTimeout(()=>enviarEstadoNuvem('automática'),700);
+}
+function iniciarRealtimeNuvem(){
+  try{if(canalNuvem)sb.removeChannel(canalNuvem)}catch(e){}
+  canalNuvem=sb.channel('mini-box-'+lojaIdNuvem)
+    .on('postgres_changes',{
+      event:'*',schema:'public',table:'app_state',filter:'loja_id=eq.'+lojaIdNuvem
+    },payload=>{
+      if(payload?.new?.dados){
+        aplicarEstadoNuvem(payload.new.dados);
+        const alteracao=payload.new.updated_at||new Date().toISOString();
+        const meta={ultimaAlteracaoNuvem:alteracao};
+        const proprioEco=ultimoEnvioPayloadAt && Math.abs(new Date(alteracao).getTime()-new Date(ultimoEnvioPayloadAt).getTime())<1500;
+        if(!proprioEco)meta.ultimaRecebidaRealtime=new Date().toISOString();
+        salvarCloudMeta(meta);
+        renderCloudStatus(proprioEco?'✅ Sincronizado com a nuvem':'🔄 Atualização recebida em tempo real','ok');
+      }
+    })
+    .subscribe();
+}
+const AREAS_ACESSO=['painel','venda','produtos','estoque','relatorios','fiados','menu'];
+function permissoesPadraoFuncionario(){
+  return {painel:false,venda:true,produtos:false,estoque:true,relatorios:false,fiados:true,menu:false};
+}
+function permissoesFormulario(){
+  return {
+    painel:$('permPainel').checked,
+    venda:$('permVenda').checked,
+    produtos:$('permProdutos').checked,
+    estoque:$('permEstoque').checked,
+    relatorios:$('permRelatorios').checked,
+    fiados:$('permFiados').checked,
+    menu:$('permMenu').checked
+  };
+}
+function preencherPermissoesFormulario(p){
+  const x={...permissoesPadraoFuncionario(),...(p||{})};
+  $('permPainel').checked=!!x.painel;$('permVenda').checked=!!x.venda;
+  $('permProdutos').checked=!!x.produtos;$('permEstoque').checked=!!x.estoque;
+  $('permRelatorios').checked=!!x.relatorios;$('permFiados').checked=!!x.fiados;$('permMenu').checked=!!x.menu;
+}
+function podeAcessar(area){
+  if(ehAdmin())return true;
+  const p={...permissoesPadraoFuncionario(),...(perfilNuvem?.permissoes||{})};
+  return !!p[area];
+}
+function aplicarPermissoesAcesso(){
+  const mapa={painel:'painel',venda:'venda',produtos:'produtos',estoque:'estoque',vendas:'relatorios',fiados:'fiados',menu:'menu'};
+  document.querySelectorAll('.menu button').forEach(b=>{
+    const area=mapa[b.dataset.tab];
+    b.classList.toggle('hidden',!podeAcessar(area));
+  });
+  if($('cardMaquinas'))$('cardMaquinas').classList.toggle('hidden',!ehAdmin());
+  if($('cardDadosBackup'))$('cardDadosBackup').classList.toggle('hidden',!ehAdmin());
+  const atual=document.querySelector('.menu button.on');
+  if(!atual || atual.classList.contains('hidden')){
+    const primeiro=[...document.querySelectorAll('.menu button')].find(b=>!b.classList.contains('hidden'));
+    if(primeiro)primeiro.click();
+  }
+}
+function mostrarApp(){
+  const u=usuarioAtual();
+  if(!u){mostrarLogin();return;}
+  $('loginScreen').classList.add('hidden');
+  $('appHeader').classList.remove('hidden');
+  $('appMain').classList.remove('hidden');
+  $('usuarioLogadoNome').textContent=u.nome||u.usuario||u.email||'Usuário';
+  $('usuarioLogadoPerfil').textContent=ehAdmin()?'• Administrador':'• Funcionário';
+  $('cardFuncionarios').classList.toggle('hidden',!ehAdmin());
+  if($('blocoMinhaSenhaAdmin'))$('blocoMinhaSenhaAdmin').classList.toggle('hidden',!ehAdmin());
+  if(ehAdmin())carregarAcessosNuvem();
+  aplicarPermissoesAcesso();
+  const ultimo=u.ultimoLogin?new Date(u.ultimoLogin).toLocaleString('pt-BR'):'Agora';
+  if($('minhaContaInfo'))$('minhaContaInfo').innerHTML=
+    '<b>'+esc(u.nome||u.email||'Usuário')+'</b><br>E-mail: '+esc(u.email||'')+
+    '<br>Perfil: '+(ehAdmin()?'Administrador':'Funcionário')+
+    '<br>☁️ Dados vinculados à loja na nuvem';
+  atualizarTudo();
+  setTimeout(()=>verificarPopupLembreteCaixa(false),500);
+  setTimeout(()=>atualizarStatusPush(),650);
+  tratarAcaoPushUrl();
+}
+function mostrarLogin(){
+  $('appHeader').classList.add('hidden');
+  $('appMain').classList.add('hidden');
+  $('loginScreen').classList.remove('hidden');
+  $('loginSenha').value='';
+  $('loginMsg').innerHTML='';
+}
+async function prepararSessaoNuvem(session){
+  if(!session?.user){usuarioNuvem=null;perfilNuvem=null;lojaIdNuvem=null;mostrarLogin();return;}
+  if(!sb)throw new Error('Biblioteca do Supabase não carregou.');
+  perfilNuvem=await obterPerfilNuvem(session.user);
+  lojaIdNuvem=perfilNuvem.loja_id;
+  usuarioNuvem={
+    id:session.user.id,
+    nome:perfilNuvem.nome||session.user.email,
+    usuario:session.user.email,
+    email:session.user.email,
+    perfil:perfilNuvem.perfil,
+    ativo:perfilNuvem.ativo,
+    permissoes:perfilNuvem.permissoes||{},
+    ultimoLogin:new Date().toISOString()
+  };
+  usuarios=[usuarioNuvem];
+
+  const remoto=await baixarEstadoNuvem();
+  if(!remoto){
+    if(temDadosLocaisRelevantes()){
+      const ok=confirm(
+        'A nuvem ainda está vazia e este aparelho possui dados do Mini Box.\n\n'+
+        'Deseja enviar os dados deste aparelho para a nuvem agora?\n\n'+
+        'Recomendado: OK.'
+      );
+      if(ok)await enviarEstadoNuvem('migração inicial');
+      else atualizarCloudStatus('⚠️ Nuvem vazia. Os dados locais ainda não foram enviados.','err');
+    }else{
+      await enviarEstadoNuvem('inicial');
+    }
+  }
+  iniciarRealtimeNuvem();
+  mostrarApp();
+}
+async function iniciarAutenticacao(){
+  if(!sb){$('loginMsg').innerHTML='<div class="msg err">Supabase não carregou. Verifique a internet.</div>';mostrarLogin();return;}
+  try{
+    const {data,error}=await sb.auth.getSession();
+    if(error)throw error;
+    if(data.session)await prepararSessaoNuvem(data.session);
+    else mostrarLogin();
+  }catch(e){
+    console.error(e);
+    mostrarLogin();
+    $('loginMsg').innerHTML='<div class="msg err">'+esc(e.message||String(e))+'</div>';
+  }
+}
+async function fazerLogin(){
+  const email=$('loginUsuario').value.trim();
+  const senha=$('loginSenha').value;
+  if(!email||!senha){
+    $('loginMsg').innerHTML='<div class="msg err">Informe e-mail e senha.</div>';return;
+  }
+  $('loginMsg').innerHTML='<div class="msg">☁️ Conectando...</div>';
+  const {data,error}=await sb.auth.signInWithPassword({email,password:senha});
+  if(error){
+    $('loginMsg').innerHTML='<div class="msg err">Não foi possível entrar: '+esc(error.message)+'</div>';return;
+  }
+  $('loginSenha').value='';
+  try{
+    await prepararSessaoNuvem(data.session);
+    $('loginMsg').innerHTML='';
+  }catch(e){
+    await sb.auth.signOut();
+    $('loginMsg').innerHTML='<div class="msg err">'+esc(e.message||String(e))+'</div>';
+  }
+}
+$('entrarBtn').addEventListener('click',fazerLogin);
+$('loginSenha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
+$('logoutBtn').addEventListener('click',async function(){
+  await pararScanner();
+  try{if(canalNuvem)await sb.removeChannel(canalNuvem)}catch(e){}
+  canalNuvem=null;
+  usuarioNuvem=null;perfilNuvem=null;lojaIdNuvem=null;
+  await sb.auth.signOut();
+  mostrarLogin();
+});
+if($('sincronizarAgoraBtn'))$('sincronizarAgoraBtn').addEventListener('click',async()=>{
+  try{
+    const remoto=await baixarEstadoNuvem();
+    if(!remoto)await enviarEstadoNuvem('manual');
+    beep();
+  }catch(e){atualizarCloudStatus('❌ '+esc(e.message||String(e)),'err');}
+});
+if($('enviarLocalNuvemBtn'))$('enviarLocalNuvemBtn').addEventListener('click',async()=>{
+  if(!confirm('Enviar os dados atuais deste aparelho para a nuvem?\n\nIsso substituirá o estado salvo na nuvem.'))return;
+  await enviarEstadoNuvem('manual');
+  beep();
+});
+
+
+$('alterarMinhaSenhaBtn').addEventListener('click',async function(){
+  if(!ehAdmin()){
+    $('minhaSenhaMsg').innerHTML='<div class="msg err">Somente administradores podem alterar senhas.</div>';return;
+  }
+  const atual=$('minhaSenhaAtual').value;
+  const nova=$('minhaSenhaNova').value;
+  const confirmar=$('minhaSenhaConfirmar').value;
+  if(!atual||!nova||!confirmar){
+    $('minhaSenhaMsg').innerHTML='<div class="msg err">Preencha os três campos.</div>';return;
+  }
+  if(nova.length<8){
+    $('minhaSenhaMsg').innerHTML='<div class="msg err">Use pelo menos 8 caracteres na nova senha.</div>';return;
+  }
+  if(nova!==confirmar){
+    $('minhaSenhaMsg').innerHTML='<div class="msg err">A confirmação não confere.</div>';return;
+  }
+  const email=usuarioNuvem?.email;
+  if(!email)return;
+  const teste=await sb.auth.signInWithPassword({email,password:atual});
+  if(teste.error){
+    $('minhaSenhaMsg').innerHTML='<div class="msg err">A senha atual está incorreta.</div>';return;
+  }
+  const {error}=await sb.auth.updateUser({password:nova});
+  if(error){
+    $('minhaSenhaMsg').innerHTML='<div class="msg err">'+esc(error.message)+'</div>';return;
+  }
+  $('minhaSenhaAtual').value='';$('minhaSenhaNova').value='';$('minhaSenhaConfirmar').value='';
+  $('minhaSenhaMsg').innerHTML='<div class="msg ok">✅ Senha da conta na nuvem alterada.</div>';
+  beep();
+});
+
+function beep(){
+  try{
+    const A=window.AudioContext||window.webkitAudioContext;if(!A)return;
+    const a=new A(),o=a.createOscillator(),g=a.createGain();
+    o.frequency.value=900;g.gain.value=.10;o.connect(g);g.connect(a.destination);
+    o.start();o.stop(a.currentTime+.12);
+  }catch(e){}
+}
+function mostrarMsg(t,c=''){$('msg').innerHTML='<div class="msg '+c+'">'+t+'</div>';}
+function mesmoDia(a,b){
+  const da=new Date(a),db=new Date(b);
+  return da.getFullYear()===db.getFullYear()&&da.getMonth()===db.getMonth()&&da.getDate()===db.getDate();
+}
+function inicioDia(d){const x=new Date(d);x.setHours(0,0,0,0);return x;}
+function custoVenda(v){
+  return (v.it||[]).reduce((s,x)=>{
+    const custo=x.custo!=null?num(x.custo):num(produtos[x.c]?.custo);
+    return s+custo*num(x.q);
+  },0);
+}
+function totalCalculadoVenda(v){
+  return v.totalCalculado!=null?num(v.totalCalculado):(v.it||[]).reduce((s,x)=>s+num(x.p)*num(x.q),0);
+}
+function lucroVenda(v){
+  return num(v.t)-custoVenda(v);
+}
+
+function taxaVenda(v){
+  return Math.max(0,num(v.taxaValor));
+}
+function liquidoVenda(v){
+  return num(v.liquido!=null?v.liquido:(num(v.t)-taxaVenda(v)));
+}
+function lucroAposTaxa(v){
+  return lucroVenda(v)-taxaVenda(v);
+}
+function maquinaPorId(id){
+  return maquinas.find(m=>String(m.id)===String(id))||null;
+}
+function percentualDaMaquina(maquina,pagamento,parcelas){
+  if(!maquina)return 0;
+  if(pagamento==='PIX')return num(maquina.pix);
+  if(pagamento==='Cartão de débito')return num(maquina.debito);
+  if(pagamento==='Cartão de crédito'){
+    const p=Math.max(1,Math.floor(num(parcelas)||1));
+    if(p===1)return num(maquina.credito1);
+    if(p<=6)return num(maquina.credito26);
+    return num(maquina.credito712);
+  }
+  return 0;
+}
+function formasSplit(pagamento){
+  const mapa={
+    'PIX + Dinheiro':['PIX','Dinheiro'],
+    'Crédito + Débito':['Cartão de crédito','Cartão de débito'],
+    'PIX + Débito':['PIX','Cartão de débito'],
+    'PIX + Crédito':['PIX','Cartão de crédito']
+  };
+  return mapa[pagamento]||null;
+}
+function ehPagamentoDividido(pagamento){return !!formasSplit(pagamento);}
+function valoresSplit(){return [Math.max(0,num($('splitValor1')?.value)),Math.max(0,num($('splitValor2')?.value))];}
+function dadosTarifaForma(forma,valor,maquina,parcelas){
+  const perc=percentualDaMaquina(maquina,forma,parcelas);
+  const taxa=Number((num(valor)*perc/100).toFixed(2));
+  return {forma,valor:Number(num(valor).toFixed(2)),percentual:perc,taxa,liquido:Number((num(valor)-taxa).toFixed(2))};
+}
+function dadosTarifaAtual(total){
+  const pagamento=$('pagamento').value;
+  const maquina=maquinaPorId($('maquinaVenda').value);
+  const parcelas=(pagamento==='Cartão de crédito'||pagamento==='Crédito + Débito'||pagamento==='PIX + Crédito')?Math.max(1,Math.floor(num($('parcelasVenda').value)||1)):1;
+  const fs=formasSplit(pagamento);
+  if(fs){
+    const vs=valoresSplit();
+    const partes=[dadosTarifaForma(fs[0],vs[0],maquina,parcelas),dadosTarifaForma(fs[1],vs[1],maquina,parcelas)];
+    const taxa=Number(partes.reduce((a,x)=>a+x.taxa,0).toFixed(2));
+    return {maquina,parcelas,percentual:0,taxa,liquido:Number((num(total)-taxa).toFixed(2)),partes};
+  }
+  const percentual=percentualDaMaquina(maquina,pagamento,parcelas);
+  const taxa=Number((num(total)*percentual/100).toFixed(2));
+  const liquido=Number((num(total)-taxa).toFixed(2));
+  return {maquina,parcelas,percentual,taxa,liquido,partes:null};
+}
+
+function vendasDoPeriodo(periodo){
+  const agora=new Date(), hoje=inicioDia(agora);
+  if(periodo==='tudo')return vendas.slice();
+  if(periodo==='hoje')return vendas.filter(v=>mesmoDia(v.d,agora));
+  if(periodo==='ontem'){
+    const ontem=new Date(hoje);ontem.setDate(ontem.getDate()-1);
+    return vendas.filter(v=>mesmoDia(v.d,ontem));
+  }
+  if(periodo==='7'){
+    const ini=new Date(hoje);ini.setDate(ini.getDate()-6);
+    return vendas.filter(v=>new Date(v.d)>=ini);
+  }
+  if(periodo==='mes'){
+    const ini=new Date(agora.getFullYear(),agora.getMonth(),1);
+    return vendas.filter(v=>new Date(v.d)>=ini);
+  }
+  return vendas.slice();
+}
+function topProduto(lista){
+  const m={};
+  lista.forEach(v=>(v.it||[]).forEach(x=>{
+    const k=x.n||'Produto';
+    m[k]=(m[k]||0)+num(x.q);
+  }));
+  const ord=Object.entries(m).sort((a,b)=>b[1]-a[1]);
+  return ord[0]||null;
+}
+function pagamentosFiadoTodos(){
+  const out=[];
+  (fiados||[]).forEach(f=>(f.pagamentos||[]).forEach(p=>out.push({...p,fiadoId:f.id,clienteNome:f.clienteNome||''})));
+  return out;
+}
+function pagamentoNoPeriodoData(d,periodo){
+  const data=new Date(d),agora=new Date(),hoje=inicioDia(agora);
+  if(periodo==='tudo')return true;
+  if(periodo==='hoje')return mesmoDia(data,agora);
+  if(periodo==='ontem'){const ontem=new Date(hoje);ontem.setDate(ontem.getDate()-1);return mesmoDia(data,ontem);}
+  if(periodo==='7'){const ini=new Date(hoje);ini.setDate(ini.getDate()-6);return data>=ini;}
+  if(periodo==='mes'){const ini=new Date(agora.getFullYear(),agora.getMonth(),1);return data>=ini;}
+  return true;
+}
+function pagamentosFiadoDoPeriodo(periodo){
+  return pagamentosFiadoTodos().filter(p=>pagamentoNoPeriodoData(p.d,periodo));
+}
+function totalAReceberAtual(){
+  return (fiados||[]).reduce((s,f)=>s+Math.max(0,saldoFiado(f)),0);
+}
+function chaveDataLocal(valor){
+  const d=valor instanceof Date?new Date(valor):new Date(valor);
+  if(Number.isNaN(d.getTime()))return '';
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dia=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dia}`;
+}
+function dataDaChave(chave){
+  const m=String(chave||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m)return null;
+  const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+  return Number.isNaN(d.getTime())?null:d;
+}
+function dataChaveBR(chave){
+  const d=dataDaChave(chave);return d?d.toLocaleDateString('pt-BR'):String(chave||'');
+}
+function chaveFechamento(c){return c?.referenciaDia||chaveDataLocal(c?.d);}
+function fechamentoDoDia(chave){return fechamentos.find(c=>chaveFechamento(c)===chave)||null;}
+function formaPagamentoDoDia(chave){
+  const out={'Dinheiro':0,'PIX':0,'PIX QR Code':0,'Cartão de débito':0,'Cartão de crédito':0,'Vale/Outros':0};
+  vendas.filter(v=>chaveDataLocal(v.d)===chave && v.p!=='Fiado').forEach(v=>{
+    if(Array.isArray(v.pagamentosDivididos)&&v.pagamentosDivididos.length){
+      v.pagamentosDivididos.forEach(pg=>{
+        const p=pg.forma||'Vale/Outros'; if(out[p]==null)out[p]=0;
+        out[p]+=num(pg.liquido!=null?pg.liquido:(num(pg.valor)-num(pg.taxaValor)));
+      });
+    }else{
+      const p=v.p||'Vale/Outros'; if(out[p]==null)out[p]=0;
+      out[p]+=(p==='Dinheiro'||p==='Vale/Outros')?num(v.t):liquidoVenda(v);
+    }
+  });
+  pagamentosFiadoTodos().filter(pg=>chaveDataLocal(pg.d)===chave).forEach(pg=>{
+    const p=pg.forma||'Vale/Outros'; if(out[p]==null)out[p]=0;
+    out[p]+=(p==='Dinheiro'||p==='Vale/Outros')?num(pg.valor):num(pg.liquido!=null?pg.liquido:(num(pg.valor)-num(pg.taxaValor)));
+  });
+  return out;
+}
+function formaPagamentoHoje(){return formaPagamentoDoDia(chaveDataLocal(new Date()));}
+function diasComMovimento(){
+  const set=new Set();
+  vendas.forEach(v=>{const k=chaveDataLocal(v.d);if(k)set.add(k);});
+  pagamentosFiadoTodos().forEach(p=>{const k=chaveDataLocal(p.d);if(k)set.add(k);});
+  return [...set].sort();
+}
+function horarioFechamentoJaPassou(){
+  const [h,m]=String(caixaConfig.hora||'22:00').split(':').map(Number);
+  const agora=new Date(),limite=new Date();limite.setHours(Number.isFinite(h)?h:22,Number.isFinite(m)?m:0,0,0);
+  return agora>=limite;
+}
+function pendenciasCaixa(apenasParaAlerta=false){
+  const hoje=chaveDataLocal(new Date());
+  return diasComMovimento().filter(k=>{
+    if(k>hoje || fechamentoDoDia(k))return false;
+    if(k<hoje)return true;
+    return !apenasParaAlerta || horarioFechamentoJaPassou();
+  }).sort().reverse();
+}
+function podeFecharCaixa(){return podeAcessar('menu');}
+function irParaFechamento(chave){
+  if(!podeFecharCaixa()){alert('Seu acesso não permite abrir o fechamento de caixa.');return;}
+  const b=document.querySelector('.menu button[data-tab="menu"]');if(b)b.click();
+  if(chave && $('caixaDataRef'))$('caixaDataRef').value=chave;
+  renderCaixa();
+  try{$('caixaDataRef').scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
+}
+function renderLembreteCaixa(){
+  if(!$('caixaStatusGlobal'))return;
+  const hoje=chaveDataLocal(new Date()), fechHoje=fechamentoDoDia(hoje), movimentosHoje=diasComMovimento().includes(hoje);
+  const pend=pendenciasCaixa(false), antigas=pend.filter(k=>k<hoje);
+  let cls='msg ok',texto='✅ <b>Caixa em dia</b>',acao='';
+  if(antigas.length){
+    cls='msg err';texto='🔴 <b>'+antigas.length+' fechamento'+(antigas.length>1?'s':'')+' pendente'+(antigas.length>1?'s':'')+'</b> · mais antigo: '+dataChaveBR(antigas[antigas.length-1]);
+    if(podeFecharCaixa())acao=' <button type="button" class="btn red action caixaIrPendenteBtn" data-dia="'+esc(antigas[antigas.length-1])+'">Fechar agora</button>';
+  }else if(fechHoje){
+    texto='✅ <b>Caixa de hoje fechado</b> · '+dataChaveBR(hoje);
+  }else if(movimentosHoje){
+    cls=horarioFechamentoJaPassou()?'msg err':'msg';
+    texto=(horarioFechamentoJaPassou()?'⏰ <b>Caixa de hoje ainda não foi fechado</b>':'🟠 <b>Caixa aberto</b>')+(caixaConfig.ativo?' · lembrete às '+esc(caixaConfig.hora):' · lembrete desativado');
+    if(podeFecharCaixa())acao=' <button type="button" class="btn '+(horarioFechamentoJaPassou()?'red':'gray')+' action caixaIrPendenteBtn" data-dia="'+esc(hoje)+'">Fechar caixa</button>';
+  }else{
+    cls='msg';texto='ℹ️ <b>Sem movimento de caixa hoje</b>';
+  }
+  $('caixaStatusGlobal').className=cls;$('caixaStatusGlobal').innerHTML=texto+acao;
+  if($('dashCaixaStatus')){$('dashCaixaStatus').className=cls;$('dashCaixaStatus').innerHTML=texto;}
+  const lista=$('dashFechamentosPendentes');
+  if(lista){
+    lista.innerHTML=pend.length?pend.slice(0,7).map(k=>`<div class="item between"><div><b>${dataChaveBR(k)}</b><div class="small">Fechamento pendente</div></div>${podeFecharCaixa()?`<button type="button" class="btn red action caixaIrPendenteBtn" data-dia="${esc(k)}">Fechar</button>`:''}</div>`).join(''):'<div class="small">✅ Nenhum dia com movimento está pendente.</div>';
+  }
+  if($('listaPendenciasCaixa'))$('listaPendenciasCaixa').innerHTML=pend.length?pend.map(k=>`<div class="item between"><div><b>${dataChaveBR(k)}</b><div class="small">Há movimento e nenhum fechamento registrado.</div></div><button type="button" class="btn red action caixaIrPendenteBtn" data-dia="${esc(k)}">Fechar</button></div>`).join(''):'<div class="msg ok">✅ Nenhum fechamento pendente.</div>';
+  document.querySelectorAll('.caixaIrPendenteBtn').forEach(b=>b.onclick=()=>irParaFechamento(b.dataset.dia));
+}
+function snoozeCaixaAte(){
+  try{return Number(localStorage.getItem(CXSNOOZEK)||0)||0}catch(e){return 0}
+}
+function lembrarCaixaDepois(minutos=30){try{localStorage.setItem(CXSNOOZEK,String(Date.now()+minutos*60000))}catch(e){}}
+function limparSnoozeCaixa(){try{localStorage.removeItem(CXSNOOZEK)}catch(e){}}
+function verificarPopupLembreteCaixa(forcar=false){
+  if(!caixaConfig.ativo || !usuarioAtual())return;
+  const pend=pendenciasCaixa(true);if(!pend.length)return;
+  if(!forcar && Date.now()<snoozeCaixaAte())return;
+  const dia=pend[pend.length-1];
+  $('lembreteCaixaInfo').innerHTML=`<b>${dataChaveBR(dia)}</b><br>Existe movimento neste dia e o fechamento ainda não foi registrado.${dia===chaveDataLocal(new Date())?'<br><span class="small">Horário configurado: '+esc(caixaConfig.hora)+'</span>':''}`;
+  $('lembreteFecharAgoraBtn').dataset.dia=dia;
+  $('lembreteFecharAgoraBtn').classList.toggle('hidden',!podeFecharCaixa());
+  $('modalLembreteCaixa').classList.remove('hidden');
+}
+
+
+// PUSH — lembrete de fechamento fora do app
+function pushSuportado(){
+  return location.protocol==='https:' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+}
+function base64UrlParaUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw=atob(base64),out=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+  return out;
+}
+async function registroServiceWorkerPush(){
+  if(!pushSuportado())throw new Error('Este navegador não oferece suporte a notificações push ou a página não está em HTTPS.');
+  const reg=await navigator.serviceWorker.register('./service-worker.js?v=13.5.4',{scope:'./'});
+  await navigator.serviceWorker.ready;
+  try{await reg.update();}catch(e){}
+  return reg;
+}
+async function assinaturaPushAtual(){
+  if(!pushSuportado())return null;
+  const reg=await registroServiceWorkerPush();
+  return await reg.pushManager.getSubscription();
+}
+async function salvarAssinaturaPush(subscription){
+  if(!subscription || !usuarioNuvem || !lojaIdNuvem)throw new Error('Entre na sua conta antes de ativar a notificação.');
+  const j=subscription.toJSON(),keys=j.keys||{};
+  if(!j.endpoint || !keys.p256dh || !keys.auth)throw new Error('O navegador não retornou uma assinatura push válida.');
+  const payload={
+    loja_id:lojaIdNuvem,user_id:usuarioNuvem.id,endpoint:j.endpoint,p256dh:keys.p256dh,auth:keys.auth,
+    user_agent:navigator.userAgent||'',ativo:true,updated_at:new Date().toISOString()
+  };
+  const {error}=await sb.from('push_subscriptions').upsert(payload,{onConflict:'endpoint'});
+  if(error)throw new Error(error.message);
+}
+async function atualizarStatusPush(){
+  const el=$('pushStatusCaixa');if(!el)return;
+  if(!pushSuportado()){
+    el.className='msg err';el.innerHTML='❌ <b>Push indisponível neste navegador.</b><br><span class="small">Use o endereço HTTPS do GitHub Pages em um navegador compatível.</span>';
+    $('ativarPushCaixaBtn').disabled=true;$('testarPushCaixaBtn').disabled=true;$('desativarPushCaixaBtn').disabled=true;return;
+  }
+  $('ativarPushCaixaBtn').disabled=false;
+  try{
+    const sub=await assinaturaPushAtual();
+    const perm=Notification.permission;
+    if(sub && perm==='granted'){
+      el.className='msg ok';el.innerHTML='✅ <b>Notificação externa ativa neste aparelho.</b><br><span class="small">Você poderá receber o lembrete mesmo com o sistema fechado.</span>';
+      $('testarPushCaixaBtn').disabled=false;$('desativarPushCaixaBtn').disabled=false;$('ativarPushCaixaBtn').textContent='✅ NOTIFICAÇÃO ATIVA';
+      try{await salvarAssinaturaPush(sub);}catch(e){console.warn('Assinatura push ainda não sincronizada:',e);}
+    }else if(perm==='denied'){
+      el.className='msg err';el.innerHTML='🚫 <b>Notificações bloqueadas pelo navegador.</b><br><span class="small">Abra as permissões do site no celular e permita Notificações.</span>';
+      $('testarPushCaixaBtn').disabled=true;$('desativarPushCaixaBtn').disabled=!sub;
+    }else{
+      el.className='msg';el.innerHTML='🔔 <b>Notificação externa ainda não ativada neste aparelho.</b>';
+      $('testarPushCaixaBtn').disabled=true;$('desativarPushCaixaBtn').disabled=true;$('ativarPushCaixaBtn').textContent='🔔 ATIVAR NESTE APARELHO';
+    }
+  }catch(e){
+    el.className='msg err';el.innerHTML='⚠️ Não foi possível verificar a notificação: '+esc(e.message||String(e));
+  }
+}
+async function ativarPushCaixa(){
+  const el=$('pushStatusCaixa');
+  if(!usuarioNuvem||!lojaIdNuvem){el.innerHTML='<b>Entre na nuvem primeiro.</b>';return;}
+  if(!pushSuportado()){await atualizarStatusPush();return;}
+  try{
+    el.className='msg';el.innerHTML='🔔 Solicitando permissão...';
+    const permissao=await Notification.requestPermission();
+    if(permissao!=='granted')throw new Error('A permissão de notificações não foi concedida.');
+    const reg=await registroServiceWorkerPush();
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub){
+      sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:base64UrlParaUint8Array(VAPID_PUBLIC_KEY)});
+    }
+    await salvarAssinaturaPush(sub);
+    await atualizarStatusPush();
+    beep();
+  }catch(e){
+    el.className='msg err';el.innerHTML='❌ Não foi possível ativar: '+esc(e.message||String(e));
+  }
+}
+async function desativarPushCaixa(){
+  const el=$('pushStatusCaixa');
+  try{
+    const sub=await assinaturaPushAtual();
+    if(sub){
+      const endpoint=sub.endpoint;
+      if(sb && usuarioNuvem){
+        const {error}=await sb.from('push_subscriptions').delete().eq('endpoint',endpoint).eq('user_id',usuarioNuvem.id);
+        if(error)console.warn('Falha ao remover assinatura no servidor:',error);
+      }
+      await sub.unsubscribe();
+    }
+    el.className='msg ok';el.innerHTML='✅ Notificação externa desativada neste aparelho.';
+    await atualizarStatusPush();
+  }catch(e){el.className='msg err';el.innerHTML='❌ Não foi possível desativar: '+esc(e.message||String(e));}
+}
+async function testarPushCaixa(){
+  const el=$('pushStatusCaixa');
+  try{
+    const sub=await assinaturaPushAtual();if(!sub)throw new Error('Ative a notificação neste aparelho primeiro.');
+    await salvarAssinaturaPush(sub);
+    el.className='msg';el.innerHTML='🧪 Enviando notificação de teste...';
+    const {data,error}=await sb.functions.invoke(PUSH_FUNCTION_NAME,{body:{action:'test',endpoint:sub.endpoint}});
+    if(error)throw new Error(error.message||'A Edge Function retornou erro.');
+    if(data && data.error)throw new Error(data.error);
+    el.className='msg ok';el.innerHTML='✅ Teste enviado. A notificação deve aparecer no celular em alguns segundos.';
+  }catch(e){el.className='msg err';el.innerHTML='❌ Teste falhou: '+esc(e.message||String(e))+'<br><span class="small">Confira se o SQL e a Edge Function da versão 13.5.4 já foram instalados no Supabase.</span>';}
+}
+function tratarAcaoPushUrl(){
+  try{
+    const u=new URL(location.href),acao=u.searchParams.get('acao'),dia=u.searchParams.get('dia');
+    if(acao==='fechar-caixa'){
+      setTimeout(()=>irParaFechamento(/^\d{4}-\d{2}-\d{2}$/.test(dia||'')?dia:chaveDataLocal(new Date())),450);
+      u.searchParams.delete('acao');u.searchParams.delete('dia');history.replaceState({},'',u.pathname+(u.search?'?'+u.searchParams.toString():'')+u.hash);
+    }
+  }catch(e){}
+}
+$('ativarPushCaixaBtn').addEventListener('click',ativarPushCaixa);
+$('desativarPushCaixaBtn').addEventListener('click',desativarPushCaixa);
+$('testarPushCaixaBtn').addEventListener('click',testarPushCaixa);
+
+// NAVEGAÇÃO
+document.querySelectorAll('.menu button').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    const alvo=this.dataset.tab;
+    const area={painel:'painel',venda:'venda',produtos:'produtos',estoque:'estoque',vendas:'relatorios',fiados:'fiados',menu:'menu'}[alvo];
+    if(!podeAcessar(area)){alert('Seu acesso não permite abrir esta área.');return;}
+    ['painel','venda','produtos','estoque','vendas','fiados','menu'].forEach(id=>$(id).classList.toggle('hidden',id!==alvo));
+    document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('on'));
+    this.classList.add('on');
+    atualizarTudo();
+  });
+});
+
+$('lembreteFecharAgoraBtn').addEventListener('click',function(){
+  const dia=this.dataset.dia;$('modalLembreteCaixa').classList.add('hidden');limparSnoozeCaixa();irParaFechamento(dia);
+});
+$('lembreteDepoisBtn').addEventListener('click',function(){
+  lembrarCaixaDepois(30);$('modalLembreteCaixa').classList.add('hidden');
+});
+setInterval(()=>{renderLembreteCaixa();verificarPopupLembreteCaixa(false);},60000);
+
+
+function renderSelectMaquinas(){
+  const sel=$('maquinaVenda');
+  if(!sel)return;
+  const atual=sel.value;
+  sel.innerHTML='<option value="">Sem máquina / sem tarifa</option>'+
+    maquinas.map(m=>'<option value="'+esc(m.id)+'">'+esc(m.nome)+'</option>').join('');
+  if(maquinaPorId(atual))sel.value=atual;
+}
+function atualizarAreaTarifa(){
+  const pg=$('pagamento').value;
+  const fs=formasSplit(pg);
+  $('areaPagamentoDividido').classList.toggle('hidden',!fs);
+  $('areaFiadoVenda').classList.toggle('hidden',pg!=='Fiado');
+  if(fs){
+    $('splitLabel1').textContent=fs[0]+' — valor'; $('splitLabel2').textContent=fs[1]+' — valor';
+  }
+  const usa=pg==='PIX'||pg==='Cartão de débito'||pg==='Cartão de crédito'||(fs&&fs.some(x=>x==='PIX'||x==='Cartão de débito'||x==='Cartão de crédito'));
+  $('areaMaquinaVenda').classList.toggle('hidden',!usa);
+  const temCredito=pg==='Cartão de crédito'||(fs&&fs.includes('Cartão de crédito'));
+  $('areaParcelas').classList.toggle('hidden',!temCredito);
+  if(!usa){$('maquinaVenda').value='';$('parcelasVenda').value='1';return;}
+  const total=carrinho.reduce((s,x)=>s+num(x.p)*num(x.q),0);
+  if(fs){
+    const vs=valoresSplit(), soma=Number((vs[0]+vs[1]).toFixed(2));
+    $('splitResumo').innerHTML='Informado: <b>'+money(soma)+'</b> · Total da venda: <b>'+money(total)+'</b>'+(Math.abs(soma-total)<.005?' · ✅ Confere':' · ⚠️ Falta '+money(Math.abs(total-soma)));
+  }
+  const d=dadosTarifaAtual(fs?(valoresSplit()[0]+valoresSplit()[1]):total);
+  if(!d.maquina){$('tarifaPreview').innerHTML='Sem máquina selecionada: <b>nenhuma tarifa será descontada</b>.';return;}
+  if(d.partes){
+    $('tarifaPreview').innerHTML=d.partes.map(x=>'<b>'+esc(x.forma)+'</b>: '+money(x.valor)+' · taxa '+x.percentual.toFixed(2).replace('.',',')+'% = '+money(x.taxa)).join('<br>')+'<br>Total de tarifas: <b>'+money(d.taxa)+'</b> · Líquido: <b>'+money(d.liquido)+'</b>';
+  }else $('tarifaPreview').innerHTML='<b>'+esc(d.maquina.nome)+'</b><br>Taxa: <b>'+d.percentual.toFixed(2).replace('.',',')+'%</b> · desconto: <b>'+money(d.taxa)+'</b><br>Você recebe líquido: <b>'+money(d.liquido)+'</b>';
+}
+$('pagamento').addEventListener('change',atualizarAreaTarifa);
+$('maquinaVenda').addEventListener('change',atualizarAreaTarifa);
+$('parcelasVenda').addEventListener('change',atualizarAreaTarifa);
+$('splitValor1').addEventListener('input',atualizarAreaTarifa);
+$('splitValor2').addEventListener('input',atualizarAreaTarifa);
+
+// CÂMERA
+function normalizarCodigoLido(codigo){
+  return String(codigo??'').trim().replace(/\s+/g,'');
+}
+function mostrarScannerStatus(html,tipo=''){
+  const el=$('scannerStatus');
+  if(!el)return;
+  el.classList.remove('hidden','ok','err');
+  if(tipo)el.classList.add(tipo);
+  el.innerHTML=html;
+}
+function resetarConfirmacaoScanner(){
+  leituraCandidata='';
+  leituraRepeticoes=0;
+  ultimaLeituraEm=0;
+  scannerProcessando=false;
+}
+async function melhorarFocoCamera(){
+  const ajustes=$('cameraAjustes'), slider=$('cameraZoom'), valor=$('zoomValor'), info=$('cameraFocoInfo');
+  if(!ajustes||!slider)return;
+  try{
+    await new Promise(r=>setTimeout(r,350));
+    const video=document.querySelector('#reader video');
+    const track=video?.srcObject?.getVideoTracks?.()[0];
+    if(!track){ajustes.style.display='none';return;}
+    const caps=track.getCapabilities?track.getCapabilities():{};
+    const settings=track.getSettings?track.getSettings():{};
+    let focoAtivado=false;
+    if(Array.isArray(caps.focusMode)&&caps.focusMode.includes('continuous')){
+      try{await track.applyConstraints({advanced:[{focusMode:'continuous'}]});focoAtivado=true;}catch(e){}
+    }
+    if(caps.zoom && Number.isFinite(Number(caps.zoom.min)) && Number.isFinite(Number(caps.zoom.max)) && Number(caps.zoom.max)>Number(caps.zoom.min)){
+      const min=Number(caps.zoom.min),max=Number(caps.zoom.max),step=Number(caps.zoom.step)||0.1;
+      slider.min=String(min);slider.max=String(max);slider.step=String(step);
+      const atual=Math.min(max,Math.max(min,Number(settings.zoom)||min));
+      slider.value=String(atual);valor.textContent=atual.toFixed(1).replace('.',',')+'x';
+      ajustes.style.display='block';
+      info.textContent=focoAtivado?'✅ Foco automático contínuo ativado. Use o zoom sem aproximar demais o celular.':'Use o zoom para manter distância e melhorar a nitidez.';
+      slider.oninput=async()=>{
+        const z=Number(slider.value);valor.textContent=z.toFixed(1).replace('.',',')+'x';
+        try{await track.applyConstraints({advanced:[{zoom:z}]});}catch(e){}
+      };
+    }else{
+      ajustes.style.display='block';
+      slider.style.display='none';
+      if(valor)valor.style.display='none';
+      info.textContent=focoAtivado?'✅ Foco automático contínuo ativado neste aparelho.':'Este aparelho não oferece controle de zoom pelo navegador. Afaste um pouco o código para a câmera conseguir focar.';
+    }
+  }catch(e){console.warn('Ajuste de foco não disponível',e);if(ajustes)ajustes.style.display='none';}
+}
+
+async function pararScanner(){
+  if(scanner){try{await scanner.stop()}catch(e){}try{scanner.clear()}catch(e){}}
+  $('reader').style.display='none';
+  if($('cameraAjustes'))$('cameraAjustes').style.display='none';
+  scanner=null;resetarConfirmacaoScanner();
+}
+async function aceitarCodigoScanner(codigo){
+  if(scannerProcessando)return;
+  scannerProcessando=true;
+  const code=normalizarCodigoLido(codigo);
+
+  // Segurança: leitura de câmera não cadastra produto automaticamente.
+  // Se o código não existir, mostramos para conferência manual.
+  if(!produtos[code]){
+    await pararScanner();
+    $('codigoVenda').value=code;
+    mostrarScannerStatus(
+      '⚠️ Código <b>'+esc(code)+'</b> não encontrado no cadastro.<br>'+
+      'Ele <b>não foi adicionado à venda</b>. Confira o número e, se estiver correto, cadastre o produto primeiro.',
+      'err'
+    );
+    try{navigator.vibrate&&navigator.vibrate([80,60,80]);}catch(e){}
+    return;
+  }
+
+  await pararScanner();
+  $('codigoVenda').value=code;
+  mostrarScannerStatus('✅ Leitura confirmada: <b>'+esc(produtos[code].nome)+'</b> · código '+esc(code),'ok');
+  beep();
+  try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}
+  adicionarProdutoVenda(true);
+}
+
+$('scanBtn').addEventListener('click',async function(){
+  if(!window.Html5Qrcode){
+    mostrarMsg('Leitor de câmera não carregou. Verifique a internet.','err');
+    return;
+  }
+
+  await pararScanner();
+  resetarConfirmacaoScanner();
+  $('reader').style.display='block';
+  mostrarScannerStatus('📷 Aponte para um único código de barras. Confirmando a mesma leitura 3 vezes.');
+
+  const processarLeitura=codigo=>{
+    if(scannerProcessando)return;
+    const code=normalizarCodigoLido(codigo);
+    if(!code)return;
+
+    const agora=Date.now();
+    if(agora-ultimaLeituraEm>1400){
+      leituraCandidata='';
+      leituraRepeticoes=0;
+    }
+    ultimaLeituraEm=agora;
+
+    if(code===leituraCandidata)leituraRepeticoes++;
+    else{
+      leituraCandidata=code;
+      leituraRepeticoes=1;
+    }
+
+    if(leituraRepeticoes<3){
+      mostrarScannerStatus(
+        '🔎 Código detectado: <b>'+esc(code)+'</b><br>'+
+        'Confirmando leitura… '+leituraRepeticoes+'/3'
+      );
+      return;
+    }
+    aceitarCodigoScanner(code);
+  };
+
+  try{
+    // Usa a configuração de câmera simples e compatível que já funcionava
+    // nas versões anteriores. A precisão extra fica na confirmação 3x.
+    scanner=new Html5Qrcode('reader');
+    await scanner.start(
+      {facingMode:'environment'},
+      {fps:10,qrbox:{width:280,height:150}},
+      processarLeitura,
+      ()=>{}
+    );
+    await melhorarFocoCamera();
+  }catch(e1){
+    // Alguns aparelhos não aceitam facingMode. Tenta a câmera disponível
+    // diretamente, sem constraints avançadas.
+    try{
+      if(scanner){try{scanner.clear()}catch(e){}}
+      scanner=new Html5Qrcode('reader');
+      const cams=await Html5Qrcode.getCameras();
+      if(!cams||!cams.length)throw new Error('Nenhuma câmera encontrada');
+
+      const traseira=cams.find(c=>/back|rear|traseira|environment/i.test(c.label||''))||cams[cams.length-1];
+      await scanner.start(
+        traseira.id,
+        {fps:10,qrbox:{width:280,height:150}},
+        processarLeitura,
+        ()=>{}
+      );
+      await melhorarFocoCamera();
+    }catch(e2){
+      console.error('Falha ao abrir câmera:',e1,e2);
+      mostrarMsg('Não foi possível abrir a câmera. Confira a permissão do navegador.','err');
+      mostrarScannerStatus(
+        '❌ Não consegui iniciar a câmera. Verifique se o navegador tem permissão para usar a câmera e tente novamente.',
+        'err'
+      );
+      await pararScanner();
+    }
+  }
+});
+
+// VENDA
+function adicionarProdutoVenda(origemScanner=false){
+  const codigo=$('codigoVenda').value.trim();
+  const q=Math.max(1,Math.floor(num($('qtdVenda').value)||1));
+  if(!codigo){alert('Digite ou escaneie o código do produto.');return;}
+  let p=produtos[codigo];
+  if(!p && origemScanner){
+    mostrarScannerStatus('⚠️ O código lido não está cadastrado. Nenhum item foi adicionado.','err');
+    return;
+  }
+  if(!p){
+    const nome=prompt('Produto não cadastrado. Digite o nome:');
+    if(!nome)return;
+    const precoTxt=prompt('Preço de venda (ex.: 8,00):','0');
+    const preco=num(String(precoTxt||'0').replace(',','.'));
+    produtos[codigo]={nome:nome.trim()||'Produto',preco,custo:0,estoque:0,minimo:3};
+    p=produtos[codigo];persist();
+  }
+  const existente=carrinho.find(x=>x.c===codigo);
+  if(existente)existente.q+=q;
+  else carrinho.push({c:codigo,n:p.nome,p:num(p.preco),custo:num(p.custo),q});
+  $('codigoVenda').value='';$('qtdVenda').value='1';renderCarrinho();
+}
+$('addBtn').addEventListener('click',()=>adicionarProdutoVenda(false));
+$('codigoVenda').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adicionarProdutoVenda(false);}});
+
+function renderCarrinho(){
+  if(!carrinho.length){$('carrinho').innerHTML='Nenhum produto adicionado.';$('totalVenda').textContent=money(0);atualizarAreaTarifa();return;}
+  $('carrinho').innerHTML=carrinho.map((x,i)=>`
+    <div class="item">
+      <div class="between"><b>${x.q}x ${esc(x.n)}</b><b>${money(x.p*x.q)}</b></div>
+      <div class="small">${money(x.p)} cada · estoque atual: ${num(produtos[x.c]?.estoque)}
+        <button type="button" class="btn gray action removerCarrinho" data-i="${i}">Remover</button>
+      </div>
+    </div>`).join('');
+  $('totalVenda').textContent=money(carrinho.reduce((s,x)=>s+x.p*x.q,0));
+  atualizarAreaTarifa();
+}
+$('carrinho').addEventListener('click',e=>{
+  const b=e.target.closest('.removerCarrinho');if(!b)return;
+  carrinho.splice(Number(b.dataset.i),1);renderCarrinho();
+});
+$('finalizarBtn').addEventListener('click',function(){
+  if(!carrinho.length){alert('Adicione pelo menos um produto.');return;}
+  const pagamento=$('pagamento').value;
+  if(!pagamento){alert('Escolha a modalidade de pagamento.');return;}
+  if(pagamento==='Fiado'){
+    const cid=$('fiadoClienteSelect').value;
+    const cliente=clientes.find(c=>String(c.id)===String(cid));
+    if(!cliente){alert('Selecione o cliente da venda fiada.');return;}
+  }
+
+  const total=carrinho.reduce((s,x)=>s+num(x.p)*num(x.q),0);
+  if(ehPagamentoDividido(pagamento)){
+    const vs=valoresSplit(), soma=Number((vs[0]+vs[1]).toFixed(2));
+    if(vs[0]<=0||vs[1]<=0){alert('Informe um valor maior que zero para as duas formas de pagamento.');return;}
+    if(Math.abs(soma-total)>=0.005){alert('Os dois pagamentos precisam somar exatamente '+money(total)+'.\nValor informado: '+money(soma));return;}
+  }
+
+  $('confirmarVendaItens').innerHTML=carrinho.map(x=>
+    '<div class="item"><b>'+num(x.q)+'x '+esc(x.n)+'</b><span style="float:right">'+money(num(x.p)*num(x.q))+'</span></div>'
+  ).join('');
+  $('confirmarTotalCalculado').textContent=money(total);
+  $('confirmarValorCobrado').value=total.toFixed(2);
+  $('confirmarVendaObs').value='';
+  const fsConfirm=formasSplit(pagamento), vsConfirm=valoresSplit();
+  $('confirmarVendaPagamento').innerHTML='Pagamento: <b>'+esc(pagamento)+'</b>'+
+    (fsConfirm?' · '+esc(fsConfirm[0])+': <b>'+money(vsConfirm[0])+'</b> · '+esc(fsConfirm[1])+': <b>'+money(vsConfirm[1])+'</b>':'')+
+    (pagamento==='Fiado'?' · Cliente: <b>'+esc(clientes.find(c=>String(c.id)===String($('fiadoClienteSelect').value))?.nome||'')+'</b>':'');
+  atualizarDiferencaConfirmacao();
+  $('modalConfirmarVenda').classList.remove('hidden');
+});
+
+function atualizarDiferencaConfirmacao(){
+  const calculado=carrinho.reduce((s,x)=>s+num(x.p)*num(x.q),0);
+  const cobrado=num($('confirmarValorCobrado').value);
+  const dif=Number((cobrado-calculado).toFixed(2));
+  if(Math.abs(dif)<0.005){
+    $('confirmarVendaDiferenca').className='msg ok';
+    $('confirmarVendaDiferenca').innerHTML='✅ Valor confere com o total calculado.';
+  }else if(dif<0){
+    $('confirmarVendaDiferenca').className='msg err';
+    $('confirmarVendaDiferenca').innerHTML='⚠️ Você está cobrando <b>'+money(Math.abs(dif))+' A MENOS</b> que o total calculado.';
+  }else{
+    $('confirmarVendaDiferenca').className='msg err';
+    $('confirmarVendaDiferenca').innerHTML='⚠️ Você está cobrando <b>'+money(dif)+' A MAIS</b> que o total calculado.';
+  }
+}
+$('confirmarValorCobrado').addEventListener('input',atualizarDiferencaConfirmacao);
+$('cancelarConfirmarVendaBtn').addEventListener('click',()=>{$('modalConfirmarVenda').classList.add('hidden');});
+
+$('confirmarRegistrarVendaBtn').addEventListener('click',function(){
+  if(!carrinho.length){$('modalConfirmarVenda').classList.add('hidden');alert('A venda ficou sem itens.');return;}
+
+  const pagamento=$('pagamento').value;
+  let clienteFiado=null;
+  if(pagamento==='Fiado'){
+    const cid=$('fiadoClienteSelect').value;
+    clienteFiado=clientes.find(c=>String(c.id)===String(cid));
+    if(!clienteFiado){$('modalConfirmarVenda').classList.add('hidden');alert('Selecione o cliente da venda fiada.');return;}
+  }
+
+  const totalCalculado=carrinho.reduce((s,x)=>s+num(x.p)*num(x.q),0);
+  const valorCobrado=num($('confirmarValorCobrado').value);
+  const observacao=$('confirmarVendaObs').value.trim();
+  const diferenca=Number((valorCobrado-totalCalculado).toFixed(2));
+
+  if(valorCobrado<0){alert('O valor cobrado não pode ser negativo.');return;}
+  if(Math.abs(diferenca)>=0.005 && !observacao){
+    alert('Como o valor cobrado é diferente do total calculado, informe uma observação. Ex.: desconto, arredondamento ou correção.');
+    $('confirmarVendaObs').focus();
+    return;
+  }
+  if(ehPagamentoDividido(pagamento)){
+    const vs=valoresSplit(), soma=Number((vs[0]+vs[1]).toFixed(2));
+    if(vs[0]<=0||vs[1]<=0||Math.abs(soma-valorCobrado)>=0.005){
+      alert('No pagamento dividido, os dois valores precisam somar exatamente o valor cobrado: '+money(valorCobrado)+'.');return;
+    }
+  }
+
+  const td=dadosTarifaAtual(valorCobrado);
+  carrinho.forEach(x=>{if(produtos[x.c])produtos[x.c].estoque=num(produtos[x.c].estoque)-num(x.q);});
+
+  const novaVenda={
+    id:'v_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
+    d:new Date().toISOString(),
+    it:carrinho.map(x=>({...x})),
+    totalCalculado:Number(totalCalculado.toFixed(2)),
+    t:Number(valorCobrado.toFixed(2)),
+    diferencaCobrada:diferenca,
+    observacao,
+    p:pagamento,
+    clienteId:clienteFiado?clienteFiado.id:'',
+    clienteNome:clienteFiado?clienteFiado.nome:'',
+    clienteTelefone:clienteFiado?(clienteFiado.telefone||''):'',
+    maquinaId:td.maquina?td.maquina.id:'',
+    maquinaNome:td.maquina?td.maquina.nome:'',
+    parcelas:td.parcelas,
+    taxaPercentual:td.percentual,
+    taxaValor:td.taxa,
+    liquido:td.liquido,
+    pagamentosDivididos:td.partes?td.partes.map(x=>({forma:x.forma,valor:x.valor,taxaPercentual:x.percentual,taxaValor:x.taxa,liquido:x.liquido,maquinaId:td.maquina?td.maquina.id:'',maquinaNome:td.maquina?td.maquina.nome:'',parcelas:x.forma==='Cartão de crédito'?td.parcelas:1})):[],
+    operadorId:usuarioAtual()?.id||'',
+    operadorNome:usuarioAtual()?.nome||usuarioAtual()?.usuario||''
+  };
+
+  vendas.push(novaVenda);
+
+  if(pagamento==='Fiado'){
+    fiados.push({
+      id:'f_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+      vendaId:novaVenda.id,
+      clienteId:clienteFiado.id,
+      clienteNome:clienteFiado.nome,
+      clienteTelefone:clienteFiado.telefone||'',
+      criadoEm:novaVenda.d,
+      vencimento:$('fiadoVencimento').value||'',
+      total:novaVenda.t,
+      pago:0,
+      status:'pendente',
+      pagamentos:[],
+      itens:novaVenda.it.map(x=>({...x})),
+      observacao:novaVenda.observacao,
+      operadorId:novaVenda.operadorId,
+      operadorNome:novaVenda.operadorNome
+    });
+  }
+
+  persist();
+  $('modalConfirmarVenda').classList.add('hidden');
+  carrinho=[];
+  $('pagamento').value='';
+  $('fiadoClienteSelect').value='';
+  $('fiadoVencimento').value='';
+  $('maquinaVenda').value='';
+  $('parcelasVenda').value='1';
+  $('splitValor1').value='';$('splitValor2').value='';
+  renderCarrinho();atualizarTudo();beep();
+
+  let msg=pagamento==='Fiado'
+    ? 'Venda fiada registrada!\nCliente: '+clienteFiado.nome+'\nDívida: '+money(novaVenda.t)
+    : 'Venda registrada com sucesso!\nValor cobrado: '+money(novaVenda.t);
+
+  if(Math.abs(diferenca)>=0.005)msg+='\nTotal calculado: '+money(totalCalculado)+'\nDiferença: '+(diferenca>0?'+':'')+money(diferenca);
+  if(td.taxa>0)msg+='\nTarifa: '+money(td.taxa)+'\nLíquido: '+money(td.liquido);
+  alert(msg);
+});
+
+
+// FIADOS / CONTAS A RECEBER
+
+function reconciliarVendasFiadas(){
+  let mudou=false;
+  fiados.forEach(f=>{
+    const v=vendas.find(x=>String(x.id)===String(f.vendaId));
+    if(v && v.p==='Fiado'){
+      if(!v.clienteId && f.clienteId){v.clienteId=f.clienteId;mudou=true;}
+      if(!v.clienteNome && f.clienteNome){v.clienteNome=f.clienteNome;mudou=true;}
+      if(!v.clienteTelefone && f.clienteTelefone){v.clienteTelefone=f.clienteTelefone;mudou=true;}
+    }
+  });
+  if(mudou)persist();
+}
+reconciliarVendasFiadas();
+
+
+function saldoFiado(f){return Math.max(0,num(f.total)-num(f.pago));}
+function statusFiado(f){
+  if(saldoFiado(f)<=0.009)return 'pago';
+  if(f.vencimento){
+    const hoje=new Date();hoje.setHours(0,0,0,0);
+    const d=new Date(f.vencimento+'T00:00:00');
+    if(d<hoje)return 'vencido';
+  }
+  return 'pendente';
+}
+function dataBR(s){
+  if(!s)return 'Sem vencimento';
+  const d=new Date(s+'T00:00:00');
+  return d.toLocaleDateString('pt-BR');
+}
+function preencherClientesFiado(){
+  const sel=$('fiadoClienteSelect');if(!sel)return;
+  const atual=sel.value;
+  const lista=clientes.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+  sel.innerHTML='<option value="">Selecione um cliente...</option>'+lista.map(c=>`<option value="${esc(c.id)}">${esc(c.nome)}</option>`).join('');
+  if(clientes.some(c=>String(c.id)===String(atual)))sel.value=atual;
+}
+$('fiadoClienteSelect').addEventListener('change',function(){
+  const c=clientes.find(x=>String(x.id)===String(this.value));
+  if(!c){
+    $('fiadoClienteResumo').textContent='A dívida será vinculada ao cliente selecionado.';
+    return;
+  }
+  const saldo=fiados.filter(f=>String(f.clienteId)===String(c.id)).reduce((t,f)=>t+saldoFiado(f),0);
+  $('fiadoClienteResumo').innerHTML='Cliente selecionado: <b>'+esc(c.nome)+'</b> · saldo atual: <b>'+money(saldo)+'</b>';
+});
+function limparClienteForm(){
+  $('clienteEditId').value='';$('clienteNome').value='';$('clienteTelefone').value='';
+  $('cancelarClienteBtn').classList.add('hidden');$('salvarClienteBtn').textContent='💾 SALVAR CLIENTE';
+}
+$('salvarClienteBtn').addEventListener('click',function(){
+  const id=$('clienteEditId').value,nome=$('clienteNome').value.trim(),telefone=$('clienteTelefone').value.trim();
+  if(!nome){alert('Informe o nome do cliente.');return;}
+  if(id){
+    const i=clientes.findIndex(c=>String(c.id)===String(id));if(i<0)return;
+    clientes[i]={...clientes[i],nome,telefone};
+    fiados.forEach(f=>{if(String(f.clienteId)===String(id)){f.clienteNome=nome;f.clienteTelefone=telefone;}});
+  }else{
+    clientes.push({id:'cli_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),nome,telefone,criadoEm:new Date().toISOString()});
+  }
+  persist();limparClienteForm();renderFiados();preencherClientesFiado();beep();
+  $('clienteMsg').innerHTML='<div class="msg ok">✅ Cliente salvo.</div>';
+});
+$('cancelarClienteBtn').addEventListener('click',limparClienteForm);
+$('buscaClientes').addEventListener('input',renderFiados);
+$('buscaFiados').addEventListener('input',renderFiados);
+$('filtroFiados').addEventListener('change',renderFiados);
+
+function renderFiados(){
+  if(!$('listaFiados'))return;
+  const abertos=fiados.filter(f=>saldoFiado(f)>0.009);
+  const totalAberto=abertos.reduce((s,f)=>s+saldoFiado(f),0);
+  const vencidos=abertos.filter(f=>statusFiado(f)==='vencido');
+  $('fiadoTotalAberto').textContent=money(totalAberto);
+  $('fiadoTotalVencido').textContent=money(vencidos.reduce((s,f)=>s+saldoFiado(f),0));
+  $('fiadoClientesDevendo').textContent=new Set(abertos.map(f=>f.clienteId)).size;
+
+  const termo=String($('buscaFiados').value||'').trim().toLowerCase();
+  const filtro=$('filtroFiados').value;
+  let lista=fiados.filter(f=>!termo||String(f.clienteNome||'').toLowerCase().includes(termo));
+  lista=lista.filter(f=>{
+    const st=statusFiado(f);
+    if(filtro==='abertos')return st!=='pago';
+    if(filtro==='vencidos')return st==='vencido';
+    if(filtro==='pagos')return st==='pago';
+    return true;
+  }).sort((a,b)=>new Date(b.criadoEm)-new Date(a.criadoEm));
+
+  $('listaFiados').innerHTML=lista.length?lista.map(f=>{
+    const st=statusFiado(f), saldo=saldoFiado(f);
+    const badge=st==='pago'?'okstock':'low';
+    const label=st==='pago'?'PAGO':st==='vencido'?'VENCIDO':'PENDENTE';
+    const itens=(f.itens||[]).map(x=>`${num(x.q)}x ${esc(x.n)}`).join(', ');
+    return `<div class="item">
+      <div class="between"><div><b>${esc(f.clienteNome)}</b><div class="small">${f.clienteTelefone?esc(f.clienteTelefone)+' · ':''}${new Date(f.criadoEm).toLocaleString('pt-BR')}</div></div>
+      <span class="badge ${badge}">${label}</span></div>
+      <div style="margin-top:7px"><b>Total: ${money(f.total)}</b> · Pago: ${money(f.pago)} · <b>Saldo: ${money(saldo)}</b></div>
+      <div class="small">Vencimento: ${dataBR(f.vencimento)}${itens?'<br>Itens: '+itens:''}</div>
+      <div class="sale-actions">
+        ${st!=='pago'?`<button class="btn green action pagarFiadoBtn" data-id="${esc(f.id)}" type="button">💰 Receber</button>`:''}
+        ${f.clienteTelefone&&st!=='pago'?`<button class="btn blue action cobrarFiadoBtn" data-id="${esc(f.id)}" type="button">📲 Cobrar</button>`:''}
+        <button class="btn gray action editarFiadoBtn" data-id="${esc(f.id)}" type="button">✏️ Editar</button>
+        <button class="btn red action excluirFiadoBtn" data-id="${esc(f.id)}" type="button">🗑 Excluir</button>
+      </div>
+    </div>`;
+  }).join(''):'Nenhuma conta encontrada.';
+
+  const tc=String($('buscaClientes').value||'').trim().toLowerCase();
+  const lc=clientes.filter(c=>!tc||c.nome.toLowerCase().includes(tc)||String(c.telefone||'').includes(tc)).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+  $('listaClientes').innerHTML=lc.length?lc.map(c=>{
+    const contas=fiados.filter(f=>String(f.clienteId)===String(c.id));
+    const abertas=contas.filter(f=>saldoFiado(f)>0.009);
+    const dev=abertas.reduce((x,f)=>x+saldoFiado(f),0);
+    return `<div class="item">
+      <div class="between">
+        <div><b>${esc(c.nome)}</b><div class="small">${esc(c.telefone||'Sem telefone')} · ${abertas.length} conta(s) pendente(s)</div></div>
+        <b>${dev>0?'Deve '+money(dev):'Sem dívida'}</b>
+      </div>
+      <div class="sale-actions">
+        <button class="btn blue action verContaClienteBtn" data-id="${esc(c.id)}" type="button">📒 Ver conta</button>
+        <button class="btn gray action editClienteBtn" data-id="${esc(c.id)}" type="button">✏️ Editar</button>
+        <button class="btn red action delClienteBtn" data-id="${esc(c.id)}" type="button">🗑 Excluir</button>
+      </div>
+    </div>`;
+  }).join(''):'Nenhum cliente cadastrado.';
+}
+
+function abrirContaCliente(clienteId){
+  const c=clientes.find(x=>String(x.id)===String(clienteId));
+  if(!c){alert('Cliente não encontrado.');return;}
+
+  const contas=fiados
+    .filter(f=>String(f.clienteId)===String(c.id))
+    .sort((a,b)=>new Date(b.criadoEm)-new Date(a.criadoEm));
+
+  const abertas=contas.filter(f=>saldoFiado(f)>0.009);
+  const saldo=abertas.reduce((t,f)=>t+saldoFiado(f),0);
+
+  $('contaClienteCabecalho').innerHTML=
+    '<b>'+esc(c.nome)+'</b>'+(c.telefone?'<br>'+esc(c.telefone):'')+
+    '<br>Saldo devedor: <b>'+money(saldo)+'</b>'+
+    '<br>Contas pendentes: <b>'+abertas.length+'</b>';
+
+  $('contaClienteDividas').innerHTML=contas.length?contas.map(f=>{
+    const st=statusFiado(f);
+    const label=st==='pago'?'PAGO':st==='vencido'?'VENCIDO':'PENDENTE';
+    const itens=(f.itens||[]).map(x=>num(x.q)+'x '+esc(x.n)).join(', ');
+    return '<div class="item">'+
+      '<div class="between"><b>'+new Date(f.criadoEm).toLocaleDateString('pt-BR')+'</b><span class="badge '+(st==='pago'?'okstock':'low')+'">'+label+'</span></div>'+
+      '<div>Total: <b>'+money(f.total)+'</b> · Pago: '+money(f.pago)+' · Saldo: <b>'+money(saldoFiado(f))+'</b></div>'+
+      '<div class="small">Vencimento: '+dataBR(f.vencimento)+(itens?'<br>Itens: '+itens:'')+'</div>'+
+    '</div>';
+  }).join(''):'Este cliente ainda não possui compras fiadas.';
+
+  $('modalContaCliente').classList.remove('hidden');
+}
+$('fecharContaClienteBtn').addEventListener('click',()=>{$('modalContaCliente').classList.add('hidden');});
+
+$('listaClientes').addEventListener('click',e=>{
+  const ver=e.target.closest('.verContaClienteBtn'),ed=e.target.closest('.editClienteBtn'),del=e.target.closest('.delClienteBtn');
+  if(ver){
+    abrirContaCliente(ver.dataset.id);
+    return;
+  }
+  if(ed){
+    const c=clientes.find(x=>String(x.id)===String(ed.dataset.id));if(!c)return;
+    $('clienteEditId').value=c.id;$('clienteNome').value=c.nome;$('clienteTelefone').value=c.telefone||'';
+    $('cancelarClienteBtn').classList.remove('hidden');$('salvarClienteBtn').textContent='💾 ATUALIZAR CLIENTE';
+  }
+  if(del){
+    const c=clientes.find(x=>String(x.id)===String(del.dataset.id));if(!c)return;
+    if(fiados.some(f=>String(f.clienteId)===String(c.id)&&saldoFiado(f)>0.009)){alert('Este cliente ainda possui dívida pendente. Quite ou exclua a conta antes de apagar o cliente.');return;}
+    if(confirm('Excluir cliente "'+c.nome+'"?')){clientes=clientes.filter(x=>String(x.id)!==String(c.id));persist();renderFiados();preencherClientesFiado();}
+  }
+});
+
+function preencherMaquinasPagamentoFiado(){
+  $('pagFiadoMaquina').innerHTML='<option value="">Sem máquina / sem tarifa</option>'+maquinas.map(m=>`<option value="${esc(m.id)}">${esc(m.nome)}</option>`).join('');
+}
+function atualizarPagamentoFiadoPreview(){
+  const forma=$('pagFiadoForma').value, usa=forma==='PIX'||forma==='Cartão de débito'||forma==='Cartão de crédito';
+  $('pagFiadoMaquinaArea').classList.toggle('hidden',!usa);
+  $('pagFiadoParcelasArea').classList.toggle('hidden',forma!=='Cartão de crédito');
+  if(!usa)return;
+  const maq=maquinaPorId($('pagFiadoMaquina').value);
+  const valor=num($('pagFiadoValor').value),parcelas=Math.max(1,num($('pagFiadoParcelas').value));
+  const perc=maq?percentualDaMaquina(maq,forma,parcelas):0,taxa=valor*perc/100;
+  $('pagFiadoTaxaPreview').innerHTML=maq?`Taxa: <b>${perc.toFixed(2).replace('.',',')}%</b> · ${money(taxa)} · Líquido ${money(valor-taxa)}`:'Sem tarifa.';
+}
+['pagFiadoForma','pagFiadoMaquina','pagFiadoParcelas','pagFiadoValor'].forEach(id=>$(id).addEventListener('change',atualizarPagamentoFiadoPreview));
+$('pagFiadoValor').addEventListener('input',atualizarPagamentoFiadoPreview);
+
+$('listaFiados').addEventListener('click',e=>{
+  const pay=e.target.closest('.pagarFiadoBtn'), cob=e.target.closest('.cobrarFiadoBtn'), ed=e.target.closest('.editarFiadoBtn'), del=e.target.closest('.excluirFiadoBtn');
+  const btn=pay||cob||ed||del;if(!btn)return;
+  const f=fiados.find(x=>String(x.id)===String(btn.dataset.id));if(!f)return;
+  if(pay){
+    $('pagFiadoId').value=f.id;$('pagFiadoValor').value=saldoFiado(f).toFixed(2);$('pagFiadoForma').value='Dinheiro';$('pagFiadoParcelas').value='1';
+    preencherMaquinasPagamentoFiado();$('pagFiadoMaquina').value='';
+    $('pagFiadoInfo').innerHTML=`<b>${esc(f.clienteNome)}</b><br>Saldo atual: ${money(saldoFiado(f))}`;
+    $('modalPagamentoFiado').classList.remove('hidden');atualizarPagamentoFiadoPreview();return;
+  }
+  if(cob){
+    const tel=String(f.clienteTelefone||'').replace(/\D/g,'');
+    const telefone=tel.startsWith('55')?tel:'55'+tel;
+    const texto=`Olá, ${f.clienteNome}! Passando para lembrar do valor pendente no Mini Box Tem Tudo: ${money(saldoFiado(f))}. Vencimento: ${dataBR(f.vencimento)}. Obrigado!`;
+    window.open('https://wa.me/'+telefone+'?text='+encodeURIComponent(texto),'_blank');return;
+  }
+  if(ed){
+    const novo=prompt('Novo vencimento (AAAA-MM-DD). Deixe vazio para sem vencimento:',f.vencimento||'');
+    if(novo===null)return;
+    if(novo && !/^\d{4}-\d{2}-\d{2}$/.test(novo)){alert('Use o formato AAAA-MM-DD.');return;}
+    f.vencimento=novo;persist();renderFiados();return;
+  }
+  if(del){
+    const pagamentos=(f.pagamentos||[]);
+    if(pagamentos.length){alert('Esta conta já possui pagamento registrado. Por segurança, não é possível excluir a dívida diretamente.');return;}
+    const vendaIndex=vendas.findIndex(v=>String(v.id)===String(f.vendaId));
+    if(vendaIndex>=0){
+      if(!confirm('Excluir esta dívida e também a venda fiada original?\n\nO estoque dos itens será devolvido.'))return;
+      const venda=vendas[vendaIndex];
+      (venda.it||[]).forEach(x=>{if(produtos[x.c])produtos[x.c].estoque=num(produtos[x.c].estoque)+num(x.q);});
+      vendas.splice(vendaIndex,1);
+    }else if(!confirm('Excluir esta conta a receber? A venda original não foi localizada.'))return;
+    fiados=fiados.filter(x=>String(x.id)!==String(f.id));persist();atualizarTudo();beep();
+  }
+});
+$('cancelarPagamentoFiadoBtn').addEventListener('click',()=>{$('modalPagamentoFiado').classList.add('hidden');});
+$('confirmarPagamentoFiadoBtn').addEventListener('click',function(){
+  const f=fiados.find(x=>String(x.id)===String($('pagFiadoId').value));if(!f)return;
+  const saldo=saldoFiado(f),valor=num($('pagFiadoValor').value);
+  if(valor<=0){alert('Informe um valor recebido maior que zero.');return;}
+  if(valor>saldo+0.009){alert('O pagamento não pode ser maior que o saldo devedor ('+money(saldo)+').');return;}
+  const forma=$('pagFiadoForma').value, maq=maquinaPorId($('pagFiadoMaquina').value), parcelas=Math.max(1,num($('pagFiadoParcelas').value));
+  const perc=maq?percentualDaMaquina(maq,forma,parcelas):0,taxa=valor*perc/100,liquido=valor-taxa;
+  f.pago=num(f.pago)+valor;
+  f.status=saldoFiado(f)<=0.009?'pago':'pendente';
+  f.pagamentos=f.pagamentos||[];
+  f.pagamentos.push({id:'pg_'+Date.now(),d:new Date().toISOString(),valor,forma,maquinaId:maq?.id||'',maquinaNome:maq?.nome||'',parcelas,taxaPercentual:perc,taxaValor:taxa,liquido,operadorId:usuarioAtual()?.id||'',operadorNome:usuarioAtual()?.nome||''});
+  persist();$('modalPagamentoFiado').classList.add('hidden');renderFiados();beep();
+  alert('Pagamento registrado!\\nRecebido: '+money(valor)+(taxa?'\\nTarifa: '+money(taxa)+'\\nLíquido: '+money(liquido):'')+'\\nSaldo: '+money(saldoFiado(f)));
+});
+
+// PRODUTOS
+function limparProdutoForm(){
+  produtoEditando=null;
+  ['produtoNome','produtoCodigo','produtoCusto','produtoPreco','produtoEstoque'].forEach(id=>$(id).value='');
+  $('produtoMinimo').value='3';$('cancelarProdutoBtn').classList.add('hidden');$('salvarProdutoBtn').textContent='💾 SALVAR';
+}
+$('salvarProdutoBtn').addEventListener('click',function(){
+  const nome=$('produtoNome').value.trim(),codigo=$('produtoCodigo').value.trim();
+  const custo=num($('produtoCusto').value),preco=num($('produtoPreco').value);
+  const estoque=num($('produtoEstoque').value),minimo=Math.max(0,num($('produtoMinimo').value));
+  if(!nome||!codigo||preco<0||custo<0){alert('Preencha nome, código e preços corretamente.');return;}
+  if(produtoEditando&&produtoEditando!==codigo)delete produtos[produtoEditando];
+  produtos[codigo]={nome,preco,custo,estoque,minimo};persist();limparProdutoForm();atualizarTudo();
+  $('produtoMsg').innerHTML='<div class="msg ok">✅ Produto salvo!</div>';beep();
+});
+$('cancelarProdutoBtn').addEventListener('click',limparProdutoForm);
+
+function renderProdutos(){
+  const termo=String($('buscaProdutos')?.value||'').trim().toLowerCase();
+  const todos=Object.entries(produtos).sort((a,b)=>a[1].nome.localeCompare(b[1].nome,'pt-BR'));
+  const a=termo?todos.filter(([c,p])=>
+    String(p.nome||'').toLowerCase().includes(termo) ||
+    String(c).toLowerCase().includes(termo)
+  ):todos;
+
+  if($('resultadoBuscaProdutos')){
+    $('resultadoBuscaProdutos').textContent=termo
+      ? a.length+' produto(s) encontrado(s)'
+      : todos.length+' produto(s) cadastrado(s)';
+  }
+
+  $('listaProdutos').innerHTML=a.length?'<table><tr><th>Produto</th><th>Valores</th><th>Estoque</th><th>Ações</th></tr>'+
+  a.map(([c,p])=>{
+    const baixo=num(p.estoque)<=num(p.minimo);
+    return `<tr>
+      <td><b>${esc(p.nome)}</b><br><small>${esc(c)}</small></td>
+      <td>Venda ${money(p.preco)}<br><small>Custo ${money(p.custo)} · Lucro un. ${money(num(p.preco)-num(p.custo))}</small></td>
+      <td><span class="badge ${baixo?'low':'okstock'}">${num(p.estoque)} un.</span><br><small>mín. ${num(p.minimo)}</small></td>
+      <td><button type="button" class="btn gray action editProduto" data-c="${encodeURIComponent(c)}">✏️</button>
+      <button type="button" class="btn red action delProduto" data-c="${encodeURIComponent(c)}">🗑</button></td>
+    </tr>`;
+  }).join('')+'</table>':(termo?'Nenhum produto encontrado.':'Nenhum produto cadastrado.');
+}
+$('buscaProdutos').addEventListener('input',renderProdutos);
+$('listaProdutos').addEventListener('click',e=>{
+  const edit=e.target.closest('.editProduto'),del=e.target.closest('.delProduto');
+  if(edit){
+    const c=decodeURIComponent(edit.dataset.c),p=produtos[c];if(!p)return;
+    produtoEditando=c;$('produtoNome').value=p.nome;$('produtoCodigo').value=c;$('produtoCusto').value=p.custo;
+    $('produtoPreco').value=p.preco;$('produtoEstoque').value=p.estoque;$('produtoMinimo').value=p.minimo;
+    $('cancelarProdutoBtn').classList.remove('hidden');$('salvarProdutoBtn').textContent='💾 ATUALIZAR';window.scrollTo({top:0,behavior:'smooth'});return;
+  }
+  if(del){
+    const c=decodeURIComponent(del.dataset.c),p=produtos[c];if(!p)return;
+    if(confirm('Excluir o produto "'+p.nome+'"?')){delete produtos[c];persist();atualizarTudo();}
+  }
+});
+
+// ESTOQUE / ENTRADAS
+function preencherSelectEntrada(){
+  const sel=$('entradaProdutoSelect');
+  if(!sel)return;
+  const atual=sel.value;
+  const lista=Object.entries(produtos).sort((a,b)=>String(a[1].nome).localeCompare(String(b[1].nome),'pt-BR'));
+  sel.innerHTML='<option value="">Selecione um produto...</option>'+
+    lista.map(([c,p])=>'<option value="'+esc(c)+'">'+esc(p.nome)+' — estoque: '+num(p.estoque)+'</option>').join('');
+  if(produtos[atual])sel.value=atual;
+}
+
+function carregarProdutoEntrada(codigo){
+  const p=produtos[codigo];
+  if(!p)return false;
+  $('entradaProdutoSelect').value=codigo;
+  $('entradaCodigo').value=codigo;
+  $('entradaCusto').value=num(p.custo)||'';
+  $('entradaMsg').innerHTML='<div class="msg">Produto: <b>'+esc(p.nome)+'</b> · estoque atual: <b>'+num(p.estoque)+' un.</b></div>';
+  return true;
+}
+
+$('entradaProdutoSelect').addEventListener('change',function(){
+  if(this.value)carregarProdutoEntrada(this.value);
+});
+
+$('entradaCodigo').addEventListener('input',function(){
+  const codigo=this.value.trim();
+  if(produtos[codigo])carregarProdutoEntrada(codigo);
+});
+
+$('registrarEntradaBtn').addEventListener('click',function(){
+  try{
+    const codigo=($('entradaProdutoSelect').value || $('entradaCodigo').value || '').trim();
+    const qtdBruta=num($('entradaQtd').value);
+    const q=Math.floor(qtdBruta);
+    const custo=num($('entradaCusto').value);
+    const fornecedor=$('entradaFornecedor').value.trim();
+
+    if(!codigo){
+      $('entradaMsg').innerHTML='<div class="msg err">⚠️ Escolha um produto ou digite o código de barras.</div>';
+      return;
+    }
+
+    const p=produtos[codigo];
+    if(!p){
+      $('entradaMsg').innerHTML='<div class="msg err">⚠️ Produto não encontrado. Cadastre o produto primeiro.</div>';
+      return;
+    }
+
+    if(!Number.isFinite(q) || q < 1){
+      $('entradaMsg').innerHTML='<div class="msg err">⚠️ Informe uma quantidade maior que zero.</div>';
+      return;
+    }
+
+    if(custo < 0){
+      $('entradaMsg').innerHTML='<div class="msg err">⚠️ O custo não pode ser negativo.</div>';
+      return;
+    }
+
+    const estoqueAnterior=num(p.estoque);
+    p.estoque=estoqueAnterior+q;
+    if(custo>0)p.custo=custo;
+
+    entradas.push({
+      id:'e_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+      d:new Date().toISOString(),
+      c:codigo,
+      n:p.nome,
+      q:q,
+      custo:custo,
+      fornecedor:fornecedor,
+      estoqueAnterior:estoqueAnterior,
+      estoqueNovo:p.estoque
+    });
+
+    persist();
+
+    $('entradaProdutoSelect').value='';
+    $('entradaCodigo').value='';
+    $('entradaQtd').value='1';
+    $('entradaCusto').value='';
+    $('entradaFornecedor').value='';
+
+    $('entradaMsg').innerHTML='<div class="msg ok">✅ Entrada registrada com sucesso!<br><b>'+esc(p.nome)+'</b>: '+estoqueAnterior+' → <b>'+p.estoque+' un.</b></div>';
+
+    atualizarTudo();
+    beep();
+  }catch(err){
+    console.error('Erro ao registrar entrada:',err);
+    $('entradaMsg').innerHTML='<div class="msg err">❌ Ocorreu um erro ao registrar a entrada. Recarregue a página e tente novamente.</div>';
+  }
+});
+function renderEstoque(){
+  const a=Object.entries(produtos).sort((a,b)=>num(a[1].estoque)-num(b[1].estoque));
+  $('listaEstoque').innerHTML=a.length?a.map(([c,p])=>`
+    <div class="item between">
+      <div><b>${esc(p.nome)}</b><div class="small">${esc(c)} · custo ${money(p.custo)}</div></div>
+      <span class="badge ${num(p.estoque)<=num(p.minimo)?'low':'okstock'}">${num(p.estoque)} un.</span>
+    </div>`).join(''):'Nenhum produto cadastrado.';
+  $('listaEntradas').innerHTML=entradas.length?entradas.slice().reverse().slice(0,20).map(e=>`
+    <div class="item"><div class="between"><b>${esc(e.n)}</b><b>+${num(e.q)} un.</b></div>
+    <div class="small">${new Date(e.d).toLocaleString('pt-BR')} · custo ${money(e.custo)}${e.fornecedor?' · '+esc(e.fornecedor):''}</div></div>`).join(''):'Nenhuma entrada registrada.';
+}
+
+// PAINEL
+function vendasEntre(inicio,fim){
+  return vendas.filter(v=>{const d=new Date(v.d);return d>=inicio&&d<fim;});
+}
+function entradasEntre(inicio,fim){
+  return entradas.filter(e=>{const d=new Date(e.d);return d>=inicio&&d<fim;});
+}
+function totaisFinanceiros(lista,periodoFiado){
+  const fat=lista.reduce((s,v)=>s+num(v.t),0);
+  const cmv=lista.reduce((s,v)=>s+custoVenda(v),0);
+  const recebidas=lista.filter(v=>v.p!=='Fiado');
+  const recebFiado=periodoFiado?pagamentosFiadoDoPeriodo(periodoFiado):[];
+  const taxasVendas=recebidas.reduce((s,v)=>s+taxaVenda(v),0);
+  const taxasFiado=recebFiado.reduce((s,p)=>s+num(p.taxaValor),0);
+  const taxas=taxasVendas+taxasFiado;
+  return {fat,cmv,lucroBruto:fat-cmv,taxas,lucroLiquido:(fat-cmv)-taxas,recebFiado};
+}
+function topProdutosLista(lista,limite=8){
+  const m={};
+  lista.forEach(v=>(v.it||[]).forEach(x=>{
+    const k=x.n||'Produto';m[k]=(m[k]||0)+num(x.q);
+  }));
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,limite);
+}
+function renderGraficoVendasMes(lista){
+  const box=$('dashGraficoVendas');if(!box)return;
+  const agora=new Date(),diasNoMes=new Date(agora.getFullYear(),agora.getMonth()+1,0).getDate();
+  const ate=agora.getDate(),dados=Array.from({length:ate},(_,i)=>({dia:i+1,total:0}));
+  lista.forEach(v=>{const d=new Date(v.d);if(d.getFullYear()===agora.getFullYear()&&d.getMonth()===agora.getMonth()&&dados[d.getDate()-1])dados[d.getDate()-1].total+=num(v.t);});
+  const max=Math.max(1,...dados.map(x=>x.total)),W=700,H=250,L=55,R=18,T=18,B=38,PW=W-L-R,PH=H-T-B;
+  const x=i=>L+(dados.length<=1?0:PW*i/(dados.length-1));
+  const y=v=>T+PH-(v/max)*PH;
+  let grid='';for(let i=0;i<=4;i++){const yy=T+PH*i/4,val=max*(1-i/4);grid+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#e9ecef"/><text x="${L-7}" y="${yy+4}" text-anchor="end" font-size="10" fill="#777">${money(val).replace('R$ ','')}</text>`;}
+  const pts=dados.map((d,i)=>`${x(i)},${y(d.total)}`).join(' ');
+  const labels=dados.map((d,i)=>((d.dia===1||d.dia===ate||d.dia%5===0)?`<text x="${x(i)}" y="${H-12}" text-anchor="middle" font-size="10" fill="#777">${d.dia}</text>`:'')).join('');
+  const circles=dados.map((d,i)=>d.total>0?`<circle cx="${x(i)}" cy="${y(d.total)}" r="3.5" fill="#ff8300"><title>Dia ${d.dia}: ${money(d.total)}</title></circle>`:'').join('');
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de faturamento diário do mês">${grid}<polyline points="${pts}" fill="none" stroke="#ff8300" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>${circles}${labels}<text x="${W/2}" y="${H-1}" text-anchor="middle" font-size="11" fill="#777">Dias do mês</text></svg>`;
+}
+function renderPainel(){
+  const agora=new Date();
+  const iniHoje=inicioDia(agora),fimHoje=new Date(iniHoje);fimHoje.setDate(fimHoje.getDate()+1);
+  const iniMes=new Date(agora.getFullYear(),agora.getMonth(),1),fimMes=new Date(agora.getFullYear(),agora.getMonth()+1,1);
+  const iniMesAnt=new Date(agora.getFullYear(),agora.getMonth()-1,1),fimMesAnt=iniMes;
+  const iniAno=new Date(agora.getFullYear(),0,1),fimAno=new Date(agora.getFullYear()+1,0,1);
+  const hoje=vendasEntre(iniHoje,fimHoje),mes=vendasEntre(iniMes,fimMes),mesAnt=vendasEntre(iniMesAnt,fimMesAnt),ano=vendasEntre(iniAno,fimAno);
+  const tf=totaisFinanceiros(mes,'mes');
+  const comprasMes=entradasEntre(iniMes,fimMes).reduce((s,e)=>s+num(e.q)*num(e.custo),0);
+  const balanco=tf.fat-comprasMes-tf.taxas;
+  $('dashAno').textContent=money(ano.reduce((s,v)=>s+num(v.t),0));
+  $('dashMesAnterior').textContent=money(mesAnt.reduce((s,v)=>s+num(v.t),0));
+  $('dashMesAtual').textContent=money(tf.fat);
+  $('dashBalancoMes').textContent=money(balanco);
+  $('dashLucroBrutoMes').textContent=money(tf.lucroBruto);
+  $('dashLucroLiquidoMes').textContent=money(tf.lucroLiquido);
+  $('dashTotalDia').textContent=money(hoje.reduce((s,v)=>s+num(v.t),0));
+  $('dashQtdMes').textContent=mes.length;
+  $('dashTaxasMes').textContent=money(tf.taxas);
+  $('dashTicketMes').textContent=money(mes.length?tf.fat/mes.length:0);
+  $('dashFiadoRecebido').textContent=money(tf.recebFiado.reduce((s,p)=>s+num(p.valor),0));
+  $('dashAReceber').textContent=money(totalAReceberAtual());
+  renderGraficoVendasMes(mes);
+  const tops=topProdutosLista(mes,8);
+  $('dashTopMes').innerHTML=tops.length?tops.map((x,i)=>`<div class="rankRow"><b>${i+1}º</b><span>${esc(x[0])}</span><b>${num(x[1])} un.</b></div>`).join(''):'<div class="msg">Ainda não há vendas no mês.</div>';
+
+  const termo=String($('buscaEstoqueBaixo')?.value||'').trim().toLowerCase();
+  const todosBaixos=Object.entries(produtos).filter(([c,p])=>num(p.estoque)<=num(p.minimo)).sort((a,b)=>num(a[1].estoque)-num(b[1].estoque));
+  const baixos=termo?todosBaixos.filter(([c,p])=>String(p.nome||'').toLowerCase().includes(termo)||String(c).toLowerCase().includes(termo)):todosBaixos;
+  if($('resultadoBuscaEstoqueBaixo'))$('resultadoBuscaEstoqueBaixo').textContent=termo?baixos.length+' resultado(s) em '+todosBaixos.length+' item(ns) com estoque baixo':todosBaixos.length+' item(ns) com estoque baixo';
+  $('dashEstoqueBaixo').innerHTML=baixos.length?baixos.map(([c,p])=>`<div class="item between"><div><b>${esc(p.nome)}</b><div class="small">${esc(c)} · mínimo ${num(p.minimo)}</div></div><span class="badge low">${num(p.estoque)} un.</span></div>`).join(''):(termo?'Nenhum produto com estoque baixo encontrado para esta busca.':'✅ Nenhum produto abaixo do estoque mínimo.');
+}
+$('buscaEstoqueBaixo').addEventListener('input',renderPainel);
+
+// RELATÓRIOS / VENDAS
+function produtosDetalhadosPeriodo(lista){
+  const m={};
+  lista.forEach(v=>(v.it||[]).forEach(x=>{
+    const nome=x.n||'Produto',q=num(x.q),receita=num(x.p)*q,custoUnit=x.custo!=null?num(x.custo):num(produtos[x.c]?.custo),custo=custoUnit*q;
+    if(!m[nome])m[nome]={q:0,receita:0,custo:0};
+    m[nome].q+=q;m[nome].receita+=receita;m[nome].custo+=custo;
+  }));
+  return Object.entries(m).map(([nome,d])=>({nome,...d,lucro:d.receita-d.custo,margem:d.receita?((d.receita-d.custo)/d.receita*100):0})).sort((a,b)=>b.lucro-a.lucro);
+}
+function renderLucroDetalhado(lista){
+  const rows=produtosDetalhadosPeriodo(lista),box=$('lucroDetalhado');if(!box)return;
+  box.innerHTML=rows.length?`<table class="reportTable"><thead><tr><th>Produto</th><th>Qtd.</th><th>Faturamento</th><th>Custo</th><th>Lucro bruto</th><th>Margem</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r.nome)}</b></td><td>${num(r.q)}</td><td>${money(r.receita)}</td><td>${money(r.custo)}</td><td><b>${money(r.lucro)}</b></td><td>${r.margem.toFixed(2).replace('.',',')}%</td></tr>`).join('')}</tbody></table>`:'<div class="msg">Sem itens vendidos no período.</div>';
+}
+function renderSaudeFinanceira(){
+  const agora=new Date(),ini=new Date(agora.getFullYear(),agora.getMonth(),1),fim=new Date(agora.getFullYear(),agora.getMonth()+1,1),lista=vendasEntre(ini,fim),tf=totaisFinanceiros(lista,'mes');
+  const compras=entradasEntre(ini,fim).reduce((s,e)=>s+num(e.q)*num(e.custo),0),margem=tf.fat?tf.lucroLiquido/tf.fat*100:0,ticket=lista.length?tf.fat/lista.length:0;
+  $('saudeFat').textContent=money(tf.fat);$('saudeCmv').textContent=money(tf.cmv);$('saudeCompras').textContent=money(compras);$('saudeTaxas').textContent=money(tf.taxas);$('saudeLucro').textContent=money(tf.lucroLiquido);$('saudeMargem').textContent=margem.toFixed(2).replace('.',',')+'%';$('saudeTicket').textContent=money(ticket);$('saudeReceber').textContent=money(totalAReceberAtual());
+  const st=$('saudeFinanceiraStatus');
+  if(!lista.length){st.className='msg healthNeutral';st.innerHTML='ℹ️ Ainda não há vendas registradas neste mês para avaliar o resultado.';}
+  else if(tf.lucroLiquido>0){st.className='msg healthGood';st.innerHTML='✅ Resultado do mês está <b>positivo</b>. Lucro líquido registrado: <b>'+money(tf.lucroLiquido)+'</b>.';}
+  else if(tf.lucroLiquido<0){st.className='msg healthBad';st.innerHTML='⚠️ Resultado do mês está <b>negativo</b>. Resultado após custos e tarifas: <b>'+money(tf.lucroLiquido)+'</b>.';}
+  else{st.className='msg healthNeutral';st.innerHTML='➖ Resultado do mês está no ponto de equilíbrio com os dados registrados.';}
+}
+function renderVendasMensais(){
+  const m={};vendas.forEach(v=>{const d=new Date(v.d),k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!m[k])m[k]={q:0,fat:0,lucro:0,taxas:0};m[k].q++;m[k].fat+=num(v.t);m[k].lucro+=lucroVenda(v);m[k].taxas+=v.p==='Fiado'?0:taxaVenda(v);});
+  const rows=Object.entries(m).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,24),box=$('vendasMensais');if(!box)return;
+  box.innerHTML=rows.length?`<table class="reportTable"><thead><tr><th>Mês</th><th>Vendas</th><th>Faturamento</th><th>Lucro bruto</th><th>Tarifas</th><th>Lucro líquido</th></tr></thead><tbody>${rows.map(([k,d])=>{const [a,mn]=k.split('-'),nome=new Date(Number(a),Number(mn)-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});return `<tr><td><b>${nome}</b></td><td>${d.q}</td><td>${money(d.fat)}</td><td>${money(d.lucro)}</td><td>${money(d.taxas)}</td><td><b>${money(d.lucro-d.taxas)}</b></td></tr>`}).join('')}</tbody></table>`:'<div class="msg">Sem vendas mensais registradas.</div>';
+}
+function renderVendasDiarias(){
+  const inp=$('relatorioMesRef');if(!inp)return;const agora=new Date();if(!inp.value)inp.value=agora.getFullYear()+'-'+String(agora.getMonth()+1).padStart(2,'0');
+  const [a,mn]=inp.value.split('-').map(Number),ini=new Date(a,mn-1,1),fim=new Date(a,mn,1),lista=vendasEntre(ini,fim),dias={};
+  lista.forEach(v=>{const d=new Date(v.d),k=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();if(!dias[k])dias[k]={data:d,q:0,fat:0,lucro:0,taxas:0};dias[k].q++;dias[k].fat+=num(v.t);dias[k].lucro+=lucroVenda(v);dias[k].taxas+=v.p==='Fiado'?0:taxaVenda(v);});
+  const rows=Object.values(dias).sort((a,b)=>b.data-a.data),box=$('vendasDiarias');
+  box.innerHTML=rows.length?`<table class="reportTable"><thead><tr><th>Dia</th><th>Vendas</th><th>Faturamento</th><th>Lucro bruto</th><th>Tarifas</th><th>Lucro líquido</th></tr></thead><tbody>${rows.map(d=>`<tr><td><b>${d.data.toLocaleDateString('pt-BR')}</b></td><td>${d.q}</td><td>${money(d.fat)}</td><td>${money(d.lucro)}</td><td>${money(d.taxas)}</td><td><b>${money(d.lucro-d.taxas)}</b></td></tr>`).join('')}</tbody></table>`:'<div class="msg">Sem vendas neste mês.</div>';
+}
+function renderVendas(){
+  const periodo=$('filtroPeriodo').value,lista=vendasDoPeriodo(periodo);
+  const fat=lista.reduce((s,v)=>s+num(v.t),0);
+  const lucro=lista.reduce((s,v)=>s+lucroVenda(v),0);
+  const vendasRecebidas=lista.filter(v=>v.p!=='Fiado');
+  const recebFiado=pagamentosFiadoDoPeriodo(periodo);
+  const taxas=vendasRecebidas.reduce((s,v)=>s+taxaVenda(v),0)+recebFiado.reduce((s,p)=>s+num(p.taxaValor),0);
+  const liquido=vendasRecebidas.reduce((s,v)=>s+liquidoVenda(v),0)+recebFiado.reduce((s,p)=>s+num(p.liquido!=null?p.liquido:(num(p.valor)-num(p.taxaValor))),0);
+  const lucroLiquido=lucro-taxas;
+  $('totalVendas').textContent=lista.length;
+  $('faturamento').textContent=money(fat);
+  $('lucroPeriodo').textContent=money(lucro);
+  $('taxasPeriodo').textContent=money(taxas);
+  $('liquidoPeriodo').textContent=money(liquido);
+  $('lucroLiquidoPeriodo').textContent=money(lucroLiquido);
+  $('ticketPeriodo').textContent=money(lista.length?fat/lista.length:0);
+  if($('fiadoRecebidoPeriodo'))$('fiadoRecebidoPeriodo').textContent=money(recebFiado.reduce((s,p)=>s+num(p.valor),0));
+  if($('aReceberPeriodo'))$('aReceberPeriodo').textContent=money(totalAReceberAtual());
+  const top=topProduto(lista);$('topPeriodo').innerHTML=top?'🏆 Produto mais vendido: <b>'+esc(top[0])+'</b> · '+top[1]+' un.':'Sem vendas no período.';
+  const indices=new Set(lista.map(v=>v.id||v.d));
+  const linhas=vendas.map((v,index)=>({v,index})).filter(x=>indices.has(x.v.id||x.v.d)).reverse();
+  $('listaVendas').innerHTML=linhas.length?linhas.map(({v,index})=>`
+    <div class="item">
+      <div class="between"><b>${money(v.t)}</b><span class="badge">${esc(v.p||'Sem pagamento')}</span></div>
+      <div class="small">${new Date(v.d).toLocaleString('pt-BR')}<br>${(v.it||[]).map(x=>x.q+'x '+esc(x.n)).join(', ')||'Sem itens'}<br>
+      ${v.p==='Fiado'&&v.clienteNome?'📒 Cliente: <b>'+esc(v.clienteNome)+'</b><br>':''}${v.operadorNome?'Operador: '+esc(v.operadorNome)+'<br>':''}${Math.abs(num(v.diferencaCobrada))>=0.005?'🧮 Calculado: '+money(totalCalculadoVenda(v))+' · Cobrado: <b>'+money(v.t)+'</b> · Diferença: <b>'+(num(v.diferencaCobrada)>0?'+':'')+money(v.diferencaCobrada)+'</b><br>':''}${v.observacao?'📝 '+esc(v.observacao)+'<br>':''}Lucro bruto: ${money(lucroVenda(v))}
+      ${taxaVenda(v)>0?'<br>Máquina: '+esc(v.maquinaNome||'Não informada')+(v.p==='Cartão de crédito'?' · '+num(v.parcelas||1)+'x':'')+' · tarifa '+num(v.taxaPercentual).toFixed(2).replace('.',',')+'% ('+money(taxaVenda(v))+')<br><b>Líquido recebido: '+money(liquidoVenda(v))+'</b><br>Lucro após tarifa: '+money(lucroAposTaxa(v)):''}
+      </div>
+      <div class="sale-actions">
+        <button type="button" class="btn primary action compartilharVendaBtn" data-index="${index}">📲 Compartilhar</button>
+        <button type="button" class="btn gray action editarVendaBtn" data-index="${index}">✏️ Editar</button>
+        <button type="button" class="btn red action excluirVendaBtn" data-index="${index}">🗑 Excluir</button>
+      </div>
+    </div>`).join(''):'Nenhuma venda no período.';
+  renderLucroDetalhado(lista);
+  renderSaudeFinanceira();
+  renderVendasMensais();
+  renderVendasDiarias();
+  renderRelatorioPeriodo();
+}
+// RELATÓRIO PERSONALIZADO POR PERÍODO
+function rpISOData(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function rpAplicarPreset(){
+  const p=$('rpPreset').value,ag=new Date(),hoje=new Date(ag.getFullYear(),ag.getMonth(),ag.getDate()),ini=new Date(hoje),fim=new Date(hoje);
+  if(p==='personalizado')return renderRelatorioPeriodo();
+  if(p==='tudo'){$('rpDataIni').value='';$('rpDataFim').value='';return renderRelatorioPeriodo();}
+  if(p==='ontem'){ini.setDate(ini.getDate()-1);fim.setDate(fim.getDate()-1);}
+  else if(p==='semana'){const dow=(hoje.getDay()+6)%7;ini.setDate(ini.getDate()-dow);}
+  else if(p==='semanaAnterior'){const dow=(hoje.getDay()+6)%7;fim.setDate(fim.getDate()-dow-1);ini.setTime(fim.getTime());ini.setDate(ini.getDate()-6);}
+  else if(p==='7'){ini.setDate(ini.getDate()-6);}
+  else if(p==='mes'){ini.setDate(1);}
+  else if(p==='mesAnterior'){ini.setMonth(ini.getMonth()-1,1);fim.setDate(0);}
+  else if(p==='30'){ini.setDate(ini.getDate()-29);}
+  $('rpDataIni').value=rpISOData(ini);$('rpDataFim').value=rpISOData(fim);renderRelatorioPeriodo();
+}
+function rpAtualizarOpcoes(){
+  const prod=$('rpProduto'),op=$('rpOperador'),pv=prod.value,ov=op.value;
+  const nomes=[...new Set(vendas.flatMap(v=>(v.it||[]).map(x=>x.n||'')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  prod.innerHTML='<option value="">Todos os produtos</option>'+nomes.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join('');
+  const ops=[...new Set(vendas.map(v=>v.operadorNome||'').filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  op.innerHTML='<option value="">Todos os operadores</option>'+ops.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join('');
+  if(nomes.includes(pv))prod.value=pv;if(ops.includes(ov))op.value=ov;
+}
+function rpVendaTemPagamento(v,forma){
+  if(!forma)return true;if(v.p===forma)return true;
+  return Array.isArray(v.pagamentosDivididos)&&v.pagamentosDivididos.some(x=>x.forma===forma);
+}
+function rpListaFiltrada(){
+  const di=$('rpDataIni').value,df=$('rpDataFim').value,hi=$('rpHoraIni').value,hf=$('rpHoraFim').value,pag=$('rpPagamento').value,prod=$('rpProduto').value,op=$('rpOperador').value;
+  return vendas.filter(v=>{const d=new Date(v.d);if(Number.isNaN(d.getTime()))return false;const ds=rpISOData(d),hs=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    if(di&&ds<di)return false;if(df&&ds>df)return false;if(hi&&hs<hi)return false;if(hf&&hs>hf)return false;if(!rpVendaTemPagamento(v,pag))return false;
+    if(prod&&!(v.it||[]).some(x=>(x.n||'')===prod))return false;if(op&&(v.operadorNome||'')!==op)return false;return true;});
+}
+function rpTotaisPorPagamento(lista){
+  const formas={
+    'Dinheiro':{valor:0,transacoes:0},
+    'Cartão de débito':{valor:0,transacoes:0},
+    'Cartão de crédito':{valor:0,transacoes:0},
+    'PIX':{valor:0,transacoes:0},
+    'PIX QR Code':{valor:0,transacoes:0},
+    'Fiado':{valor:0,transacoes:0},
+    'Vale/Outros':{valor:0,transacoes:0}
+  };
+  lista.forEach(v=>{
+    if(Array.isArray(v.pagamentosDivididos)&&v.pagamentosDivididos.length){
+      v.pagamentosDivididos.forEach(pg=>{
+        const f=formas[pg.forma]?pg.forma:'Vale/Outros';
+        formas[f].valor+=num(pg.valor);formas[f].transacoes++;
+      });
+    }else{
+      const f=formas[v.p]?v.p:'Vale/Outros';
+      formas[f].valor+=num(v.t);formas[f].transacoes++;
+    }
+  });
+  return formas;
+}
+function renderRpMetodosPagamento(lista,fat){
+  const box=$('rpMetodosPagamento'),totalBox=$('rpMetodosTotal');if(!box||!totalBox)return;
+  const t=rpTotaisPorPagamento(lista);
+  const defs=[
+    ['Dinheiro','💵','pmDinheiro'],['Cartão de débito','💳','pmDebito'],['Cartão de crédito','💳','pmCredito'],
+    ['PIX','📱','pmPix'],['PIX QR Code','🔳','pmPixQr'],['Fiado','📒','pmFiado'],['Vale/Outros','🎟️','pmOutros']
+  ];
+  box.innerHTML=defs.map(([nome,icone,classe])=>{const d=t[nome],pct=fat?d.valor/fat*100:0;return `<div class="paymentMethodCard ${classe}"><div class="pmIcon">${icone}</div><div class="pmLabel">${esc(nome==='PIX'?'PIX maquininha':nome)}</div><div class="pmValue">${money(d.valor)}</div><div class="pmMeta">${pct.toFixed(1).replace('.',',')}% do faturamento · ${d.transacoes} ${d.transacoes===1?'transação':'transações'}</div></div>`;}).join('');
+  const soma=Object.values(t).reduce((a,d)=>a+d.valor,0);
+  totalBox.innerHTML=`💰 <b>Total distribuído entre as formas:</b> ${money(soma)}${Math.abs(soma-fat)>=0.02?' <span class="small">· diferença de '+money(soma-fat)+' em relação ao faturamento filtrado</span>':''}`;
+}
+function renderRelatorioPeriodo(){
+  if(!$('rpLista'))return;rpAtualizarOpcoes();const lista=rpListaFiltrada(),fat=lista.reduce((s,v)=>s+num(v.t),0),cmv=lista.reduce((s,v)=>s+custoVenda(v),0),lb=fat-cmv;
+  const taxas=lista.filter(v=>v.p!=='Fiado').reduce((s,v)=>s+taxaVenda(v),0),ll=lb-taxas,un=lista.reduce((s,v)=>s+(v.it||[]).reduce((a,x)=>a+num(x.q),0),0),margem=fat?ll/fat*100:0,top=topProduto(lista);
+  $('rpQtd').textContent=lista.length;$('rpFat').textContent=money(fat);$('rpUnidades').textContent=num(un);$('rpTicket').textContent=money(lista.length?fat/lista.length:0);$('rpCmv').textContent=money(cmv);$('rpLucroBruto').textContent=money(lb);$('rpTaxas').textContent=money(taxas);$('rpLucroLiquido').textContent=money(ll);$('rpMargem').textContent=margem.toFixed(2).replace('.',',')+'%';$('rpTop').textContent=top?top[0]+' · '+top[1]+' un.':'—';
+  renderRpMetodosPagamento(lista,fat);
+  const partes=[];if($('rpDataIni').value||$('rpDataFim').value)partes.push('📅 '+($('rpDataIni').value?new Date($('rpDataIni').value+'T12:00:00').toLocaleDateString('pt-BR'):'início')+' a '+($('rpDataFim').value?new Date($('rpDataFim').value+'T12:00:00').toLocaleDateString('pt-BR'):'hoje'));if($('rpHoraIni').value||$('rpHoraFim').value)partes.push('⏰ '+($('rpHoraIni').value||'00:00')+'–'+($('rpHoraFim').value||'23:59'));if($('rpPagamento').value)partes.push('💳 '+$('rpPagamento').value);if($('rpProduto').value)partes.push('📦 '+$('rpProduto').value);if($('rpOperador').value)partes.push('👤 '+$('rpOperador').value);$('rpResumo').innerHTML=partes.length?'<b>Filtros:</b> '+partes.map(esc).join(' · '):'Todo o histórico, sem filtros adicionais.';
+  const horas={};lista.forEach(v=>{const h=new Date(v.d).getHours(),k=String(h).padStart(2,'0')+':00–'+String((h+1)%24).padStart(2,'0')+':00';if(!horas[k])horas[k]={q:0,fat:0};horas[k].q++;horas[k].fat+=num(v.t);});const hr=Object.entries(horas).sort((a,b)=>b[1].fat-a[1].fat);
+  $('rpHorarios').innerHTML=hr.length?`<table class="reportTable"><thead><tr><th>Faixa</th><th>Vendas</th><th>Faturamento</th><th>% do faturamento</th></tr></thead><tbody>${hr.map(([k,d],i)=>`<tr><td><b>${i===0?'🏆 ':''}${k}</b></td><td>${d.q}</td><td>${money(d.fat)}</td><td>${fat?(d.fat/fat*100).toFixed(1).replace('.',','):0}%</td></tr>`).join('')}</tbody></table>`:'<div class="msg">Sem vendas para analisar os horários.</div>';
+  const rows=lista.slice().sort((a,b)=>new Date(b.d)-new Date(a.d));$('rpLista').innerHTML=rows.length?`<table class="reportTable"><thead><tr><th>Data/hora</th><th>Pagamento</th><th>Itens</th><th>Total</th><th>Lucro líquido</th><th>Operador</th></tr></thead><tbody>${rows.map(v=>`<tr><td>${new Date(v.d).toLocaleString('pt-BR')}</td><td>${esc(v.p||'—')}</td><td>${(v.it||[]).map(x=>num(x.q)+'x '+esc(x.n)).join(', ')||'—'}</td><td><b>${money(v.t)}</b></td><td>${money(lucroAposTaxa(v))}</td><td>${esc(v.operadorNome||'—')}</td></tr>`).join('')}</tbody></table>`:'<div class="msg">Nenhuma venda encontrada com estes filtros.</div>';
+}
+$('rpPreset').addEventListener('change',rpAplicarPreset);
+['rpDataIni','rpDataFim'].forEach(id=>$(id).addEventListener('change',()=>{$('rpPreset').value='personalizado';renderRelatorioPeriodo();}));
+['rpHoraIni','rpHoraFim','rpPagamento','rpProduto','rpOperador'].forEach(id=>$(id).addEventListener('change',renderRelatorioPeriodo));
+rpAplicarPreset();
+
+$('filtroPeriodo').addEventListener('change',renderVendas);
+$('relatorioMesRef').addEventListener('change',renderVendasDiarias);
+$('listaVendas').addEventListener('click',e=>{
+  const compartilhar=e.target.closest('.compartilharVendaBtn'),editar=e.target.closest('.editarVendaBtn'),excluir=e.target.closest('.excluirVendaBtn');
+  if(compartilhar){compartilharVenda(Number(compartilhar.dataset.index));return;}
+  if(editar){abrirEditarVenda(Number(editar.dataset.index));return;}
+  if(excluir)abrirExcluirVenda(Number(excluir.dataset.index));
+});
+
+function textoVenda(v){
+  const itens=(v.it||[]).map(x=>`${x.q}x ${x.n} — ${money(num(x.p)*num(x.q))}`).join('\n');
+  const tarifa=taxaVenda(v);
+  return `🛒 Mini Box Tem Tudo\n\nVenda registrada\nData: ${new Date(v.d).toLocaleString('pt-BR')}\n\n${itens||'Sem itens detalhados'}\n\n💰 Total: ${money(v.t)}\n💳 Pagamento: ${v.p||'Não informado'}${v.maquinaNome?'\n🏧 Máquina: '+v.maquinaNome:''}${v.p==='Cartão de crédito'?'\n📆 Parcelas: '+num(v.parcelas||1)+'x':''}${tarifa>0?'\n💸 Tarifa: '+money(tarifa)+' ('+num(v.taxaPercentual).toFixed(2).replace('.',',')+'%)\n✅ Líquido: '+money(liquidoVenda(v)):''}`;
+}
+async function compartilharTexto(titulo,texto){
+  try{if(navigator.share){await navigator.share({title:titulo,text:texto});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+  window.open('https://wa.me/?text='+encodeURIComponent(texto),'_blank');
+}
+function compartilharVenda(index){
+  if(!Number.isInteger(index)||index<0||index>=vendas.length){alert('Venda não encontrada.');return;}
+  compartilharTexto('Venda - Mini Box Tem Tudo',textoVenda(vendas[index]));
+}
+$('compartilharResumoBtn').addEventListener('click',function(){
+  const periodo=$('filtroPeriodo').value,lista=vendasDoPeriodo(periodo);
+  const fat=lista.reduce((s,v)=>s+num(v.t),0),lucro=lista.reduce((s,v)=>s+lucroVenda(v),0),recebFiado=pagamentosFiadoDoPeriodo(periodo),vendasRecebidas=lista.filter(v=>v.p!=='Fiado'),taxas=vendasRecebidas.reduce((s,v)=>s+taxaVenda(v),0)+recebFiado.reduce((s,p)=>s+num(p.taxaValor),0),liquido=vendasRecebidas.reduce((s,v)=>s+liquidoVenda(v),0)+recebFiado.reduce((s,p)=>s+num(p.liquido!=null?p.liquido:(num(p.valor)-num(p.taxaValor))),0),top=topProduto(lista);
+  const nomes={hoje:'Hoje',ontem:'Ontem','7':'Últimos 7 dias',mes:'Mês atual',tudo:'Todo o histórico'};
+  compartilharTexto('Resumo - Mini Box Tem Tudo',
+`📊 Mini Box Tem Tudo\nResumo: ${nomes[periodo]||periodo}\n\n🧾 Vendas: ${lista.length}\n💰 Faturamento: ${money(fat)}\n💸 Tarifas: ${money(taxas)}\n✅ Líquido recebido: ${money(liquido)}\n📒 Recebimentos de fiado: ${money(recebFiado.reduce((s,p)=>s+num(p.valor),0))}\n📈 Lucro bruto: ${money(lucro)}\n📊 Lucro após tarifas: ${money(lucro-taxas)}\n🎫 Ticket médio: ${money(lista.length?fat/lista.length:0)}\n${top?'🏆 Mais vendido: '+top[0]+' ('+top[1]+' un.)':''}`);
+});
+
+// EDIÇÃO DE VENDA com ajuste de estoque
+function abrirEditarVenda(index){
+  if(!Number.isInteger(index)||index<0||index>=vendas.length){alert('Venda não encontrada.');return;}
+  const v=vendas[index];
+  if(Array.isArray(v.pagamentosDivididos)&&v.pagamentosDivididos.length){alert('Esta venda usa pagamento dividido. Para preservar os valores e tarifas de cada forma de pagamento, a edição está bloqueada nesta versão. Se precisar corrigir, exclua a venda e registre novamente.');return;}
+  if(v.p==='Fiado' && fiados.some(f=>String(f.vendaId)===String(v.id))){alert('Esta venda está vinculada a uma conta de fiado. Para evitar divergência na dívida do cliente, a edição desta venda está bloqueada.');return;}
+  $('editVendaIndex').value=String(index);
+  const d=new Date(v.d),local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  $('editData').value=local;$('editPagamento').value=v.p||'Dinheiro';
+  $('editValorCobrado').value=num(v.t).toFixed(2);
+  $('editObservacao').value=v.observacao||'';
+  $('editItens').innerHTML=(v.it||[]).map((x,j)=>`
+    <div class="item"><b>${esc(x.n)}</b><div class="small">${esc(x.c)} · ${money(x.p)} cada</div>
+    <label>Quantidade</label><input class="editQtd" data-i="${j}" type="number" min="0" value="${num(x.q)}"></div>`).join('')||'<div class="msg">Esta venda não possui itens detalhados.</div>';
+  atualizarTotalEdicao();$('modalVenda').classList.remove('hidden');
+}
+function atualizarTotalEdicao(){
+  const index=Number($('editVendaIndex').value);if(!Number.isInteger(index)||index<0||index>=vendas.length)return;
+  const v=vendas[index];let total=0;
+  document.querySelectorAll('.editQtd').forEach(inp=>{const j=Number(inp.dataset.i);if(v.it&&v.it[j])total+=num(v.it[j].p)*Math.max(0,num(inp.value));});
+  $('editTotal').textContent=money(total);
+  const cobrado=num($('editValorCobrado').value);
+  const dif=Number((cobrado-total).toFixed(2));
+  $('editDiferenca').className='msg '+(Math.abs(dif)<0.005?'ok':'err');
+  $('editDiferenca').innerHTML=Math.abs(dif)<0.005
+    ? '✅ Valor cobrado confere com o calculado.'
+    : '⚠️ Diferença entre calculado e cobrado: <b>'+(dif>0?'+':'')+money(dif)+'</b>';
+}
+$('editItens').addEventListener('input',e=>{if(e.target.classList.contains('editQtd'))atualizarTotalEdicao();});
+$('editValorCobrado').addEventListener('input',atualizarTotalEdicao);
+$('fecharModalBtn').addEventListener('click',()=> $('modalVenda').classList.add('hidden'));
+$('salvarVendaEditBtn').addEventListener('click',function(){
+  const index=Number($('editVendaIndex').value);if(!Number.isInteger(index)||index<0||index>=vendas.length){alert('Venda não encontrada.');return;}
+  const v=vendas[index];
+  if(Array.isArray(v.pagamentosDivididos)&&v.pagamentosDivididos.length){alert('Esta venda usa pagamento dividido. Para preservar os valores e tarifas de cada forma de pagamento, a edição está bloqueada nesta versão. Se precisar corrigir, exclua a venda e registre novamente.');return;}
+  if(v.p==='Fiado' && fiados.some(f=>String(f.vendaId)===String(v.id))){alert('Esta venda está vinculada a uma conta de fiado e não pode ser editada por aqui.');return;}
+  const orig=(v.it||[]).map(x=>({...x})),novos=[];
+  document.querySelectorAll('.editQtd').forEach(inp=>{const j=Number(inp.dataset.i),q=Math.max(0,num(inp.value));if(q>0&&v.it&&v.it[j])novos.push({...v.it[j],q});});
+  if(orig.length&&!novos.length){alert('A venda precisa ter pelo menos um item.');return;}
+  const novaData=$('editData').value;
+  const novoPagamento=$('editPagamento').value;
+  const itensFinais=orig.length?novos:orig;
+  const calculado=itensFinais.reduce((s,x)=>s+num(x.p)*num(x.q),0);
+  const cobrado=num($('editValorCobrado').value);
+  const diferenca=Number((cobrado-calculado).toFixed(2));
+  const obs=$('editObservacao').value.trim();
+  if(cobrado<0){alert('O valor cobrado não pode ser negativo.');return;}
+  if(Math.abs(diferenca)>=0.005 && !obs){alert('Informe uma observação para justificar a diferença entre o total calculado e o valor cobrado.');return;}
+
+  // Só altera estoque depois de todas as validações passarem.
+  orig.forEach(x=>{if(produtos[x.c])produtos[x.c].estoque=num(produtos[x.c].estoque)+num(x.q);});
+  novos.forEach(x=>{if(produtos[x.c])produtos[x.c].estoque=num(produtos[x.c].estoque)-num(x.q);});
+
+  if(novaData)v.d=new Date(novaData).toISOString();
+  v.p=novoPagamento;
+  if(orig.length)v.it=novos;
+  v.totalCalculado=Number(calculado.toFixed(2));
+  v.t=Number(cobrado.toFixed(2));
+  v.diferencaCobrada=diferenca;
+  v.observacao=obs;
+  const maq=maquinaPorId(v.maquinaId);
+  const usaMaquina=v.p==='PIX'||v.p==='Cartão de débito'||v.p==='Cartão de crédito';
+  const perc=usaMaquina&&maq?percentualDaMaquina(maq,v.p,v.parcelas||1):0;
+  v.taxaPercentual=perc;
+  v.taxaValor=Number((v.t*perc/100).toFixed(2));
+  v.liquido=Number((v.t-v.taxaValor).toFixed(2));
+  vendas[index]=v;persist();$('modalVenda').classList.add('hidden');atualizarTudo();beep();alert('Venda atualizada!');
+});
+
+// EXCLUSÃO
+function abrirExcluirVenda(index){
+  if(!Number.isInteger(index)||index<0||index>=vendas.length){alert('Venda não encontrada.');return;}
+  const v=vendas[index];$('deleteVendaIndex').value=String(index);
+  $('deleteVendaInfo').innerHTML='<b>Valor: '+money(v.t)+'</b><br>Pagamento: '+esc(v.p||'Não informado')+'<br>Data: '+new Date(v.d).toLocaleString('pt-BR');
+  $('modalExcluirVenda').classList.remove('hidden');
+}
+$('cancelarExcluirVendaBtn').addEventListener('click',()=>{$('modalExcluirVenda').classList.add('hidden');$('deleteVendaIndex').value='';});
+$('confirmarExcluirVendaBtn').addEventListener('click',function(){
+  const index=Number($('deleteVendaIndex').value);if(!Number.isInteger(index)||index<0||index>=vendas.length){$('modalExcluirVenda').classList.add('hidden');alert('Venda não encontrada.');return;}
+  const v=vendas[index];
+  const conta=fiados.find(f=>String(f.vendaId)===String(v.id));
+  if(conta && (conta.pagamentos||[]).length){$('modalExcluirVenda').classList.add('hidden');alert('Esta venda fiada já possui pagamento registrado e não pode ser excluída.');return;}
+  if(conta)fiados=fiados.filter(f=>String(f.id)!==String(conta.id));
+  (v.it||[]).forEach(x=>{if(produtos[x.c])produtos[x.c].estoque=num(produtos[x.c].estoque)+num(x.q);});
+  vendas.splice(index,1);persist();$('modalExcluirVenda').classList.add('hidden');$('deleteVendaIndex').value='';atualizarTudo();beep();alert(conta?'Venda fiada e dívida excluídas; estoque devolvido!':'Venda excluída e estoque devolvido!');
+});
+
+// CAIXA
+function renderCaixa(){
+  if(!$('caixaDataRef').value)$('caixaDataRef').value=chaveDataLocal(new Date());
+  const ref=$('caixaDataRef').value||chaveDataLocal(new Date());
+  const f=formaPagamentoDoDia(ref), existente=fechamentoDoDia(ref);
+  $('caixaEsperado').innerHTML=`Valores líquidos esperados em <b>${dataChaveBR(ref)}</b> (vendas recebidas + pagamentos de fiado, já descontando tarifas):<br>
+  💵 Dinheiro: <b>${money(f['Dinheiro'])}</b> · 📱 PIX maquininha: <b>${money(f['PIX'])}</b><br>
+  🔳 PIX QR Code: <b>${money(f['PIX QR Code'])}</b><br>
+  💳 Débito: <b>${money(f['Cartão de débito'])}</b> · Crédito: <b>${money(f['Cartão de crédito'])}</b><br>
+  Outros: <b>${money(f['Vale/Outros'])}</b>${existente?'<br><span class="badge">✅ Este dia já possui fechamento. Use Editar no histórico para corrigir.</span>':''}`;
+
+  $('salvarCaixaBtn').disabled=!!existente;
+  $('salvarCaixaBtn').textContent=existente?'✅ DIA JÁ FECHADO':'💾 SALVAR FECHAMENTO';
+  $('caixaLembreteAtivo').checked=caixaConfig.ativo!==false;
+  $('caixaHoraLembrete').value=caixaConfig.hora||'22:00';
+
+  const ultimos=fechamentos.map((c,index)=>({c,index})).reverse().slice(0,10);
+  $('listaFechamentos').innerHTML=ultimos.length?ultimos.map(({c,index})=>`
+    <div class="item">
+      <div class="between">
+        <b>${dataChaveBR(chaveFechamento(c))} · ${new Date(c.d).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</b>
+        <b>${money(c.diferenca)}</b>
+      </div>
+      <div class="small">
+        Esperado ${money(c.esperado)} · Conferido ${money(c.informado)} · fundo ${money(c.fundo)}
+        ${c.operadorNome?'<br>👤 '+esc(c.operadorNome):''}
+        ${c.editadoEm?'<br>✏️ Editado em '+new Date(c.editadoEm).toLocaleString('pt-BR'):''}
+      </div>
+      <div class="sale-actions">
+        <button type="button" class="btn gray action editarFechamentoBtn" data-index="${index}">✏️ Editar</button>
+        <button type="button" class="btn red action excluirFechamentoBtn" data-index="${index}">🗑 Excluir</button>
+      </div>
+    </div>`).join(''):'Nenhum fechamento salvo.';
+
+  document.querySelectorAll('.editarFechamentoBtn').forEach(btn=>btn.onclick=function(){abrirEditarFechamento(Number(this.dataset.index));});
+  document.querySelectorAll('.excluirFechamentoBtn').forEach(btn=>btn.onclick=function(){abrirExcluirFechamento(Number(this.dataset.index));});
+  renderLembreteCaixa();
+}
+
+$('caixaDataRef').addEventListener('change',function(){$('caixaResultado').innerHTML='';renderCaixa();});
+$('salvarConfigCaixaBtn').addEventListener('click',function(){
+  caixaConfig={ativo:$('caixaLembreteAtivo').checked,hora:$('caixaHoraLembrete').value||'22:00'};
+  persist();renderLembreteCaixa();
+  $('configCaixaMsg').innerHTML='<div class="msg ok">✅ Lembrete salvo para '+esc(caixaConfig.hora)+(caixaConfig.ativo?'':' (desativado)')+'.</div>';beep();
+});
+
+function calcularCaixa(){
+  const ref=$('caixaDataRef').value||chaveDataLocal(new Date());
+  const f=formaPagamentoDoDia(ref),fundo=num($('caixaFundo').value);
+  const esperado=f['Dinheiro']+f['PIX']+f['PIX QR Code']+f['Cartão de débito']+f['Cartão de crédito']+f['Vale/Outros']+fundo;
+  const informado=num($('caixaDinheiro').value)+num($('caixaPix').value)+num($('caixaPixQr').value)+num($('caixaDebito').value)+num($('caixaCredito').value)+num($('caixaOutros').value);
+  const diferenca=informado-esperado;
+  $('caixaResultado').innerHTML='<div class="msg '+(Math.abs(diferenca)<0.01?'ok':'err')+'"><b>'+dataChaveBR(ref)+'</b><br><b>Esperado: '+money(esperado)+'</b><br>Conferido: '+money(informado)+'<br>Diferença: <b>'+money(diferenca)+'</b></div>';
+  return {fundo,esperado,informado,diferenca,formas:f,referenciaDia:ref};
+}
+$('calcularCaixaBtn').addEventListener('click',calcularCaixa);
+$('salvarCaixaBtn').addEventListener('click',function(){
+  const ref=$('caixaDataRef').value||chaveDataLocal(new Date());
+  if(fechamentoDoDia(ref)){alert('Este dia já possui fechamento. Use o botão Editar no histórico.');return;}
+  const c=calcularCaixa();
+  fechamentos.push({
+    ...c,
+    id:'cx_'+Date.now(),
+    d:new Date().toISOString(),
+    operadorId:usuarioAtual()?.id||'',
+    operadorNome:usuarioAtual()?.nome||usuarioAtual()?.usuario||'',
+    valoresInformados:{
+      dinheiro:num($('caixaDinheiro').value),
+      pix:num($('caixaPix').value),
+      pixQr:num($('caixaPixQr').value),
+      debito:num($('caixaDebito').value),
+      credito:num($('caixaCredito').value),
+      outros:num($('caixaOutros').value)
+    }
+  });
+  limparSnoozeCaixa();persist();renderCaixa();beep();alert('Fechamento de '+dataChaveBR(ref)+' salvo!');
+});
+
+
+
+function valoresDetalhadosFechamento(c){
+  if(c && c.valoresInformados){
+    return {
+      dinheiro:num(c.valoresInformados.dinheiro),
+      pix:num(c.valoresInformados.pix),
+      pixQr:num(c.valoresInformados.pixQr),
+      debito:num(c.valoresInformados.debito),
+      credito:num(c.valoresInformados.credito),
+      outros:num(c.valoresInformados.outros)
+    };
+  }
+
+  // Compatibilidade com fechamentos antigos: mantém o total informado,
+  // mesmo que a versão antiga não tenha salvo a divisão por pagamento.
+  return {
+    dinheiro:num(c?.informado),
+    pix:0,
+    pixQr:0,
+    debito:0,
+    credito:0,
+    outros:0
+  };
+}
+
+function calcularEdicaoFechamento(){
+  const index=Number($('editFechamentoIndex').value);
+  if(!Number.isInteger(index) || index<0 || index>=fechamentos.length)return null;
+
+  const c=fechamentos[index];
+  const fundo=num($('editCaixaFundo').value);
+  const dinheiro=num($('editCaixaDinheiro').value);
+  const pix=num($('editCaixaPix').value);
+  const pixQr=num($('editCaixaPixQr').value);
+  const debito=num($('editCaixaDebito').value);
+  const credito=num($('editCaixaCredito').value);
+  const outros=num($('editCaixaOutros').value);
+
+  // Ao editar um fechamento histórico, preservamos o "esperado" original.
+  // Apenas o fundo altera o total esperado em relação ao fundo original.
+  const esperadoBase=num(c.esperado)-num(c.fundo);
+  const esperado=esperadoBase+fundo;
+  const informado=dinheiro+pix+pixQr+debito+credito+outros;
+  const diferenca=informado-esperado;
+
+  $('editCaixaResultado').innerHTML=
+    '<b>Esperado: '+money(esperado)+'</b><br>'+
+    'Conferido: '+money(informado)+'<br>'+
+    'Diferença: <b>'+money(diferenca)+'</b>';
+
+  return {
+    fundo,esperado,informado,diferenca,
+    valoresInformados:{dinheiro,pix,pixQr,debito,credito,outros}
+  };
+}
+
+function abrirEditarFechamento(index){
+  if(!Number.isInteger(index) || index<0 || index>=fechamentos.length){
+    alert('Fechamento não encontrado.');
+    return;
+  }
+
+  const c=fechamentos[index];
+  const v=valoresDetalhadosFechamento(c);
+
+  $('editFechamentoIndex').value=String(index);
+  $('editFechamentoData').innerHTML=
+    'Fechamento de <b>'+dataChaveBR(chaveFechamento(c))+'</b> · registrado em '+new Date(c.d).toLocaleString('pt-BR');
+
+  $('editCaixaFundo').value=num(c.fundo);
+  $('editCaixaDinheiro').value=v.dinheiro;
+  $('editCaixaPix').value=v.pix;
+  $('editCaixaPixQr').value=v.pixQr;
+  $('editCaixaDebito').value=v.debito;
+  $('editCaixaCredito').value=v.credito;
+  $('editCaixaOutros').value=v.outros;
+
+  $('modalEditarFechamento').classList.remove('hidden');
+  calcularEdicaoFechamento();
+}
+
+['editCaixaFundo','editCaixaDinheiro','editCaixaPix','editCaixaPixQr','editCaixaDebito','editCaixaCredito','editCaixaOutros'].forEach(id=>{
+  $(id).addEventListener('input',calcularEdicaoFechamento);
+});
+
+$('cancelarEdicaoFechamentoBtn').addEventListener('click',function(){
+  $('modalEditarFechamento').classList.add('hidden');
+  $('editFechamentoIndex').value='';
+});
+
+$('salvarEdicaoFechamentoBtn').addEventListener('click',function(){
+  const index=Number($('editFechamentoIndex').value);
+  if(!Number.isInteger(index) || index<0 || index>=fechamentos.length){
+    alert('Fechamento não encontrado.');
+    return;
+  }
+
+  const novo=calcularEdicaoFechamento();
+  if(!novo)return;
+
+  fechamentos[index]={
+    ...fechamentos[index],
+    ...novo,
+    editadoEm:new Date().toISOString()
+  };
+
+  persist();
+  $('modalEditarFechamento').classList.add('hidden');
+  $('editFechamentoIndex').value='';
+  renderCaixa();
+  beep();
+  alert('Fechamento atualizado com sucesso!');
+});
+
+function abrirExcluirFechamento(index){
+  if(!Number.isInteger(index) || index<0 || index>=fechamentos.length){
+    alert('Fechamento não encontrado.');
+    return;
+  }
+
+  const c=fechamentos[index];
+  $('deleteFechamentoIndex').value=String(index);
+  $('deleteFechamentoInfo').innerHTML=
+    '<b>'+new Date(c.d).toLocaleString('pt-BR')+'</b><br>'+
+    'Esperado: '+money(c.esperado)+'<br>'+
+    'Conferido: '+money(c.informado)+'<br>'+
+    'Diferença: <b>'+money(c.diferenca)+'</b>';
+
+  $('modalExcluirFechamento').classList.remove('hidden');
+}
+
+$('cancelarExcluirFechamentoBtn').addEventListener('click',function(){
+  $('modalExcluirFechamento').classList.add('hidden');
+  $('deleteFechamentoIndex').value='';
+});
+
+$('confirmarExcluirFechamentoBtn').addEventListener('click',function(){
+  const index=Number($('deleteFechamentoIndex').value);
+
+  if(!Number.isInteger(index) || index<0 || index>=fechamentos.length){
+    $('modalExcluirFechamento').classList.add('hidden');
+    alert('Fechamento não encontrado.');
+    return;
+  }
+
+  fechamentos.splice(index,1);
+  persist();
+
+  $('modalExcluirFechamento').classList.add('hidden');
+  $('deleteFechamentoIndex').value='';
+
+  renderCaixa();
+  beep();
+  alert('Fechamento excluído com sucesso!');
+});
+
+
+// ADMINISTRADORES, FUNCIONÁRIOS E ACESSO NA NUVEM
+function limparFuncionarioForm(){
+  $('funcionarioEditId').value='';
+  $('funcionarioNome').value='';
+  $('funcionarioUsuario').value='';
+  $('funcionarioUsuario').disabled=false;
+  $('funcionarioSenha').value='';
+  $('funcionarioSenha').disabled=false;
+  $('funcionarioSenha').placeholder='Mínimo 8 caracteres';
+  $('funcionarioPerfil').value='funcionario';
+  $('funcionarioAtivo').checked=true;
+  preencherPermissoesFormulario(permissoesPadraoFuncionario());
+  $('blocoPermissoesFuncionario').classList.remove('hidden');
+  $('cancelarFuncionarioBtn').classList.add('hidden');
+  $('salvarFuncionarioBtn').textContent='☁️ CRIAR ACESSO NA NUVEM';
+  $('funcionarioMsg').innerHTML='';
+}
+async function carregarAcessosNuvem(){
+  if(!ehAdmin()||!sb||!lojaIdNuvem)return;
+  const {data,error}=await sb.from('perfis')
+    .select('id,nome,email,perfil,ativo,permissoes')
+    .eq('loja_id',lojaIdNuvem)
+    .order('nome',{ascending:true});
+  if(error){
+    acessosNuvem=[];
+    $('funcionarioMsg').innerHTML='<div class="msg err">⚠️ Não foi possível carregar os acessos: '+esc(error.message)+'<br><span class="small">Se aparecer erro sobre a coluna email, confira se o campo permissões da versão 13.2 já foi criado no Supabase.</span></div>';
+    renderFuncionarios();return;
+  }
+  acessosNuvem=Array.isArray(data)?data:[];
+  renderFuncionarios();
+}
+function renderFuncionarios(){
+  if(!$('listaFuncionarios'))return;
+  const termo=String($('buscaFuncionarios').value||'').trim().toLowerCase();
+  const lista=acessosNuvem.filter(u=>!termo || String(u.nome||'').toLowerCase().includes(termo) || String(u.email||'').toLowerCase().includes(termo));
+  $('listaFuncionarios').innerHTML=lista.length?lista.map(u=>`
+    <div class="item">
+      <div class="between">
+        <div><b>${esc(u.nome||'Sem nome')}</b><div class="small">E-mail: ${esc(u.email||((u.id===usuarioNuvem?.id)?usuarioNuvem.email:'não informado'))}</div></div>
+        <span class="badge ${u.ativo===false?'low':'okstock'}">${u.ativo===false?'Inativo':'Ativo'}</span>
+      </div>
+      <div class="small">Perfil: ${u.perfil==='admin'?'Administrador':'Funcionário'}${u.id===usuarioNuvem?.id?' · Você':''}${u.perfil==='funcionario'?'<br>Acessos: '+AREAS_ACESSO.filter(a=>({...permissoesPadraoFuncionario(),...(u.permissoes||{})})[a]).map(a=>({painel:'Painel',venda:'Venda',produtos:'Produtos',estoque:'Estoque',relatorios:'Relatórios',fiados:'Fiados',menu:'Menu'}[a])).join(', '):''}</div>
+      <div class="sale-actions">
+        <button type="button" class="btn gray action editarFuncionarioBtn" data-id="${esc(u.id)}">✏️ Editar acesso</button>
+        <button type="button" class="btn blue action senhaFuncionarioBtn" data-id="${esc(u.id)}">🔑 Alterar senha</button>
+        ${String(u.id)!==String(usuarioNuvem?.id)?`<button type="button" class="btn red action excluirFuncionarioBtn" data-id="${esc(u.id)}">🗑 Excluir cadastro</button>`:''}
+      </div>
+    </div>`).join(''):'Nenhum acesso encontrado.';
+}
+
+$('funcionarioPerfil').addEventListener('change',function(){
+  $('blocoPermissoesFuncionario').classList.toggle('hidden',this.value==='admin');
+});
+
+$('buscaFuncionarios').addEventListener('input',renderFuncionarios);
+$('cancelarFuncionarioBtn').addEventListener('click',limparFuncionarioForm);
+
+$('salvarFuncionarioBtn').addEventListener('click',async function(){
+  if(!ehAdmin()){alert('Somente administradores podem gerenciar acessos.');return;}
+  const id=$('funcionarioEditId').value;
+  const nome=$('funcionarioNome').value.trim();
+  const email=$('funcionarioUsuario').value.trim().toLowerCase();
+  const senha=$('funcionarioSenha').value;
+  const perfil=$('funcionarioPerfil').value;
+  const ativo=$('funcionarioAtivo').checked;
+  const permissoes=perfil==='admin'?{}:permissoesFormulario();
+  const msg=$('funcionarioMsg');
+  if(!nome||!email){msg.innerHTML='<div class="msg err">Informe o nome e o e-mail.</div>';return;}
+  if(!/^\S+@\S+\.\S+$/.test(email)){msg.innerHTML='<div class="msg err">Informe um e-mail válido.</div>';return;}
+
+  if(id){
+    const atual=acessosNuvem.find(u=>String(u.id)===String(id));
+    if(!atual)return;
+    if(String(id)===String(usuarioNuvem?.id) && (!ativo || perfil!=='admin')){
+      msg.innerHTML='<div class="msg err">Você não pode desativar ou retirar o perfil de administrador da conta que está usando agora.</div>';return;
+    }
+    if(atual.perfil==='admin' && atual.ativo!==false && (!ativo || perfil!=='admin')){
+      const outros=acessosNuvem.filter(u=>u.perfil==='admin'&&u.ativo!==false&&String(u.id)!==String(id));
+      if(!outros.length){msg.innerHTML='<div class="msg err">É necessário manter pelo menos um administrador ativo.</div>';return;}
+    }
+    msg.innerHTML='<div class="msg">☁️ Atualizando acesso...</div>';
+    const {error}=await sb.from('perfis').update({nome,perfil,ativo,permissoes}).eq('id',id).eq('loja_id',lojaIdNuvem);
+    if(error){msg.innerHTML='<div class="msg err">Erro ao atualizar: '+esc(error.message)+'</div>';return;}
+    await carregarAcessosNuvem();
+    limparFuncionarioForm();
+    msg.innerHTML='<div class="msg ok">✅ Acesso atualizado na nuvem.</div>';
+    beep();return;
+  }
+
+  if(senha.length<8){msg.innerHTML='<div class="msg err">A senha inicial precisa ter pelo menos 8 caracteres.</div>';return;}
+  if(acessosNuvem.some(u=>String(u.email||'').toLowerCase()===email)){
+    msg.innerHTML='<div class="msg err">Já existe um acesso cadastrado com este e-mail.</div>';return;
+  }
+  if(!sbCadastro){msg.innerHTML='<div class="msg err">Biblioteca do Supabase não carregou.</div>';return;}
+  msg.innerHTML='<div class="msg">☁️ Criando conta de acesso...</div>';
+  try{
+    const {data,error}=await sbCadastro.auth.signUp({email,password:senha,options:{data:{nome}}});
+    if(error)throw error;
+    const novoId=data?.user?.id;
+    if(!novoId)throw new Error('O Supabase não retornou o identificador do novo usuário.');
+    const {error:perfilErro}=await sb.from('perfis').insert({
+      id:novoId,loja_id:lojaIdNuvem,nome,email,perfil,ativo:true,permissoes
+    });
+    if(perfilErro)throw new Error('A conta foi criada no Auth, mas o perfil da loja não pôde ser salvo: '+perfilErro.message);
+    await carregarAcessosNuvem();
+    limparFuncionarioForm();
+    msg.innerHTML='<div class="msg ok">✅ '+(perfil==='admin'?'Administrador':'Funcionário')+' criado com sucesso.<br><span class="small">'+(data.session?'Já pode entrar com o e-mail e a senha cadastrados.':'Se a confirmação de e-mail estiver habilitada no Supabase, a pessoa precisará confirmar o e-mail antes do primeiro acesso.')+'</span></div>';
+    beep();
+  }catch(e){
+    msg.innerHTML='<div class="msg err">Não foi possível criar o acesso: '+esc(e?.message||String(e))+'</div>';
+  }
+});
+
+async function chamarAdminUsuarios(acao,usuarioId,extras={}){
+  if(!ehAdmin())throw new Error('Somente administradores podem realizar esta ação.');
+  const {data,error}=await sb.functions.invoke('mini-box-admin-users',{
+    body:{acao,usuario_id:usuarioId,...extras}
+  });
+  if(error)throw new Error(error.message||'Falha ao chamar a função administrativa.');
+  if(data?.error)throw new Error(data.error);
+  return data||{};
+}
+
+$('listaFuncionarios').addEventListener('click',async function(e){
+  if(!ehAdmin())return;
+  const ed=e.target.closest('.editarFuncionarioBtn');
+  const pw=e.target.closest('.senhaFuncionarioBtn');
+  const del=e.target.closest('.excluirFuncionarioBtn');
+
+  if(pw){
+    const u=acessosNuvem.find(x=>String(x.id)===String(pw.dataset.id));
+    if(!u)return;
+    $('senhaUsuarioId').value=u.id;
+    $('senhaUsuarioNova').value='';
+    $('senhaUsuarioConfirmar').value='';
+    $('senhaUsuarioMsg').innerHTML='';
+    $('senhaUsuarioInfo').innerHTML='<b>'+esc(u.nome||'Usuário')+'</b><br>E-mail: '+esc(u.email||'');
+    $('modalSenhaUsuario').classList.remove('hidden');
+    return;
+  }
+
+  if(del){
+    const u=acessosNuvem.find(x=>String(x.id)===String(del.dataset.id));
+    if(!u)return;
+    if(String(u.id)===String(usuarioNuvem?.id)){alert('Você não pode excluir a conta que está usando agora.');return;}
+    if(!confirm('Excluir definitivamente o cadastro de '+(u.nome||u.email||'este usuário')+'?\n\nO usuário perderá o acesso ao Mini Box.'))return;
+    $('funcionarioMsg').innerHTML='<div class="msg">🗑 Excluindo cadastro...</div>';
+    try{
+      await chamarAdminUsuarios('excluir',u.id);
+      await carregarAcessosNuvem();
+      $('funcionarioMsg').innerHTML='<div class="msg ok">✅ Cadastro excluído.</div>';
+      beep();
+    }catch(err){
+      $('funcionarioMsg').innerHTML='<div class="msg err">Não foi possível excluir: '+esc(err?.message||String(err))+'<br><span class="small">Verifique se a Edge Function mini-box-admin-users foi publicada no Supabase.</span></div>';
+    }
+    return;
+  }
+
+  if(!ed)return;
+  const u=acessosNuvem.find(x=>String(x.id)===String(ed.dataset.id));
+  if(!u)return;
+  $('funcionarioEditId').value=u.id;
+  $('funcionarioNome').value=u.nome||'';
+  $('funcionarioUsuario').value=u.email||((u.id===usuarioNuvem?.id)?usuarioNuvem.email:'');
+  $('funcionarioUsuario').disabled=true;
+  $('funcionarioSenha').value='';
+  $('funcionarioSenha').disabled=true;
+  $('funcionarioSenha').placeholder='Use o botão “Alterar senha” na lista';
+  $('funcionarioPerfil').value=u.perfil||'funcionario';
+  $('funcionarioAtivo').checked=u.ativo!==false;
+  preencherPermissoesFormulario(u.permissoes||permissoesPadraoFuncionario());
+  $('blocoPermissoesFuncionario').classList.toggle('hidden',u.perfil==='admin');
+  $('cancelarFuncionarioBtn').classList.remove('hidden');
+  $('salvarFuncionarioBtn').textContent='💾 ATUALIZAR ACESSO';
+  $('funcionarioMsg').innerHTML='<div class="msg">Você pode alterar nome, perfil, status e permissões. Para senha, use o botão 🔑 Alterar senha na lista.</div>';
+});
+
+$('cancelarSenhaUsuarioBtn').addEventListener('click',function(){
+  $('modalSenhaUsuario').classList.add('hidden');
+  $('senhaUsuarioId').value='';
+  $('senhaUsuarioNova').value='';
+  $('senhaUsuarioConfirmar').value='';
+  $('senhaUsuarioMsg').innerHTML='';
+});
+
+$('confirmarSenhaUsuarioBtn').addEventListener('click',async function(){
+  if(!ehAdmin())return;
+  const id=$('senhaUsuarioId').value;
+  const nova=$('senhaUsuarioNova').value;
+  const confirmar=$('senhaUsuarioConfirmar').value;
+  if(!id)return;
+  if(nova.length<8){$('senhaUsuarioMsg').innerHTML='<div class="msg err">Use pelo menos 8 caracteres.</div>';return;}
+  if(nova!==confirmar){$('senhaUsuarioMsg').innerHTML='<div class="msg err">A confirmação da senha não confere.</div>';return;}
+  $('senhaUsuarioMsg').innerHTML='<div class="msg">☁️ Alterando senha...</div>';
+  try{
+    await chamarAdminUsuarios('senha',id,{senha:nova});
+    $('modalSenhaUsuario').classList.add('hidden');
+    $('senhaUsuarioId').value='';
+    $('senhaUsuarioNova').value='';
+    $('senhaUsuarioConfirmar').value='';
+    $('funcionarioMsg').innerHTML='<div class="msg ok">✅ Senha alterada pelo administrador.</div>';
+    beep();
+  }catch(err){
+    $('senhaUsuarioMsg').innerHTML='<div class="msg err">Não foi possível alterar: '+esc(err?.message||String(err))+'<br><span class="small">Verifique se a Edge Function mini-box-admin-users foi publicada no Supabase.</span></div>';
+  }
+});
+
+// MÁQUINAS E TARIFAS
+function limparMaquinaForm(){
+  $('maquinaEditId').value='';
+  ['maquinaNome','taxaPix','taxaDebito','taxaCredito1','taxaCredito26','taxaCredito712'].forEach(id=>$(id).value='');
+  $('cancelarMaquinaBtn').classList.add('hidden');
+  $('salvarMaquinaBtn').textContent='💾 SALVAR MÁQUINA';
+}
+function renderMaquinas(){
+  $('listaMaquinas').innerHTML=maquinas.length?maquinas.map(m=>`
+    <div class="item">
+      <div class="between"><b>${esc(m.nome)}</b><span class="badge">Ativa</span></div>
+      <div class="small">
+        PIX ${num(m.pix).toFixed(2).replace('.',',')}% ·
+        Débito ${num(m.debito).toFixed(2).replace('.',',')}%<br>
+        Crédito 1x ${num(m.credito1).toFixed(2).replace('.',',')}% ·
+        2–6x ${num(m.credito26).toFixed(2).replace('.',',')}% ·
+        7–12x ${num(m.credito712).toFixed(2).replace('.',',')}%
+      </div>
+      <div class="sale-actions">
+        <button type="button" class="btn gray action editarMaquinaBtn" data-id="${esc(m.id)}">✏️ Editar</button>
+        <button type="button" class="btn red action excluirMaquinaBtn" data-id="${esc(m.id)}">🗑 Excluir</button>
+      </div>
+    </div>`).join(''):'Nenhuma máquina cadastrada.';
+  renderSelectMaquinas();
+}
+$('salvarMaquinaBtn').addEventListener('click',function(){
+  const nome=$('maquinaNome').value.trim();
+  if(!nome){$('maquinaMsg').innerHTML='<div class="msg err">Informe o nome da máquina.</div>';return;}
+  const dados={
+    nome,
+    pix:Math.max(0,num($('taxaPix').value)),
+    debito:Math.max(0,num($('taxaDebito').value)),
+    credito1:Math.max(0,num($('taxaCredito1').value)),
+    credito26:Math.max(0,num($('taxaCredito26').value)),
+    credito712:Math.max(0,num($('taxaCredito712').value))
+  };
+  const id=$('maquinaEditId').value;
+  if(id){
+    const i=maquinas.findIndex(m=>String(m.id)===String(id));
+    if(i>=0)maquinas[i]={...maquinas[i],...dados};
+  }else{
+    maquinas.push({id:'maq_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),...dados});
+  }
+  persist();limparMaquinaForm();renderMaquinas();atualizarAreaTarifa();
+  $('maquinaMsg').innerHTML='<div class="msg ok">✅ Máquina e tarifas salvas.</div>';beep();
+});
+$('cancelarMaquinaBtn').addEventListener('click',limparMaquinaForm);
+$('listaMaquinas').addEventListener('click',function(e){
+  const ed=e.target.closest('.editarMaquinaBtn'),del=e.target.closest('.excluirMaquinaBtn');
+  if(ed){
+    const m=maquinaPorId(ed.dataset.id);if(!m)return;
+    $('maquinaEditId').value=m.id;$('maquinaNome').value=m.nome;$('taxaPix').value=m.pix;
+    $('taxaDebito').value=m.debito;$('taxaCredito1').value=m.credito1;$('taxaCredito26').value=m.credito26;$('taxaCredito712').value=m.credito712;
+    $('cancelarMaquinaBtn').classList.remove('hidden');$('salvarMaquinaBtn').textContent='💾 ATUALIZAR MÁQUINA';
+    return;
+  }
+  if(del){
+    const m=maquinaPorId(del.dataset.id);if(!m)return;
+    if(confirm('Excluir a máquina "'+m.nome+'"? As vendas antigas continuarão com as tarifas já registradas.')){
+      maquinas=maquinas.filter(x=>String(x.id)!==String(m.id));persist();renderMaquinas();atualizarAreaTarifa();
+    }
+  }
+});
+
+// EXPORTAÇÃO / BACKUP
+$('csvBtn').addEventListener('click',function(){
+  const linhas=[['Data','Pagamento','Máquina','Parcelas','Taxa %','Taxa R$','Líquido da venda','Produto','Codigo','Quantidade','Custo','Preco','Lucro item','Total calculado','Valor cobrado','Diferença','Observação']];
+  vendas.forEach(v=>(v.it||[]).forEach(x=>{
+    const custo=x.custo!=null?num(x.custo):num(produtos[x.c]?.custo);
+    linhas.push([new Date(v.d).toLocaleString('pt-BR'),v.p,v.maquinaNome||'',v.parcelas||1,num(v.taxaPercentual).toFixed(2),taxaVenda(v).toFixed(2),liquidoVenda(v).toFixed(2),x.n,x.c,x.q,custo.toFixed(2),num(x.p).toFixed(2),((num(x.p)-custo)*num(x.q)).toFixed(2),totalCalculadoVenda(v).toFixed(2),num(v.t).toFixed(2),num(v.diferencaCobrada).toFixed(2),v.observacao||'']);
+  }));
+  const csv='\ufeff'+linhas.map(l=>l.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='mini-box-vendas.csv';a.click();
+});
+$('backupBtn').addEventListener('click',function(){
+  const dados={versao:'13.5.4',ps:produtos,vs:vendas,entradas,fechamentos,maquinas,usuarios,clientes,fiados,caixaConfig};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(dados,null,2)],{type:'application/json'}));a.download='backup-mini-box-v13-5-4.json';a.click();
+});
+$('restoreBtn').addEventListener('click',function(){
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.onchange=()=>{if(!input.files[0])return;const r=new FileReader();r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);produtos=d.ps||d.produtos||{};vendas=d.vs||d.vendas||[];entradas=d.entradas||[];fechamentos=d.fechamentos||[];maquinas=d.maquinas||[];
+      if(Array.isArray(d.usuarios) && d.usuarios.length)usuarios=d.usuarios;
+      clientes=Array.isArray(d.clientes)?d.clientes:[];
+      fiados=Array.isArray(d.fiados)?d.fiados:[];
+      if(d.caixaConfig&&typeof d.caixaConfig==='object')caixaConfig={ativo:true,hora:'22:00',...d.caixaConfig};
+      if(!Array.isArray(vendas))vendas=[];if(!Array.isArray(entradas))entradas=[];if(!Array.isArray(fechamentos))fechamentos=[];if(!Array.isArray(maquinas))maquinas=[];if(!Array.isArray(usuarios))usuarios=[];
+if(!Array.isArray(clientes))clientes=[];
+if(!Array.isArray(fiados))fiados=[];
+if(!Array.isArray(usuarios))usuarios=[];
+if(!Array.isArray(clientes))clientes=[];
+if(!Array.isArray(fiados))fiados=[];
+if(!Array.isArray(maquinas))maquinas=[];
+if(!Array.isArray(usuarios))usuarios=[];
+if(!Array.isArray(clientes))clientes=[];
+if(!Array.isArray(fiados))fiados=[];
+      migrarProdutos();persist();atualizarTudo();alert('Backup restaurado!');
+    }catch(e){alert('Backup inválido.');}
+  };r.readAsText(input.files[0]);};input.click();
+});
+$('apagarBtn').addEventListener('click',function(){
+  if(confirm('Apagar TODOS os dados comerciais do Mini Box (produtos, vendas, estoque, máquinas, clientes, fiados e fechamentos)?\n\nA conta de login na nuvem será preservada. Faça backup antes.')){
+    produtos={};vendas=[];entradas=[];fechamentos=[];maquinas=[];clientes=[];fiados=[];carrinho=[];persist();renderCarrinho();atualizarTudo();
+  }
+});
+
+function atualizarTudo(){renderPainel();renderProdutos();renderEstoque();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();}
+renderCarrinho();iniciarAutenticacao();
+});
+</script>
+</body>
+</html>
