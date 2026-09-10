@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pt-BR">
-<!-- BUILD: MINI BOX 13.5.4 CORRIGIDO 2026-09-10 -->
+<!-- BUILD: MINI BOX 13.5.5 MODO DEMO 2026-09-10 -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
@@ -79,6 +79,11 @@ hr{border:0;border-top:1px solid #eee;margin:14px 0}
 .paymentMethodCard.pmDinheiro{border-top-color:#20b26b}.paymentMethodCard.pmDebito{border-top-color:#3195e8}.paymentMethodCard.pmCredito{border-top-color:#9a55c5}.paymentMethodCard.pmPix{border-top-color:#08a88a}.paymentMethodCard.pmPixQr{border-top-color:#e59a18}.paymentMethodCard.pmFiado{border-top-color:#d96d40}.paymentMethodCard.pmOutros{border-top-color:#7c8794}
 @media(max-width:650px){.paymentMethodsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:430px){.dashboardGrid{grid-template-columns:1fr 1fr}.dashboardGrid .metric b{font-size:17px}}
+.demoLoginDivider{display:flex;align-items:center;gap:10px;margin:16px 0;color:#777;font-size:12px;font-weight:700}.demoLoginDivider:before,.demoLoginDivider:after{content:"";height:1px;background:#ddd;flex:1}
+.demoBanner{position:sticky;top:0;z-index:999;background:#fff3cd;border:1px solid #ffda6a;color:#664d03;border-radius:10px;padding:10px 12px;margin:0 0 12px;text-align:center;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.demoBanner small{display:block;font-weight:600;margin-top:3px}.demoLockNote{font-size:11px;color:#856404;margin-top:4px}
+body.modo-demo input:disabled,body.modo-demo textarea:disabled{background:#f5f5f5;color:#555;opacity:.9}
+body.modo-demo button.demo-bloqueado{opacity:.55;cursor:not-allowed;filter:grayscale(.15)}
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -90,7 +95,7 @@ hr{border:0;border-top:1px solid #eee;margin:14px 0}
     <p id="loginDescricao">Entre com sua conta da nuvem.</p>
 
     <div id="loginNormal">
-      <div class="msg">☁️ Versão 13.5.4 — dados sincronizados pelo Supabase.</div>
+      <div class="msg">☁️ Versão 13.5.5.2 — dados sincronizados pelo Supabase.</div>
       <label>E-mail</label>
       <input id="loginUsuario" type="email" autocomplete="username" placeholder="Seu e-mail">
       <label>Senha</label>
@@ -101,6 +106,9 @@ hr{border:0;border-top:1px solid #eee;margin:14px 0}
       <div class="note">O login agora é feito pelo Supabase Auth. A senha não é salva pelo Mini Box.</div>
       <br>
       <button id="entrarBtn" class="btn primary" style="width:100%;font-size:17px" type="button">☁️ ENTRAR NA NUVEM</button>
+      <div class="demoLoginDivider">OU</div>
+      <button id="entrarDemoBtn" class="btn gray" style="width:100%;font-size:16px" type="button">👁️ ENTRAR NO MODO DEMONSTRAÇÃO</button>
+      <div class="note" style="margin-top:8px;text-align:center">Dados fictícios • nenhuma informação real da loja é carregada • alterações bloqueadas</div>
       <div id="loginMsg"></div>
     </div>
   </div>
@@ -108,7 +116,7 @@ hr{border:0;border-top:1px solid #eee;margin:14px 0}
 
 <header id="appHeader" class="hidden">
   <h1>🛒 Mini Box Tem Tudo</h1>
-  <div>Gestão de vendas • estoque • lucro • caixa • nuvem • estoque • vendas • fiados • caixa • leitor preciso • caixa correto · versão 13.5.4</div>
+  <div>Gestão de vendas • estoque • lucro • caixa • nuvem • estoque • vendas • fiados • caixa • leitor preciso • caixa correto · versão 13.5.5.2</div>
   <div class="userBar">
     <span>👤 <b id="usuarioLogadoNome">—</b> <span id="usuarioLogadoPerfil"></span></span>
     <button id="logoutBtn" type="button">Sair</button>
@@ -116,6 +124,7 @@ hr{border:0;border-top:1px solid #eee;margin:14px 0}
 </header>
 
 <main id="appMain" class="hidden">
+<div id="demoBanner" class="demoBanner hidden">👁️ MODO DEMONSTRAÇÃO — DADOS FICTÍCIOS<small>Somente visualização. Nenhuma alteração é salva e nenhum dado real do Supabase é carregado.</small></div>
 <nav class="menu">
   <button class="on" data-tab="painel">📊<br>Painel</button>
   <button data-tab="venda">🛒<br>Venda</button>
@@ -795,6 +804,7 @@ const sb=window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBL
 }):null;
 let perfilNuvem=null, usuarioNuvem=null, lojaIdNuvem=null, aplicandoNuvem=false, timerSync=null, canalNuvem=null;
 let acessosNuvem=[];
+let MODO_DEMO=false;
 const sbCadastro=window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}):null;
 
 
@@ -843,6 +853,7 @@ function migrarProdutos(){
 migrarProdutos();
 
 function persist(sincronizar=true){
+  if(MODO_DEMO)return;
   localStorage.setItem(PK,JSON.stringify(produtos));
   localStorage.setItem(VK,JSON.stringify(vendas));
   localStorage.setItem(EK,JSON.stringify(entradas));
@@ -856,12 +867,163 @@ function persist(sincronizar=true){
 }
 persist();
 
+function demoIso(diasAtras=0,hora=12,min=0){
+  const d=new Date();d.setHours(hora,min,0,0);d.setDate(d.getDate()-diasAtras);return d.toISOString();
+}
+function demoDataKey(diasAtras=0){
+  const d=new Date();d.setDate(d.getDate()-diasAtras);return chaveDataLocal(d);
+}
+function carregarDadosDemo(){
+  const codigos=['7891000000011','7891000000028','7891000000035','MBT-0004','MBT-0005','MBT-0006'];
+  produtos={
+    [codigos[0]]:{nome:'Refrigerante Cola 2L',preco:11.00,custo:7.20,estoque:18,minimo:6},
+    [codigos[1]]:{nome:'Biscoito Recheado',preco:4.50,custo:2.65,estoque:9,minimo:5},
+    [codigos[2]]:{nome:'Água Mineral 500ml',preco:3.00,custo:1.35,estoque:24,minimo:8},
+    [codigos[3]]:{nome:'Geladinho Gourmet',preco:5.00,custo:1.80,estoque:14,minimo:5},
+    [codigos[4]]:{nome:'Mini Pizza',preco:9.00,custo:4.20,estoque:5,minimo:6},
+    [codigos[5]]:{nome:'Chocolate',preco:6.00,custo:3.60,estoque:12,minimo:4}
+  };
+  const venda=(id,dias,hora,pag,itens,extras={})=>{
+    const it=itens.map(([c,q])=>({c,n:produtos[c].nome,q,p:produtos[c].preco,custo:produtos[c].custo}));
+    const t=Number(it.reduce((s,x)=>s+x.q*x.p,0).toFixed(2));
+    return {id,d:demoIso(dias,hora),it,totalCalculado:t,t,diferencaCobrada:0,observacao:'',p:pag,
+      maquinaId:pag.includes('Cartão')||pag==='PIX'?'maq_demo_1':'',maquinaNome:pag.includes('Cartão')||pag==='PIX'?'Maquininha Demo':'',
+      parcelas:1,taxaPercentual:pag==='Cartão de crédito'?3.2:pag==='Cartão de débito'?1.6:pag==='PIX'?0.8:0,
+      taxaValor:0,liquido:t,pagamentosDivididos:[],operadorId:'demo_operador',operadorNome:'Operador Demo',...extras};
+  };
+  vendas=[
+    venda('vd1',0,9,'Dinheiro',[[codigos[0],1],[codigos[1],2]]),
+    venda('vd2',0,11,'PIX QR Code',[[codigos[2],3],[codigos[5],1]]),
+    venda('vd3',0,14,'Cartão de débito',[[codigos[3],4],[codigos[4],1]]),
+    venda('vd4',1,18,'PIX',[[codigos[0],2],[codigos[2],2]]),
+    venda('vd5',2,16,'Cartão de crédito',[[codigos[5],3],[codigos[1],1]]),
+    venda('vd6',4,10,'Dinheiro',[[codigos[4],2],[codigos[3],3]]),
+    venda('vd7',7,13,'PIX QR Code',[[codigos[0],1],[codigos[2],4]]),
+    venda('vd8',12,19,'Dinheiro',[[codigos[1],3],[codigos[5],2]]),
+    venda('vd9',18,15,'Cartão de débito',[[codigos[3],5],[codigos[2],2]]),
+    venda('vd10',26,12,'PIX QR Code',[[codigos[4],1],[codigos[0],1]])
+  ];
+  // vendas do mês anterior para enriquecer o painel
+  const ant=new Date();ant.setMonth(ant.getMonth()-1);ant.setDate(12);ant.setHours(14,0,0,0);
+  const vAnt=venda('vd_ant',0,12,'Dinheiro',[[codigos[0],2],[codigos[1],2]]);vAnt.d=ant.toISOString();vendas.push(vAnt);
+  entradas=[
+    {id:'ed1',d:demoIso(6,8),c:codigos[0],n:produtos[codigos[0]].nome,q:12,custo:7.20,fornecedor:'Distribuidora Exemplo',estoqueAnterior:8,estoqueNovo:20},
+    {id:'ed2',d:demoIso(3,9),c:codigos[4],n:produtos[codigos[4]].nome,q:10,custo:4.20,fornecedor:'Fornecedor Demonstração',estoqueAnterior:2,estoqueNovo:12}
+  ];
+  clientes=[
+    {id:'cli_demo_1',nome:'Cliente Demonstração',telefone:'(00) 90000-0000',criadoEm:demoIso(20,10)},
+    {id:'cli_demo_2',nome:'Cliente Exemplo',telefone:'(00) 98888-0000',criadoEm:demoIso(12,11)}
+  ];
+  fiados=[{
+    id:'f_demo_1',vendaId:'',clienteId:'cli_demo_1',clienteNome:'Cliente Demonstração',clienteTelefone:'(00) 90000-0000',
+    criadoEm:demoIso(5,17),vencimento:demoDataKey(-3),total:48,pago:18,status:'pendente',
+    pagamentos:[{id:'pg_demo_1',d:demoIso(2,13),valor:18,forma:'Dinheiro',taxaValor:0,liquido:18}],
+    itens:[{c:codigos[0],n:produtos[codigos[0]].nome,q:2,p:11,custo:7.2},{c:codigos[3],n:produtos[codigos[3]].nome,q:5,p:5,custo:1.8}],
+    observacao:'Conta fictícia para demonstração',operadorId:'demo_operador',operadorNome:'Operador Demo'
+  }];
+  maquinas=[{id:'maq_demo_1',nome:'Maquininha Demo',pix:0.8,debito:1.6,credito1:3.2,credito26:5.1,credito712:8.4}];
+  fechamentos=[{id:'cx_demo_1',d:demoIso(1,22,5),referenciaDia:demoDataKey(1),fundo:50,esperado:85,informado:85,diferenca:0,formas:{},operadorId:'demo_operador',operadorNome:'Operador Demo'}];
+  carrinho=[];
+  caixaConfig={ativo:false,hora:'22:00'};
+  usuarios=[{id:'demo_operador',nome:'Operador Demo',usuario:'demo@minibox.local',email:'demo@minibox.local',perfil:'admin',ativo:true,permissoes:{}}];
+}
+function bloquearAcaoDemo(msg='Modo demonstração: esta ação está bloqueada.'){
+  alert(msg+'\n\nOs dados exibidos são fictícios e nenhuma alteração é salva.');
+}
+function aplicarBloqueiosDemo(){
+  if(!MODO_DEMO)return;
+  document.body.classList.add('modo-demo');
+  if($('demoBanner'))$('demoBanner').classList.remove('hidden');
+  // Campos de cadastro/operação ficam visíveis, porém somente leitura.
+  const liberarIds=new Set(['buscaProdutoVenda','buscaEstoqueBaixo','buscaProdutos','buscaClientes','buscaFiados','filtroFiados','filtroPeriodo','relPeriodoPreset','relDataInicio','relDataFim','relHoraInicio','relHoraFim','relPagamento','relProduto','relOperador','caixaDataRef']);
+  document.querySelectorAll('#appMain input,#appMain textarea').forEach(el=>{
+    if(!liberarIds.has(el.id))el.disabled=true;
+  });
+  const bloqueados=['scanBtn','addBtn','finalizarBtn','salvarClienteBtn','cancelarClienteBtn','salvarProdutoBtn','cancelarProdutoBtn','registrarEntradaBtn','salvarCaixaBtn','salvarConfigCaixaBtn','ativarPushCaixaBtn','testarPushCaixaBtn','desativarPushCaixaBtn','sincronizarAgoraBtn','enviarLocalNuvemBtn','alterarMinhaSenhaBtn','salvarFuncionarioBtn','cancelarFuncionarioBtn','salvarMaquinaBtn','cancelarMaquinaBtn','restoreBtn','apagarBtn','confirmarRegistrarVendaBtn','salvarVendaEditBtn','confirmarExcluirVendaBtn','confirmarPagamentoFiadoBtn','salvarEdicaoFechamentoBtn','confirmarExcluirFechamentoBtn','confirmarSenhaUsuarioBtn','lembreteFecharAgoraBtn','lembreteDepoisBtn'];
+  bloqueados.forEach(id=>{const b=$(id);if(b){b.classList.add('demo-bloqueado');b.setAttribute('aria-disabled','true');b.title='Bloqueado no modo demonstração';}});
+  if($('cloudStatus'))$('cloudStatus').innerHTML='<b>👁️ Ambiente de demonstração</b><br><span class="small">Nenhum dado real foi consultado ou enviado ao Supabase.</span>';
+  if($('pushCaixaStatus'))$('pushCaixaStatus').innerHTML='🔔 Push externo disponível na versão real. Testes ficam bloqueados no modo demonstração.';
+}
+function limparBloqueiosDemo(){
+  document.body.classList.remove('modo-demo');
+  if($('demoBanner'))$('demoBanner').classList.add('hidden');
+
+  document.querySelectorAll('#appMain input,#appMain textarea,#appMain select,#appMain button').forEach(el=>{
+    el.disabled=false;
+    el.classList.remove('demo-bloqueado');
+    el.removeAttribute('aria-disabled');
+    if(el.title==='Bloqueado no modo demonstração')el.removeAttribute('title');
+  });
+}
+
+function restaurarDadosLocaisAposDemo(){
+  try{produtos=JSON.parse(localStorage.getItem(PK)||'{}')||{}}catch(e){produtos={}}
+  try{vendas=JSON.parse(localStorage.getItem(VK)||'[]')||[]}catch(e){vendas=[]}
+  try{entradas=JSON.parse(localStorage.getItem(EK)||'[]')||[]}catch(e){entradas=[]}
+  try{fechamentos=JSON.parse(localStorage.getItem(CK)||'[]')||[]}catch(e){fechamentos=[]}
+  try{maquinas=JSON.parse(localStorage.getItem(MK)||'[]')||[]}catch(e){maquinas=[]}
+  try{usuarios=JSON.parse(localStorage.getItem(UK)||'[]')||[]}catch(e){usuarios=[]}
+  try{clientes=JSON.parse(localStorage.getItem(CLK)||'[]')||[]}catch(e){clientes=[]}
+  try{fiados=JSON.parse(localStorage.getItem(FRK)||'[]')||[]}catch(e){fiados=[]}
+  caixaConfig={ativo:true,hora:'22:00'};
+  try{caixaConfig={...caixaConfig,...(JSON.parse(localStorage.getItem(CXCFGK)||'{}')||{})}}catch(e){}
+  caixaConfig.ativo=caixaConfig.ativo!==false;
+  if(!/^\d{2}:\d{2}$/.test(String(caixaConfig.hora||'')))caixaConfig.hora='22:00';
+
+  if(!produtos || typeof produtos!=='object' || Array.isArray(produtos))produtos={};
+  if(!Array.isArray(vendas))vendas=[];
+  if(!Array.isArray(entradas))entradas=[];
+  if(!Array.isArray(fechamentos))fechamentos=[];
+  if(!Array.isArray(maquinas))maquinas=[];
+  if(!Array.isArray(usuarios))usuarios=[];
+  if(!Array.isArray(clientes))clientes=[];
+  if(!Array.isArray(fiados))fiados=[];
+  carrinho=[];
+}
+
+async function sairModoDemo(){
+  await pararScanner();
+  MODO_DEMO=false;
+  limparBloqueiosDemo();
+
+  try{if(canalNuvem&&sb)await sb.removeChannel(canalNuvem)}catch(e){}
+  canalNuvem=null;
+  lojaIdNuvem=null;
+  acessosNuvem=[];
+  perfilNuvem=null;
+  usuarioNuvem=null;
+
+  restaurarDadosLocaisAposDemo();
+
+  if($('modalLembreteCaixa'))$('modalLembreteCaixa').classList.add('hidden');
+  document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
+
+  // Retorna diretamente à tela de login, sem recarregar a página.
+  // Isso evita tela branca em prévias/iframes e funciona igualmente no GitHub Pages.
+  mostrarLogin();
+  if($('loginDescricao'))$('loginDescricao').textContent='Entre com sua conta da nuvem.';
+  if($('loginUsuario'))$('loginUsuario').focus();
+}
+
+function entrarModoDemo(){
+  MODO_DEMO=true;
+  try{if(canalNuvem&&sb)sb.removeChannel(canalNuvem)}catch(e){}
+  canalNuvem=null;lojaIdNuvem=null;acessosNuvem=[];
+  perfilNuvem={id:'demo_perfil',loja_id:null,nome:'Demonstração',perfil:'admin',ativo:true,permissoes:{}};
+  usuarioNuvem={id:'demo_operador',nome:'Visitante Demo',usuario:'demo@minibox.local',email:'demo@minibox.local',perfil:'admin',ativo:true,permissoes:{},ultimoLogin:new Date().toISOString()};
+  carregarDadosDemo();
+  if($('modalLembreteCaixa'))$('modalLembreteCaixa').classList.add('hidden');
+  mostrarApp();
+  aplicarBloqueiosDemo();
+}
+
 function usuarioAtual(){
   return usuarioNuvem;
 }
 function ehAdmin(){
-  return !!perfilNuvem && perfilNuvem.perfil==='admin';
+  return MODO_DEMO || (!!perfilNuvem && perfilNuvem.perfil==='admin');
 }
+
 const CLOUD_META_KEY='MB_CLOUD_META_V1';
 let ultimoEnvioPayloadAt=null;
 function lerCloudMeta(){
@@ -1053,20 +1215,25 @@ function mostrarApp(){
   $('appHeader').classList.remove('hidden');
   $('appMain').classList.remove('hidden');
   $('usuarioLogadoNome').textContent=u.nome||u.usuario||u.email||'Usuário';
-  $('usuarioLogadoPerfil').textContent=ehAdmin()?'• Administrador':'• Funcionário';
+  $('usuarioLogadoPerfil').textContent=MODO_DEMO?'• Demonstração':(ehAdmin()?'• Administrador':'• Funcionário');
   $('cardFuncionarios').classList.toggle('hidden',!ehAdmin());
   if($('blocoMinhaSenhaAdmin'))$('blocoMinhaSenhaAdmin').classList.toggle('hidden',!ehAdmin());
-  if(ehAdmin())carregarAcessosNuvem();
+  if(ehAdmin() && !MODO_DEMO)carregarAcessosNuvem();
   aplicarPermissoesAcesso();
   const ultimo=u.ultimoLogin?new Date(u.ultimoLogin).toLocaleString('pt-BR'):'Agora';
-  if($('minhaContaInfo'))$('minhaContaInfo').innerHTML=
-    '<b>'+esc(u.nome||u.email||'Usuário')+'</b><br>E-mail: '+esc(u.email||'')+
-    '<br>Perfil: '+(ehAdmin()?'Administrador':'Funcionário')+
-    '<br>☁️ Dados vinculados à loja na nuvem';
+  if($('minhaContaInfo'))$('minhaContaInfo').innerHTML=MODO_DEMO
+    ? '<b>Visitante Demo</b><br>Perfil: Demonstração somente leitura<br>👁️ Dados 100% fictícios — sem acesso à loja real'
+    : '<b>'+esc(u.nome||u.email||'Usuário')+'</b><br>E-mail: '+esc(u.email||'')+
+      '<br>Perfil: '+(ehAdmin()?'Administrador':'Funcionário')+
+      '<br>☁️ Dados vinculados à loja na nuvem';
   atualizarTudo();
-  setTimeout(()=>verificarPopupLembreteCaixa(false),500);
-  setTimeout(()=>atualizarStatusPush(),650);
-  tratarAcaoPushUrl();
+  if(!MODO_DEMO){
+    setTimeout(()=>verificarPopupLembreteCaixa(false),500);
+    setTimeout(()=>atualizarStatusPush(),650);
+    tratarAcaoPushUrl();
+  }else{
+    setTimeout(()=>aplicarBloqueiosDemo(),50);
+  }
 }
 function mostrarLogin(){
   $('appHeader').classList.add('hidden');
@@ -1143,8 +1310,13 @@ async function fazerLogin(){
   }
 }
 $('entrarBtn').addEventListener('click',fazerLogin);
+$('entrarDemoBtn').addEventListener('click',entrarModoDemo);
 $('loginSenha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 $('logoutBtn').addEventListener('click',async function(){
+  if(MODO_DEMO){
+    await sairModoDemo();
+    return;
+  }
   await pararScanner();
   try{if(canalNuvem)await sb.removeChannel(canalNuvem)}catch(e){}
   canalNuvem=null;
@@ -1394,6 +1566,19 @@ function irParaFechamento(chave){
 }
 function renderLembreteCaixa(){
   if(!$('caixaStatusGlobal'))return;
+  if(MODO_DEMO){
+    const texto='👁️ <b>Modo demonstração</b> · lembrete de fechamento automático desativado';
+    $('caixaStatusGlobal').className='msg';
+    $('caixaStatusGlobal').innerHTML=texto;
+    if($('dashCaixaStatus')){
+      $('dashCaixaStatus').className='msg';
+      $('dashCaixaStatus').innerHTML=texto;
+    }
+    if($('dashFechamentosPendentes'))$('dashFechamentosPendentes').innerHTML='<div class="small">Dados fictícios para demonstração.</div>';
+    if($('listaPendenciasCaixa'))$('listaPendenciasCaixa').innerHTML='<div class="msg">👁️ Fechamentos fictícios — alerta automático desativado no modo demonstração.</div>';
+    if($('modalLembreteCaixa'))$('modalLembreteCaixa').classList.add('hidden');
+    return;
+  }
   const hoje=chaveDataLocal(new Date()), fechHoje=fechamentoDoDia(hoje), movimentosHoje=diasComMovimento().includes(hoje);
   const pend=pendenciasCaixa(false), antigas=pend.filter(k=>k<hoje);
   let cls='msg ok',texto='✅ <b>Caixa em dia</b>',acao='';
@@ -1424,6 +1609,10 @@ function snoozeCaixaAte(){
 function lembrarCaixaDepois(minutos=30){try{localStorage.setItem(CXSNOOZEK,String(Date.now()+minutos*60000))}catch(e){}}
 function limparSnoozeCaixa(){try{localStorage.removeItem(CXSNOOZEK)}catch(e){}}
 function verificarPopupLembreteCaixa(forcar=false){
+  if(MODO_DEMO){
+    if($('modalLembreteCaixa'))$('modalLembreteCaixa').classList.add('hidden');
+    return;
+  }
   if(!caixaConfig.ativo || !usuarioAtual())return;
   const pend=pendenciasCaixa(true);if(!pend.length)return;
   if(!forcar && Date.now()<snoozeCaixaAte())return;
@@ -1448,7 +1637,7 @@ function base64UrlParaUint8Array(base64String){
 }
 async function registroServiceWorkerPush(){
   if(!pushSuportado())throw new Error('Este navegador não oferece suporte a notificações push ou a página não está em HTTPS.');
-  const reg=await navigator.serviceWorker.register('./service-worker.js?v=13.5.4',{scope:'./'});
+  const reg=await navigator.serviceWorker.register('./service-worker.js?v=13.5.5',{scope:'./'});
   await navigator.serviceWorker.ready;
   try{await reg.update();}catch(e){}
   return reg;
@@ -3239,8 +3428,8 @@ $('csvBtn').addEventListener('click',function(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='mini-box-vendas.csv';a.click();
 });
 $('backupBtn').addEventListener('click',function(){
-  const dados={versao:'13.5.4',ps:produtos,vs:vendas,entradas,fechamentos,maquinas,usuarios,clientes,fiados,caixaConfig};
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(dados,null,2)],{type:'application/json'}));a.download='backup-mini-box-v13-5-4.json';a.click();
+  const dados={versao:'13.5.5.2',ps:produtos,vs:vendas,entradas,fechamentos,maquinas,usuarios,clientes,fiados,caixaConfig};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(dados,null,2)],{type:'application/json'}));a.download='backup-mini-box-v13-5-5-2.json';a.click();
 });
 $('restoreBtn').addEventListener('click',function(){
   const input=document.createElement('input');input.type='file';input.accept='.json';
@@ -3271,7 +3460,24 @@ $('apagarBtn').addEventListener('click',function(){
   }
 });
 
-function atualizarTudo(){renderPainel();renderProdutos();renderEstoque();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();}
+const DEMO_WRITE_SELECTORS=[
+  '#scanBtn','#addBtn','#finalizarBtn','#salvarClienteBtn','#cancelarClienteBtn','#salvarProdutoBtn','#cancelarProdutoBtn','#registrarEntradaBtn',
+  '#salvarCaixaBtn','#salvarConfigCaixaBtn','#ativarPushCaixaBtn','#testarPushCaixaBtn','#desativarPushCaixaBtn','#sincronizarAgoraBtn','#enviarLocalNuvemBtn',
+  '#alterarMinhaSenhaBtn','#salvarFuncionarioBtn','#cancelarFuncionarioBtn','#salvarMaquinaBtn','#cancelarMaquinaBtn','#restoreBtn','#apagarBtn',
+  '#confirmarRegistrarVendaBtn','#salvarVendaEditBtn','#confirmarExcluirVendaBtn','#confirmarPagamentoFiadoBtn','#salvarEdicaoFechamentoBtn','#confirmarExcluirFechamentoBtn','#confirmarSenhaUsuarioBtn',
+  '#lembreteFecharAgoraBtn','#lembreteDepoisBtn','.pagarFiadoBtn','.cobrarFiadoBtn','.editarFiadoBtn','.excluirFiadoBtn','.editClienteBtn','.delClienteBtn',
+  '.editarVendaBtn','.excluirVendaBtn','.editarFechamentoBtn','.excluirFechamentoBtn','.editarFuncionarioBtn','.senhaFuncionarioBtn','.excluirFuncionarioBtn','.editarMaquinaBtn','.excluirMaquinaBtn'
+];
+document.addEventListener('click',function(e){
+  if(!MODO_DEMO)return;
+  const alvo=e.target.closest(DEMO_WRITE_SELECTORS.join(','));
+  if(!alvo)return;
+  e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+  bloquearAcaoDemo();
+},true);
+document.addEventListener('submit',function(e){if(MODO_DEMO){e.preventDefault();e.stopImmediatePropagation();bloquearAcaoDemo();}},true);
+
+function atualizarTudo(){renderPainel();renderProdutos();renderEstoque();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();if(MODO_DEMO)setTimeout(()=>aplicarBloqueiosDemo(),0);}
 renderCarrinho();iniciarAutenticacao();
 });
 </script>
