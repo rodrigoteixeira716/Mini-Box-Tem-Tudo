@@ -76,7 +76,7 @@ hr{border:0;border-top:1px solid #eee;margin:14px 0}
 .paymentMethodCard .pmLabel{font-size:11px;text-transform:uppercase;color:#6b7280;min-height:28px;display:flex;align-items:center;justify-content:center}
 .paymentMethodCard .pmValue{font-size:21px;font-weight:800;margin-top:5px;white-space:nowrap}
 .paymentMethodCard .pmMeta{font-size:11px;color:#777;margin-top:5px;line-height:1.35}
-.paymentMethodCard.pmDinheiro{border-top-color:#20b26b}.paymentMethodCard.pmDebito{border-top-color:#3195e8}.paymentMethodCard.pmCredito{border-top-color:#9a55c5}.paymentMethodCard.pmPix{border-top-color:#08a88a}.paymentMethodCard.pmPixQr{border-top-color:#e59a18}.paymentMethodCard.pmFiado{border-top-color:#d96d40}.paymentMethodCard.pmOutros{border-top-color:#7c8794}
+.paymentMethodCard.pmDinheiro{border-top-color:#20b26b}.paymentMethodCard.pmDebito{border-top-color:#3195e8}.paymentMethodCard.pmCredito{border-top-color:#9a55c5}.paymentMethodCard.pmPix{border-top-color:#08a88a}.paymentMethodCard.pmPixQr{border-top-color:#e59a18}.paymentMethodCard.pmFiado{border-top-color:#d96d40}.paymentMethodCard.pmOutros{border-top-color:#7c8794}.paymentMethodCard.pmTarifas{border-top-color:#d9534f;background:#fffafa}.paymentMethodCard.pmLucroReal{border-top-color:#1f8a5b;background:#f8fffb}.rpFinanceiroResumo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.rpFinanceiroCard{background:#fff;border:1px solid #e5e9ef;border-left:4px solid #3498db;border-radius:10px;padding:12px;box-shadow:0 2px 8px #0000000b}.rpFinanceiroCard .rfLabel{font-size:12px;font-weight:800;color:#243447;margin-bottom:4px}.rpFinanceiroCard .rfValue{font-size:22px;font-weight:900;color:#243447}.rpFinanceiroCard .rfMeta{font-size:11px;color:#718096;margin-top:4px;line-height:1.4}.rpFinanceiroCard.rfDinheiro{border-left-color:#20b26b}.rpFinanceiroCard.rfConta{border-left-color:#16a085}.rpFinanceiroCard.rfCusto{border-left-color:#e67e22}.rpFinanceiroCard.rfTarifa{border-left-color:#9b59b6}.rpFinanceiroCard.rfLucro{border-left-color:#27ae60;grid-column:1/-1}.rpFinanceiroCard.rfLucro .rfValue{color:#27ae60}@media(max-width:600px){.rpFinanceiroResumo{grid-template-columns:1fr}.rpFinanceiroCard.rfLucro{grid-column:auto}}
 @media(max-width:650px){.paymentMethodsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:430px){.dashboardGrid{grid-template-columns:1fr 1fr}.dashboardGrid .metric b{font-size:17px}}
 .demoLoginDivider{display:flex;align-items:center;gap:10px;margin:16px 0;color:#777;font-size:12px;font-weight:700}.demoLoginDivider:before,.demoLoginDivider:after{content:"";height:1px;background:#ddd;flex:1}
@@ -95,7 +95,7 @@ body.modo-demo button.demo-bloqueado{opacity:.55;cursor:not-allowed;filter:grays
     <p id="loginDescricao">Entre com sua conta da nuvem.</p>
 
     <div id="loginNormal">
-      <div class="msg">☁️ Versão 13.5.5.2 — dados sincronizados pelo Supabase.</div>
+      <div class="msg">☁️ Versão 13.5.5.5 — dados sincronizados pelo Supabase.</div>
       <label>E-mail</label>
       <input id="loginUsuario" type="email" autocomplete="username" placeholder="Seu e-mail">
       <label>Senha</label>
@@ -116,7 +116,7 @@ body.modo-demo button.demo-bloqueado{opacity:.55;cursor:not-allowed;filter:grays
 
 <header id="appHeader" class="hidden">
   <h1>🛒 Mini Box Tem Tudo</h1>
-  <div>Gestão de vendas • estoque • lucro • caixa • nuvem • estoque • vendas • fiados • caixa • leitor preciso • caixa correto · versão 13.5.5.2</div>
+  <div>Gestão de vendas • estoque • lucro • caixa • nuvem • estoque • vendas • fiados • caixa • leitor preciso • caixa correto · versão 13.5.5.5</div>
   <div class="userBar">
     <span>👤 <b id="usuarioLogadoNome">—</b> <span id="usuarioLogadoPerfil"></span></span>
     <button id="logoutBtn" type="button">Sair</button>
@@ -412,8 +412,8 @@ body.modo-demo button.demo-bloqueado{opacity:.55;cursor:not-allowed;filter:grays
       <div class="msg">Margem líquida<br><b id="rpMargem">0,00%</b></div><div class="msg">Mais vendido<br><b id="rpTop">—</b></div>
     </div>
     <div id="rpResumo" class="msg" style="margin-top:10px"></div>
-    <h3 style="margin-top:18px">💳 Métodos de Pagamento</h3>
-    <div class="small">Valores brutos vendidos em cada forma de pagamento dentro dos filtros selecionados. Pagamentos divididos são separados corretamente entre as formas.</div>
+    <h3 style="margin-top:18px">📊 Resumo financeiro do período</h3><div id="rpFinanceiroResumo" class="rpFinanceiroResumo"></div><h3 style="margin-top:18px">💳 Métodos de Pagamento</h3>
+    <div class="small">Valores brutos vendidos em cada forma de pagamento dentro dos filtros selecionados. Pagamentos divididos são separados corretamente entre as formas. O card de tarifas mostra o total descontado pelas maquininhas e o líquido estimado que entra na conta. O card de lucro real soma o lucro de todas as vendas filtradas, descontando custo dos produtos e tarifas registradas.</div>
     <div id="rpMetodosPagamento" class="paymentMethodsGrid"></div>
     <div id="rpMetodosTotal" class="msg" style="margin-top:10px"></div>
     <h3 style="margin-top:16px">⏰ Horários de maior movimento</h3>
@@ -2767,21 +2767,91 @@ function rpTotaisPorPagamento(lista){
   });
   return formas;
 }
+function rpResumoMaquininhas(lista){
+  let bruto=0,tarifas=0,transacoes=0;
+  const formasMaquina=new Set(['PIX','Cartão de débito','Cartão de crédito']);
+
+  lista.forEach(v=>{
+    if(Array.isArray(v.pagamentosDivididos)&&v.pagamentosDivididos.length){
+      v.pagamentosDivididos.forEach(pg=>{
+        if(!formasMaquina.has(pg.forma))return;
+        bruto+=num(pg.valor);
+        tarifas+=num(pg.taxaValor);
+        transacoes++;
+      });
+      return;
+    }
+
+    if(formasMaquina.has(v.p)){
+      bruto+=num(v.t);
+      tarifas+=taxaVenda(v);
+      transacoes++;
+    }
+  });
+
+  return {bruto,tarifas,liquido:bruto-tarifas,transacoes};
+}
+
+function renderRpFinanceiroResumo(lista,fat){
+  const box=$('rpFinanceiroResumo');if(!box)return;
+  let dinheiro=0,brutoConta=0;
+  const formasConta=new Set(['PIX','Cartão de débito','Cartão de crédito']);
+  lista.forEach(v=>{
+    if(Array.isArray(v.pagamentosDivididos)&&v.pagamentosDivididos.length){
+      v.pagamentosDivididos.forEach(p=>{
+        if(p.forma==='Dinheiro')dinheiro+=num(p.valor);
+        if(formasConta.has(p.forma))brutoConta+=num(p.valor);
+      });
+    }else{
+      if(v.p==='Dinheiro')dinheiro+=num(v.t);
+      if(formasConta.has(v.p))brutoConta+=num(v.t);
+    }
+  });
+  const custo=lista.reduce((s,v)=>s+custoVenda(v),0);
+  const taxas=lista.reduce((s,v)=>s+taxaVenda(v),0);
+  const lucroBruto=lista.reduce((s,v)=>s+lucroVenda(v),0);
+  const lucroLiquido=lista.reduce((s,v)=>s+lucroAposTaxa(v),0);
+  const liquidoConta=brutoConta-taxas;
+  box.innerHTML=`
+  <div class="rpFinanceiroCard"><div class="rfLabel">💰 Faturamento total</div><div class="rfValue">${money(fat)}</div><div class="rfMeta">Total das vendas no período filtrado.</div></div>
+  <div class="rpFinanceiroCard rfDinheiro"><div class="rfLabel">💵 Dinheiro em caixa</div><div class="rfValue">${money(dinheiro)}</div><div class="rfMeta">Recebido em dinheiro no período.</div></div>
+  <div class="rpFinanceiroCard rfConta"><div class="rfLabel">🏧 Líquido das maquininhas</div><div class="rfValue">${money(liquidoConta)}</div><div class="rfMeta">Bruto ${money(brutoConta)} − taxas ${money(taxas)}.</div></div>
+  <div class="rpFinanceiroCard rfCusto"><div class="rfLabel">📦 Custo dos produtos vendidos</div><div class="rfValue">${money(custo)}</div><div class="rfMeta">Custo dos itens das vendas filtradas.</div></div>
+  <div class="rpFinanceiroCard rfTarifa"><div class="rfLabel">💸 Taxas pagas</div><div class="rfValue">${money(taxas)}</div><div class="rfMeta">Tarifas registradas no período.</div></div>
+  <div class="rpFinanceiroCard rfLucro"><div class="rfLabel">📈 Lucro total líquido</div><div class="rfValue">${money(lucroLiquido)}</div><div class="rfMeta">Lucro bruto ${money(lucroBruto)} − taxas ${money(taxas)}. O custo dos produtos já está descontado.</div></div>`;
+}
+
 function renderRpMetodosPagamento(lista,fat){
   const box=$('rpMetodosPagamento'),totalBox=$('rpMetodosTotal');if(!box||!totalBox)return;
   const t=rpTotaisPorPagamento(lista);
+  const maq=rpResumoMaquininhas(lista);
+
+  // Lucro real do período = soma do lucro de cada venda, já descontando
+  // o custo dos produtos e as tarifas registradas naquela venda.
+  const lucroBrutoPeriodo=lista.reduce((s,v)=>s+lucroVenda(v),0);
+  const tarifasPeriodo=lista.reduce((s,v)=>s+taxaVenda(v),0);
+  const lucroRealPeriodo=lista.reduce((s,v)=>s+lucroAposTaxa(v),0);
+
   const defs=[
     ['Dinheiro','💵','pmDinheiro'],['Cartão de débito','💳','pmDebito'],['Cartão de crédito','💳','pmCredito'],
     ['PIX','📱','pmPix'],['PIX QR Code','🔳','pmPixQr'],['Fiado','📒','pmFiado'],['Vale/Outros','🎟️','pmOutros']
   ];
-  box.innerHTML=defs.map(([nome,icone,classe])=>{const d=t[nome],pct=fat?d.valor/fat*100:0;return `<div class="paymentMethodCard ${classe}"><div class="pmIcon">${icone}</div><div class="pmLabel">${esc(nome==='PIX'?'PIX maquininha':nome)}</div><div class="pmValue">${money(d.valor)}</div><div class="pmMeta">${pct.toFixed(1).replace('.',',')}% do faturamento · ${d.transacoes} ${d.transacoes===1?'transação':'transações'}</div></div>`;}).join('');
+  const cards=defs.map(([nome,icone,classe])=>{const d=t[nome],pct=fat?d.valor/fat*100:0;return `<div class="paymentMethodCard ${classe}"><div class="pmIcon">${icone}</div><div class="pmLabel">${esc(nome==='PIX'?'PIX maquininha':nome)}</div><div class="pmValue">${money(d.valor)}</div><div class="pmMeta">${pct.toFixed(1).replace('.',',')}% do faturamento · ${d.transacoes} ${d.transacoes===1?'transação':'transações'}</div></div>`;}).join('');
+
+  const cardTarifas=`<div class="paymentMethodCard pmTarifas"><div class="pmIcon">💸</div><div class="pmLabel">Tarifas das maquininhas</div><div class="pmValue">${money(maq.tarifas)}</div><div class="pmMeta">Bruto nas maquininhas: ${money(maq.bruto)}<br><b>Líquido estimado na conta: ${money(maq.liquido)}</b><br>${maq.transacoes} ${maq.transacoes===1?'transação':'transações'} com maquininha</div></div>`;
+
+  const cardLucroReal=`<div class="paymentMethodCard pmLucroReal"><div class="pmIcon">📈</div><div class="pmLabel">Lucro real das vendas</div><div class="pmValue">${money(lucroRealPeriodo)}</div><div class="pmMeta">Lucro bruto: ${money(lucroBrutoPeriodo)}<br>Tarifas do período: ${money(tarifasPeriodo)}<br><b>Lucro após custos e tarifas</b></div></div>`;
+
+  box.innerHTML=cards+cardTarifas+cardLucroReal;
+
   const soma=Object.values(t).reduce((a,d)=>a+d.valor,0);
-  totalBox.innerHTML=`💰 <b>Total distribuído entre as formas:</b> ${money(soma)}${Math.abs(soma-fat)>=0.02?' <span class="small">· diferença de '+money(soma-fat)+' em relação ao faturamento filtrado</span>':''}`;
+  totalBox.innerHTML=`💰 <b>Total distribuído entre as formas:</b> ${money(soma)}${Math.abs(soma-fat)>=0.02?' <span class="small">· diferença de '+money(soma-fat)+' em relação ao faturamento filtrado</span>':''}<br>🏧 <b>Total bruto nas maquininhas:</b> ${money(maq.bruto)} · <b>Tarifas:</b> ${money(maq.tarifas)} · <b>Líquido estimado:</b> ${money(maq.liquido)}<br>📈 <b>Lucro real das vendas:</b> ${money(lucroRealPeriodo)}`;
 }
 function renderRelatorioPeriodo(){
   if(!$('rpLista'))return;rpAtualizarOpcoes();const lista=rpListaFiltrada(),fat=lista.reduce((s,v)=>s+num(v.t),0),cmv=lista.reduce((s,v)=>s+custoVenda(v),0),lb=fat-cmv;
   const taxas=lista.filter(v=>v.p!=='Fiado').reduce((s,v)=>s+taxaVenda(v),0),ll=lb-taxas,un=lista.reduce((s,v)=>s+(v.it||[]).reduce((a,x)=>a+num(x.q),0),0),margem=fat?ll/fat*100:0,top=topProduto(lista);
   $('rpQtd').textContent=lista.length;$('rpFat').textContent=money(fat);$('rpUnidades').textContent=num(un);$('rpTicket').textContent=money(lista.length?fat/lista.length:0);$('rpCmv').textContent=money(cmv);$('rpLucroBruto').textContent=money(lb);$('rpTaxas').textContent=money(taxas);$('rpLucroLiquido').textContent=money(ll);$('rpMargem').textContent=margem.toFixed(2).replace('.',',')+'%';$('rpTop').textContent=top?top[0]+' · '+top[1]+' un.':'—';
+  renderRpFinanceiroResumo(lista,fat);
   renderRpMetodosPagamento(lista,fat);
   const partes=[];if($('rpDataIni').value||$('rpDataFim').value)partes.push('📅 '+($('rpDataIni').value?new Date($('rpDataIni').value+'T12:00:00').toLocaleDateString('pt-BR'):'início')+' a '+($('rpDataFim').value?new Date($('rpDataFim').value+'T12:00:00').toLocaleDateString('pt-BR'):'hoje'));if($('rpHoraIni').value||$('rpHoraFim').value)partes.push('⏰ '+($('rpHoraIni').value||'00:00')+'–'+($('rpHoraFim').value||'23:59'));if($('rpPagamento').value)partes.push('💳 '+$('rpPagamento').value);if($('rpProduto').value)partes.push('📦 '+$('rpProduto').value);if($('rpOperador').value)partes.push('👤 '+$('rpOperador').value);$('rpResumo').innerHTML=partes.length?'<b>Filtros:</b> '+partes.map(esc).join(' · '):'Todo o histórico, sem filtros adicionais.';
   const horas={};lista.forEach(v=>{const h=new Date(v.d).getHours(),k=String(h).padStart(2,'0')+':00–'+String((h+1)%24).padStart(2,'0')+':00';if(!horas[k])horas[k]={q:0,fat:0};horas[k].q++;horas[k].fat+=num(v.t);});const hr=Object.entries(horas).sort((a,b)=>b[1].fat-a[1].fat);
@@ -3428,8 +3498,8 @@ $('csvBtn').addEventListener('click',function(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='mini-box-vendas.csv';a.click();
 });
 $('backupBtn').addEventListener('click',function(){
-  const dados={versao:'13.5.5.2',ps:produtos,vs:vendas,entradas,fechamentos,maquinas,usuarios,clientes,fiados,caixaConfig};
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(dados,null,2)],{type:'application/json'}));a.download='backup-mini-box-v13-5-5-2.json';a.click();
+  const dados={versao:'13.5.5.5',ps:produtos,vs:vendas,entradas,fechamentos,maquinas,usuarios,clientes,fiados,caixaConfig};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(dados,null,2)],{type:'application/json'}));a.download='backup-mini-box-v13-5-5-5.json';a.click();
 });
 $('restoreBtn').addEventListener('click',function(){
   const input=document.createElement('input');input.type='file';input.accept='.json';
