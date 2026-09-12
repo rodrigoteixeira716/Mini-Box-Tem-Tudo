@@ -47,6 +47,15 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px 4px;b
 .sale-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
 .modal{position:fixed;inset:0;background:#0008;display:flex;align-items:flex-end;justify-content:center;z-index:9999;padding:10px}
 .modalBox{background:#fff;width:100%;max-width:760px;max-height:90vh;overflow:auto;border-radius:20px 20px 12px 12px;padding:16px}
+.qtdVendaProduto{font-size:21px;font-weight:900;margin-bottom:3px}
+.qtdVendaPreco{font-size:14px;color:#666;margin-bottom:12px}
+.qtdVendaControle{display:grid;grid-template-columns:58px 1fr 58px;gap:9px;align-items:center;margin:12px 0}
+.qtdVendaControle button{height:52px;border:0;border-radius:13px;font-size:25px;font-weight:900;background:#eef0f3;color:#222}
+.qtdVendaControle input{height:52px;text-align:center;font-size:23px;font-weight:900;margin:0}
+.qtdVendaAtalhos{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:10px 0 14px}
+.qtdVendaAtalhos button{border:0;border-radius:10px;background:#f0f1f3;padding:10px 4px;font-weight:900}
+.qtdVendaResumo{background:#fff3d0;border-radius:12px;padding:11px;margin:12px 0}
+.qtdVendaResumo .linha{display:flex;justify-content:space-between;gap:10px;margin:4px 0}
 hr{border:0;border-top:1px solid #eee;margin:14px 0}
 
 .note{font-size:12px;color:#666;line-height:1.5}
@@ -95,7 +104,7 @@ body.modo-demo button.demo-bloqueado{opacity:.55;cursor:not-allowed;filter:grays
     <p id="loginDescricao">Entre com sua conta da nuvem.</p>
 
     <div id="loginNormal">
-      <div class="msg">☁️ Versão 13.5.5.5 — dados sincronizados pelo Supabase.</div>
+      <div class="msg">☁️ Versão 13.5.5.6 — dados sincronizados pelo Supabase.</div>
       <label>E-mail</label>
       <input id="loginUsuario" type="email" autocomplete="username" placeholder="Seu e-mail">
       <label>Senha</label>
@@ -116,7 +125,7 @@ body.modo-demo button.demo-bloqueado{opacity:.55;cursor:not-allowed;filter:grays
 
 <header id="appHeader" class="hidden">
   <h1>🛒 Mini Box Tem Tudo</h1>
-  <div>Gestão de vendas • estoque • lucro • caixa • nuvem • estoque • vendas • fiados • caixa • leitor preciso • caixa correto · versão 13.5.5.5</div>
+  <div>Gestão de vendas • estoque • lucro • caixa • nuvem • estoque • vendas • fiados • caixa • leitor preciso • caixa correto · versão 13.5.5.6</div>
   <div class="userBar">
     <span>👤 <b id="usuarioLogadoNome">—</b> <span id="usuarioLogadoPerfil"></span></span>
     <button id="logoutBtn" type="button">Sair</button>
@@ -205,10 +214,9 @@ body.modo-demo button.demo-bloqueado{opacity:.55;cursor:not-allowed;filter:grays
     <h3>Adicionar produto</h3>
     <label>Código de barras</label>
     <input id="codigoVenda" inputmode="numeric" placeholder="Escaneie ou digite">
-    <label>Quantidade</label>
-    <input id="qtdVenda" type="number" min="1" value="1" inputmode="numeric">
-    <br><br>
-    <button id="addBtn" class="btn primary" style="width:100%" type="button">➕ ADICIONAR À VENDA</button>
+    <div class="note" style="margin-top:8px">Depois de identificar o produto, o sistema perguntará a quantidade antes de adicioná-lo à venda.</div>
+    <br>
+    <button id="addBtn" class="btn primary" style="width:100%" type="button">➕ CONTINUAR</button>
   </div>
 
   <div class="card">
@@ -623,6 +631,41 @@ body.modo-demo button.demo-bloqueado{opacity:.55;cursor:not-allowed;filter:grays
 </section>
 </main>
 
+
+<div id="modalQuantidadeVenda" class="modal hidden">
+  <div class="modalBox" style="max-width:480px">
+    <h3 style="margin-top:0">🛒 Quantidade do produto</h3>
+    <div id="qtdVendaProdutoNome" class="qtdVendaProduto">Produto</div>
+    <div id="qtdVendaProdutoInfo" class="qtdVendaPreco"></div>
+
+    <label>Quantidade</label>
+    <div class="qtdVendaControle">
+      <button id="qtdVendaMenos" type="button" aria-label="Diminuir quantidade">−</button>
+      <input id="qtdVendaModal" type="number" min="1" step="1" value="1" inputmode="numeric">
+      <button id="qtdVendaMais" type="button" aria-label="Aumentar quantidade">+</button>
+    </div>
+
+    <div class="qtdVendaAtalhos">
+      <button type="button" data-qtd-venda="1">1</button>
+      <button type="button" data-qtd-venda="2">2</button>
+      <button type="button" data-qtd-venda="3">3</button>
+      <button type="button" data-qtd-venda="5">5</button>
+      <button type="button" data-qtd-venda="10">10</button>
+    </div>
+
+    <div class="qtdVendaResumo">
+      <div class="linha"><span>Estoque atual</span><b id="qtdVendaEstoque">0</b></div>
+      <div class="linha"><span>Subtotal</span><b id="qtdVendaSubtotal">R$ 0,00</b></div>
+    </div>
+
+    <div id="qtdVendaAviso" class="msg hidden"></div>
+
+    <div class="grid2">
+      <button id="qtdVendaCancelar" class="btn gray" type="button">Cancelar</button>
+      <button id="qtdVendaConfirmar" class="btn primary" type="button">✅ ADICIONAR</button>
+    </div>
+  </div>
+</div>
 
 <div id="modalConfirmarVenda" class="modal hidden">
   <div class="modalBox">
@@ -1885,7 +1928,7 @@ async function aceitarCodigoScanner(codigo){
   mostrarScannerStatus('✅ Leitura confirmada: <b>'+esc(produtos[code].nome)+'</b> · código '+esc(code),'ok');
   beep();
   try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}
-  adicionarProdutoVenda(true);
+  prepararProdutoParaVenda(true);
 }
 
 $('scanBtn').addEventListener('click',async function(){
@@ -1968,30 +2011,133 @@ $('scanBtn').addEventListener('click',async function(){
 });
 
 // VENDA
-function adicionarProdutoVenda(origemScanner=false){
+let produtoPendenteVenda=null;
+
+function quantidadeModalAtual(){
+  return Math.max(1,Math.floor(num($('qtdVendaModal').value)||1));
+}
+
+function atualizarModalQuantidadeVenda(){
+  if(!produtoPendenteVenda)return;
+  const q=quantidadeModalAtual();
+  $('qtdVendaModal').value=String(q);
+
+  const p=produtoPendenteVenda.produto;
+  const estoque=num(p.estoque);
+  $('qtdVendaSubtotal').textContent=money(num(p.preco)*q);
+  $('qtdVendaEstoque').textContent=String(estoque);
+
+  const aviso=$('qtdVendaAviso');
+  if(q>estoque){
+    aviso.classList.remove('hidden');
+    aviso.classList.add('err');
+    aviso.innerHTML='⚠️ A quantidade escolhida ('+q+') é maior que o estoque atual ('+estoque+'). Você ainda poderá confirmar, mas confira o estoque antes de finalizar a venda.';
+  }else{
+    aviso.classList.add('hidden');
+    aviso.classList.remove('err');
+    aviso.innerHTML='';
+  }
+}
+
+function abrirModalQuantidadeVenda(codigo,p){
+  produtoPendenteVenda={codigo,produto:p};
+  $('qtdVendaProdutoNome').textContent=p.nome||'Produto';
+  $('qtdVendaProdutoInfo').textContent='Código '+codigo+' · '+money(num(p.preco))+' cada';
+  $('qtdVendaModal').value='1';
+  $('modalQuantidadeVenda').classList.remove('hidden');
+  atualizarModalQuantidadeVenda();
+  setTimeout(()=>{
+    try{$('qtdVendaModal').focus();$('qtdVendaModal').select();}catch(e){}
+  },80);
+}
+
+function fecharModalQuantidadeVenda(limparCodigo=false){
+  $('modalQuantidadeVenda').classList.add('hidden');
+  produtoPendenteVenda=null;
+  if(limparCodigo)$('codigoVenda').value='';
+}
+
+function prepararProdutoParaVenda(origemScanner=false){
   const codigo=$('codigoVenda').value.trim();
-  const q=Math.max(1,Math.floor(num($('qtdVenda').value)||1));
   if(!codigo){alert('Digite ou escaneie o código do produto.');return;}
+
   let p=produtos[codigo];
   if(!p && origemScanner){
     mostrarScannerStatus('⚠️ O código lido não está cadastrado. Nenhum item foi adicionado.','err');
     return;
   }
+
   if(!p){
     const nome=prompt('Produto não cadastrado. Digite o nome:');
     if(!nome)return;
     const precoTxt=prompt('Preço de venda (ex.: 8,00):','0');
     const preco=num(String(precoTxt||'0').replace(',','.'));
     produtos[codigo]={nome:nome.trim()||'Produto',preco,custo:0,estoque:0,minimo:3};
-    p=produtos[codigo];persist();
+    p=produtos[codigo];
+    persist();
   }
+
+  abrirModalQuantidadeVenda(codigo,p);
+}
+
+function confirmarQuantidadeVenda(){
+  if(!produtoPendenteVenda)return;
+
+  const codigo=produtoPendenteVenda.codigo;
+  const p=produtoPendenteVenda.produto;
+  const q=quantidadeModalAtual();
+  const estoque=num(p.estoque);
+
+  if(q>estoque){
+    const seguir=confirm(
+      'A quantidade escolhida ('+q+') é maior que o estoque atual ('+estoque+').\\n\\nDeseja adicionar mesmo assim?'
+    );
+    if(!seguir)return;
+  }
+
   const existente=carrinho.find(x=>x.c===codigo);
   if(existente)existente.q+=q;
   else carrinho.push({c:codigo,n:p.nome,p:num(p.preco),custo:num(p.custo),q});
-  $('codigoVenda').value='';$('qtdVenda').value='1';renderCarrinho();
+
+  fecharModalQuantidadeVenda(true);
+  renderCarrinho();
+  mostrarMsg('✅ '+q+'x '+esc(p.nome)+' adicionado à venda.','ok');
 }
-$('addBtn').addEventListener('click',()=>adicionarProdutoVenda(false));
-$('codigoVenda').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adicionarProdutoVenda(false);}});
+
+$('addBtn').addEventListener('click',()=>prepararProdutoParaVenda(false));
+$('codigoVenda').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    e.preventDefault();
+    prepararProdutoParaVenda(false);
+  }
+});
+
+$('qtdVendaMenos').addEventListener('click',()=>{
+  $('qtdVendaModal').value=String(Math.max(1,quantidadeModalAtual()-1));
+  atualizarModalQuantidadeVenda();
+});
+$('qtdVendaMais').addEventListener('click',()=>{
+  $('qtdVendaModal').value=String(quantidadeModalAtual()+1);
+  atualizarModalQuantidadeVenda();
+});
+$('qtdVendaModal').addEventListener('input',atualizarModalQuantidadeVenda);
+$('qtdVendaModal').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    e.preventDefault();
+    confirmarQuantidadeVenda();
+  }else if(e.key==='Escape'){
+    e.preventDefault();
+    fecharModalQuantidadeVenda(false);
+  }
+});
+document.querySelectorAll('[data-qtd-venda]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    $('qtdVendaModal').value=b.dataset.qtdVenda;
+    atualizarModalQuantidadeVenda();
+  });
+});
+$('qtdVendaCancelar').addEventListener('click',()=>fecharModalQuantidadeVenda(false));
+$('qtdVendaConfirmar').addEventListener('click',confirmarQuantidadeVenda);
 
 function renderCarrinho(){
   if(!carrinho.length){$('carrinho').innerHTML='Nenhum produto adicionado.';$('totalVenda').textContent=money(0);atualizarAreaTarifa();return;}
@@ -3498,8 +3644,8 @@ $('csvBtn').addEventListener('click',function(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='mini-box-vendas.csv';a.click();
 });
 $('backupBtn').addEventListener('click',function(){
-  const dados={versao:'13.5.5.5',ps:produtos,vs:vendas,entradas,fechamentos,maquinas,usuarios,clientes,fiados,caixaConfig};
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(dados,null,2)],{type:'application/json'}));a.download='backup-mini-box-v13-5-5-5.json';a.click();
+  const dados={versao:'13.5.5.6',ps:produtos,vs:vendas,entradas,fechamentos,maquinas,usuarios,clientes,fiados,caixaConfig};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(dados,null,2)],{type:'application/json'}));a.download='backup-mini-box-v13-5-5-6.json';a.click();
 });
 $('restoreBtn').addEventListener('click',function(){
   const input=document.createElement('input');input.type='file';input.accept='.json';
