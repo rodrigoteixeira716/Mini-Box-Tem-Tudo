@@ -308,7 +308,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
     <p id="loginDescricao">Entre com sua conta da nuvem.</p>
 
     <div id="loginNormal">
-      <div class="msg">☁️ Versão 13.5.5.34 — dados sincronizados pelo Supabase.</div>
+      <div class="msg">☁️ Versão 13.5.5.35 — dados sincronizados pelo Supabase.</div>
       <label>E-mail</label>
       <input id="loginUsuario" type="email" autocomplete="username" placeholder="Seu e-mail">
       <label>Senha</label>
@@ -3505,6 +3505,10 @@ async function imprimirEtiquetaProduto(){
 }
 
 // 13.5.5.33: clique de impressão ligado diretamente pelo onclick do botão.
+
+// 13.5.5.35 — disponibiliza a função para o onclick inline do botão.
+window.imprimirEtiquetaProduto = imprimirEtiquetaProduto;
+
 $('fecharEtiquetaBtn').addEventListener('click',()=>{$('modalEtiquetaProduto').classList.add('hidden');etiquetaProdutoAtual=null;});
 
 $('salvarProdutoBtn').addEventListener('click',function(){
