@@ -273,8 +273,33 @@ body.sidebarCollapsed .sidebarBrand{display:none}
 .saleCheckoutDivider{display:flex;align-items:center;gap:10px;margin:24px 0 14px;color:#777;font-size:11px;font-weight:950;letter-spacing:.3px}
 .saleCheckoutDivider:before,.saleCheckoutDivider:after{content:"";height:1px;background:#dfe3e7;flex:1}
 
+
+@media print{
+  body.modoImpressaoEtiqueta *{visibility:hidden!important}
+  body.modoImpressaoEtiqueta #etiquetaPreview,
+  body.modoImpressaoEtiqueta #etiquetaPreview *{visibility:visible!important}
+  body.modoImpressaoEtiqueta #etiquetaPreview{
+    position:absolute!important;
+    left:0!important;
+    top:0!important;
+    width:80mm!important;
+    max-width:80mm!important;
+    margin:0!important;
+    padding:4mm!important;
+    border:0!important;
+    border-radius:0!important;
+    background:#fff!important;
+  }
+  body.modoImpressaoEtiqueta #etiquetaBarcode{
+    max-width:72mm!important;
+    height:auto!important;
+  }
+  @page{margin:4mm}
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 </head>
 <body>
 <div id="loginScreen" class="loginScreen">
@@ -283,7 +308,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
     <p id="loginDescricao">Entre com sua conta da nuvem.</p>
 
     <div id="loginNormal">
-      <div class="msg">☁️ Versão 13.5.5.26 — dados sincronizados pelo Supabase.</div>
+      <div class="msg">☁️ Versão 13.5.5.30 — dados sincronizados pelo Supabase.</div>
       <label>E-mail</label>
       <input id="loginUsuario" type="email" autocomplete="username" placeholder="Seu e-mail">
       <label>Senha</label>
@@ -299,6 +324,23 @@ body.sidebarCollapsed .sidebarBrand{display:none}
       <div class="note" style="margin-top:8px;text-align:center">Dados fictícios • nenhuma informação real da loja é carregada • alterações bloqueadas</div>
       <div id="loginMsg"></div>
     </div>
+  </div>
+</div>
+
+<div id="modalEtiquetaProduto" class="modal hidden">
+  <div class="modalBox" style="max-width:430px">
+    <h3>🏷️ Etiqueta do produto</h3>
+    <div id="etiquetaPreview" style="text-align:center;border:1px dashed #bbb;border-radius:14px;padding:18px 10px;background:#fff">
+      <div style="font-size:12px;font-weight:900">MINI BOX TEM TUDO</div>
+      <div id="etiquetaNome" style="font-size:18px;font-weight:900;margin:7px 0"></div>
+      <svg id="etiquetaBarcode"></svg>
+      <div id="etiquetaPreco" style="font-size:22px;font-weight:950;margin-top:6px"></div>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+      <button id="imprimirEtiquetaBtn" class="btn primary" type="button">🖨️ IMPRIMIR ETIQUETA</button>
+      <button id="fecharEtiquetaBtn" class="btn gray" type="button">❌ AGORA NÃO</button>
+    </div>
+    <div class="note" style="margin-top:9px;text-align:center">Você poderá imprimir novamente pela lista de produtos.</div>
   </div>
 </div>
 
@@ -615,7 +657,12 @@ body.sidebarCollapsed .sidebarBrand{display:none}
   <div class="card">
     <h2 id="ancProdutosCadastro">📦 Cadastro de produtos</h2>
     <label>Nome</label><input id="produtoNome">
-    <label>Código de barras</label><input id="produtoCodigo" inputmode="numeric">
+    <label>Código de barras / código interno</label>
+    <div class="grid2">
+      <input id="produtoCodigo" inputmode="numeric" maxlength="32" placeholder="Código de fábrica ou gere um código interno">
+      <button id="gerarCodigoProdutoBtn" class="btn blue" type="button">🎲 GERAR CÓDIGO 6 DÍGITOS</button>
+    </div>
+    <div class="note">Produtos sem código de fábrica podem receber um código interno exclusivo de 6 dígitos.</div>
     <div class="grid2">
       <div><label>Preço de custo</label><input id="produtoCusto" type="number" min="0" step="0.01"></div>
       <div><label>Preço de venda</label><input id="produtoPreco" type="number" min="0" step="0.01"></div>
@@ -1449,7 +1496,7 @@ function aplicarBloqueiosDemo(){
   document.querySelectorAll('#appMain input,#appMain textarea').forEach(el=>{
     if(!liberarIds.has(el.id))el.disabled=true;
   });
-  const bloqueados=['scanBtn','addBtn','finalizarBtn','salvarClienteBtn','cancelarClienteBtn','salvarProdutoBtn','cancelarProdutoBtn','registrarEntradaBtn','adicionarReposicaoBtn','limparCompradosReposicaoBtn','salvarCaixaBtn','salvarConfigCaixaBtn','ativarPushCaixaBtn','testarPushCaixaBtn','desativarPushCaixaBtn','sincronizarAgoraBtn','enviarLocalNuvemBtn','alterarMinhaSenhaBtn','salvarFuncionarioBtn','cancelarFuncionarioBtn','salvarMaquinaBtn','cancelarMaquinaBtn','restoreBtn','apagarBtn','confirmarRegistrarVendaBtn','salvarVendaEditBtn','confirmarExcluirVendaBtn','confirmarPagamentoFiadoBtn','salvarEdicaoFechamentoBtn','confirmarExcluirFechamentoBtn','confirmarSenhaUsuarioBtn','lembreteFecharAgoraBtn','lembreteDepoisBtn'];
+  const bloqueados=['gerarCodigoProdutoBtn','scanBtn','addBtn','finalizarBtn','salvarClienteBtn','cancelarClienteBtn','salvarProdutoBtn','cancelarProdutoBtn','registrarEntradaBtn','adicionarReposicaoBtn','limparCompradosReposicaoBtn','salvarCaixaBtn','salvarConfigCaixaBtn','ativarPushCaixaBtn','testarPushCaixaBtn','desativarPushCaixaBtn','sincronizarAgoraBtn','enviarLocalNuvemBtn','alterarMinhaSenhaBtn','salvarFuncionarioBtn','cancelarFuncionarioBtn','salvarMaquinaBtn','cancelarMaquinaBtn','restoreBtn','apagarBtn','confirmarRegistrarVendaBtn','salvarVendaEditBtn','confirmarExcluirVendaBtn','confirmarPagamentoFiadoBtn','salvarEdicaoFechamentoBtn','confirmarExcluirFechamentoBtn','confirmarSenhaUsuarioBtn','lembreteFecharAgoraBtn','lembreteDepoisBtn'];
   bloqueados.forEach(id=>{const b=$(id);if(b){b.classList.add('demo-bloqueado');b.setAttribute('aria-disabled','true');b.title='Bloqueado no modo demonstração';}});
   if($('cloudStatus'))$('cloudStatus').innerHTML='<b>👁️ Ambiente de demonstração</b><br><span class="small">Nenhum dado real da loja é consultado. Apenas o contador anônimo de acesso à demonstração pode ser enviado ao Supabase.</span>';
   if($('pushCaixaStatus'))$('pushCaixaStatus').innerHTML='🔔 Push externo disponível na versão real. Testes ficam bloqueados no modo demonstração.';
@@ -3329,14 +3376,96 @@ function limparProdutoForm(){
   ['produtoNome','produtoCodigo','produtoCusto','produtoPreco','produtoEstoque'].forEach(id=>$(id).value='');
   $('produtoMinimo').value='3';$('cancelarProdutoBtn').classList.add('hidden');$('salvarProdutoBtn').textContent='💾 SALVAR';
 }
+function gerarCodigoInternoProduto(){
+  // Faixa 100000–999999: sempre exatamente 6 dígitos.
+  for(let tentativa=0;tentativa<1000;tentativa++){
+    const codigo=String(Math.floor(100000+Math.random()*900000));
+    if(!Object.prototype.hasOwnProperty.call(produtos,codigo))return codigo;
+  }
+  throw new Error('Não foi possível encontrar um código interno livre.');
+}
+
+$('gerarCodigoProdutoBtn').addEventListener('click',function(){
+  if(document.body.classList.contains('modo-demo'))return;
+  try{
+    const codigo=gerarCodigoInternoProduto();
+    $('produtoCodigo').value=codigo;
+    $('produtoMsg').innerHTML='<div class="msg ok">🎲 Código interno gerado: <b>'+esc(codigo)+'</b>. Agora preencha os demais dados e salve o produto.</div>';
+    beep();
+  }catch(e){
+    $('produtoMsg').innerHTML='<div class="msg err">❌ '+esc(e.message||String(e))+'</div>';
+  }
+});
+
+let etiquetaProdutoAtual=null;
+
+function abrirEtiquetaProduto(codigo){
+  const p=produtos[codigo];
+  if(!p)return;
+  etiquetaProdutoAtual={codigo:String(codigo),nome:String(p.nome||''),preco:num(p.preco)};
+  $('etiquetaNome').textContent=etiquetaProdutoAtual.nome;
+  $('etiquetaPreco').textContent=money(etiquetaProdutoAtual.preco);
+  try{
+    if(typeof JsBarcode!=='function')throw new Error('Gerador de código de barras não carregado.');
+    JsBarcode('#etiquetaBarcode',etiquetaProdutoAtual.codigo,{
+      format:'CODE128',
+      displayValue:true,
+      fontSize:18,
+      height:62,
+      margin:8,
+      background:'#ffffff',
+      lineColor:'#000000'
+    });
+    $('modalEtiquetaProduto').classList.remove('hidden');
+  }catch(e){
+    alert('Não foi possível gerar a etiqueta agora. Verifique a internet e tente novamente.');
+  }
+}
+
+function imprimirEtiquetaProduto(){
+  if(!etiquetaProdutoAtual)return;
+
+  const area=$('etiquetaPreview');
+  if(!area)return;
+
+  // Imprime a própria etiqueta exibida no modal, sem window.open/pop-up.
+  const classe='modoImpressaoEtiqueta';
+  document.body.classList.add(classe);
+
+  const limpar=()=>document.body.classList.remove(classe);
+  window.addEventListener('afterprint',limpar,{once:true});
+
+  // Pequeno atraso garante que o navegador aplique o CSS de impressão.
+  setTimeout(()=>{
+    try{
+      window.print();
+    }catch(e){
+      limpar();
+      alert('Não foi possível abrir a impressão neste navegador.');
+    }
+    // Segurança para ambientes que não disparam afterprint.
+    setTimeout(limpar,1500);
+  },80);
+}
+
+$('imprimirEtiquetaBtn').addEventListener('click',imprimirEtiquetaProduto);
+$('fecharEtiquetaBtn').addEventListener('click',()=>{$('modalEtiquetaProduto').classList.add('hidden');etiquetaProdutoAtual=null;});
+
 $('salvarProdutoBtn').addEventListener('click',function(){
   const nome=$('produtoNome').value.trim(),codigo=$('produtoCodigo').value.trim();
   const custo=num($('produtoCusto').value),preco=num($('produtoPreco').value);
   const estoque=num($('produtoEstoque').value),minimo=Math.max(0,num($('produtoMinimo').value));
   if(!nome||!codigo||preco<0||custo<0){alert('Preencha nome, código e preços corretamente.');return;}
+  if(Object.prototype.hasOwnProperty.call(produtos,codigo) && produtoEditando!==codigo){
+    alert('Este código já pertence a outro produto. Use o código existente ou gere outro código interno.');
+    $('produtoCodigo').focus();
+    return;
+  }
+  const eraEdicao=!!produtoEditando;
   if(produtoEditando&&produtoEditando!==codigo)delete produtos[produtoEditando];
   produtos[codigo]={nome,preco,custo,estoque,minimo};persist();limparProdutoForm();atualizarTudo();
   $('produtoMsg').innerHTML='<div class="msg ok">✅ Produto salvo!</div>';beep();
+  if(!eraEdicao)abrirEtiquetaProduto(codigo);
 });
 $('cancelarProdutoBtn').addEventListener('click',limparProdutoForm);
 
@@ -3362,6 +3491,7 @@ function renderProdutos(){
       <td>Venda ${money(p.preco)}<br><small>Custo ${money(p.custo)} · Lucro un. ${money(num(p.preco)-num(p.custo))}</small></td>
       <td><span class="badge ${baixo?'low':'okstock'}">${num(p.estoque)} un.</span><br><small>mín. ${num(p.minimo)}</small></td>
       <td><button type="button" class="btn primary action reporProduto" data-c="${encodeURIComponent(c)}" title="Adicionar à lista de reposição">🛍️</button>
+      <button type="button" class="btn blue action etiquetaProduto" data-c="${encodeURIComponent(c)}" title="Imprimir etiqueta">🏷️</button>
       <button type="button" class="btn gray action editProduto" data-c="${encodeURIComponent(c)}">✏️</button>
       <button type="button" class="btn red action delProduto" data-c="${encodeURIComponent(c)}">🗑</button></td>
     </tr>`;
@@ -3369,13 +3499,18 @@ function renderProdutos(){
 }
 $('buscaProdutos').addEventListener('input',renderProdutos);
 $('listaProdutos').addEventListener('click',e=>{
-  const repor=e.target.closest('.reporProduto'),edit=e.target.closest('.editProduto'),del=e.target.closest('.delProduto');
+  const repor=e.target.closest('.reporProduto'),etiqueta=e.target.closest('.etiquetaProduto'),edit=e.target.closest('.editProduto'),del=e.target.closest('.delProduto');
   if(repor){
     const c=decodeURIComponent(repor.dataset.c),p=produtos[c];if(!p)return;
     abrirAbaSidebar('estoque');mostrarSomenteFuncao('estoque','ancEstoqueReposicao');
     abrirSubmenuDoBotao(document.querySelector('.sidebarMain[data-menu-tab="estoque"]'));
     $('reposicaoProduto').value=c;$('reposicaoCusto').value=num(p.custo)||'';$('reposicaoQtd').value='1';atualizarInfoReposicao();
     setTimeout(()=>{$('reposicaoQtd').focus();$('ancEstoqueReposicao').scrollIntoView({behavior:'smooth',block:'start'});},80);return;
+  }
+  if(etiqueta){
+    const c=decodeURIComponent(etiqueta.dataset.c);
+    abrirEtiquetaProduto(c);
+    return;
   }
   if(edit){
     const c=decodeURIComponent(edit.dataset.c),p=produtos[c];if(!p)return;
@@ -4837,7 +4972,7 @@ $('apagarBtn').addEventListener('click',function(){
 });
 
 const DEMO_WRITE_SELECTORS=[
-  '#scanBtn','#addBtn','#finalizarBtn','#salvarClienteBtn','#cancelarClienteBtn','#salvarProdutoBtn','#cancelarProdutoBtn','#registrarEntradaBtn','#adicionarReposicaoBtn','#limparCompradosReposicaoBtn','.reposicaoComprado','.reposicaoExcluir',
+  '#gerarCodigoProdutoBtn','#scanBtn','#addBtn','#finalizarBtn','#salvarClienteBtn','#cancelarClienteBtn','#salvarProdutoBtn','#cancelarProdutoBtn','#registrarEntradaBtn','#adicionarReposicaoBtn','#limparCompradosReposicaoBtn','.reposicaoComprado','.reposicaoExcluir',
   '#salvarCaixaBtn','#salvarConfigCaixaBtn','#ativarPushCaixaBtn','#testarPushCaixaBtn','#desativarPushCaixaBtn','#sincronizarAgoraBtn','#enviarLocalNuvemBtn',
   '#alterarMinhaSenhaBtn','#salvarFuncionarioBtn','#cancelarFuncionarioBtn','#salvarMaquinaBtn','#cancelarMaquinaBtn','#restoreBtn','#apagarBtn',
   '#confirmarRegistrarVendaBtn','#salvarVendaEditBtn','#confirmarExcluirVendaBtn','#confirmarPagamentoFiadoBtn','#salvarEdicaoFechamentoBtn','#confirmarExcluirFechamentoBtn','#confirmarSenhaUsuarioBtn',
