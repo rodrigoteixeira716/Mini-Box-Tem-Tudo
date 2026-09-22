@@ -308,7 +308,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
     <p id="loginDescricao">Entre com sua conta da nuvem.</p>
 
     <div id="loginNormal">
-      <div class="msg">☁️ Versão 13.5.5.30 — dados sincronizados pelo Supabase.</div>
+      <div class="msg">☁️ Versão 13.5.5.33 DIAGNÓSTICO — dados sincronizados pelo Supabase.</div>
       <label>E-mail</label>
       <input id="loginUsuario" type="email" autocomplete="username" placeholder="Seu e-mail">
       <label>Senha</label>
@@ -337,7 +337,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
       <div id="etiquetaPreco" style="font-size:22px;font-weight:950;margin-top:6px"></div>
     </div>
     <div class="grid2" style="margin-top:14px">
-      <button id="imprimirEtiquetaBtn" class="btn primary" type="button">🖨️ IMPRIMIR ETIQUETA</button>
+      <button id="imprimirEtiquetaBtn" class="btn primary" type="button" onclick="alert('🔎 CLIQUE DIRETO FUNCIONOU!'); imprimirEtiquetaProduto();">🖨️ IMPRIMIR ETIQUETA</button>
       <button id="fecharEtiquetaBtn" class="btn gray" type="button">❌ AGORA NÃO</button>
     </div>
     <div class="note" style="margin-top:9px;text-align:center">Você poderá imprimir novamente pela lista de produtos.</div>
@@ -3422,33 +3422,90 @@ function abrirEtiquetaProduto(codigo){
   }
 }
 
-function imprimirEtiquetaProduto(){
-  if(!etiquetaProdutoAtual)return;
+async function imprimirEtiquetaProduto(){
+  alert('🔎 DIAGNÓSTICO: o botão IMPRIMIR ETIQUETA foi acionado!');
+  if(!etiquetaProdutoAtual){
+    alert('⚠️ DIAGNÓSTICO: o clique chegou à função, mas etiquetaProdutoAtual está vazio.');
+    return;
+  }
 
-  const area=$('etiquetaPreview');
-  if(!area)return;
+  try{
+    const svgEl=$('etiquetaBarcode');
+    if(!svgEl)throw new Error('Código de barras não encontrado.');
 
-  // Imprime a própria etiqueta exibida no modal, sem window.open/pop-up.
-  const classe='modoImpressaoEtiqueta';
-  document.body.classList.add(classe);
+    const svgTexto=new XMLSerializer().serializeToString(svgEl);
+    const svgBlob=new Blob([svgTexto],{type:'image/svg+xml;charset=utf-8'});
+    const svgUrl=URL.createObjectURL(svgBlob);
 
-  const limpar=()=>document.body.classList.remove(classe);
-  window.addEventListener('afterprint',limpar,{once:true});
+    const img=new Image();
+    await new Promise((resolve,reject)=>{
+      img.onload=resolve;
+      img.onerror=reject;
+      img.src=svgUrl;
+    });
 
-  // Pequeno atraso garante que o navegador aplique o CSS de impressão.
-  setTimeout(()=>{
-    try{
-      window.print();
-    }catch(e){
-      limpar();
-      alert('Não foi possível abrir a impressão neste navegador.');
+    const canvas=document.createElement('canvas');
+    const largura=900;
+    const altura=560;
+    canvas.width=largura;
+    canvas.height=altura;
+    const ctx=canvas.getContext('2d');
+
+    ctx.fillStyle='#fff';
+    ctx.fillRect(0,0,largura,altura);
+    ctx.fillStyle='#000';
+    ctx.textAlign='center';
+
+    ctx.font='bold 30px Arial';
+    ctx.fillText('MINI BOX TEM TUDO',largura/2,55);
+
+    ctx.font='bold 42px Arial';
+    const nome=String(etiquetaProdutoAtual.nome||'');
+    ctx.fillText(nome.length>34?nome.slice(0,31)+'...':nome,largura/2,115);
+
+    const maxW=760,maxH=250;
+    const escala=Math.min(maxW/img.width,maxH/img.height);
+    const w=img.width*escala,h=img.height*escala;
+    ctx.drawImage(img,(largura-w)/2,145,w,h);
+
+    ctx.font='bold 54px Arial';
+    ctx.fillText(money(etiquetaProdutoAtual.preco),largura/2,510);
+
+    URL.revokeObjectURL(svgUrl);
+
+    const blob=await new Promise((resolve,reject)=>{
+      canvas.toBlob(b=>b?resolve(b):reject(new Error('Falha ao gerar imagem.')),'image/png',1);
+    });
+
+    const nomeArquivo='etiqueta-'+String(etiquetaProdutoAtual.codigo).replace(/[^0-9A-Za-z_-]/g,'')+'.png';
+    const arquivo=new File([blob],nomeArquivo,{type:'image/png'});
+
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[arquivo]})){
+      await navigator.share({
+        files:[arquivo],
+        title:'Etiqueta - '+etiquetaProdutoAtual.nome,
+        text:'Etiqueta do produto '+etiquetaProdutoAtual.nome
+      });
+      return;
     }
-    // Segurança para ambientes que não disparam afterprint.
-    setTimeout(limpar,1500);
-  },80);
+
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=nomeArquivo;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    alert('🏷️ Etiqueta gerada! A imagem foi salva/baixada neste aparelho.');
+  }catch(e){
+    if(e && e.name==='AbortError')return;
+    console.error(e);
+    alert('❌ Não foi possível gerar a etiqueta: '+(e?.message||String(e)));
+  }
 }
 
-$('imprimirEtiquetaBtn').addEventListener('click',imprimirEtiquetaProduto);
+// 13.5.5.33: clique de impressão ligado diretamente pelo onclick do botão.
 $('fecharEtiquetaBtn').addEventListener('click',()=>{$('modalEtiquetaProduto').classList.add('hidden');etiquetaProdutoAtual=null;});
 
 $('salvarProdutoBtn').addEventListener('click',function(){
