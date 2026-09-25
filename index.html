@@ -3552,7 +3552,15 @@ $('listaProdutos').addEventListener('click',e=>{
   if(desativar){
     const c=decodeURIComponent(desativar.dataset.c),p=produtos[c];if(!p)return;
     if(confirm('Desativar o produto "'+p.nome+'"? Ele será movido para Produtos desativados.')){
-      p.ativo=false;persist();atualizarTudo();
+      p.ativo=false;
+      persist();
+      atualizarTudo();
+      mostrarSomenteFuncao('produtos','ancProdutosDesativados');
+      document.querySelectorAll('.sidebarSub').forEach(b=>b.classList.toggle(
+        'active',
+        b.dataset.goTab==='produtos' && b.dataset.target==='ancProdutosDesativados'
+      ));
+      abrirSubmenuDoBotao(document.querySelector('.sidebarMain[data-menu-tab="produtos"]'));
     }
     return;
   }
@@ -3567,7 +3575,15 @@ $('listaProdutosDesativados').addEventListener('click',e=>{
   if(!reativar)return;
   const c=decodeURIComponent(reativar.dataset.c),p=produtos[c];if(!p)return;
   if(confirm('Reativar o produto "'+p.nome+'"?')){
-    p.ativo=true;persist();atualizarTudo();
+    p.ativo=true;
+    persist();
+    atualizarTudo();
+    mostrarSomenteFuncao('produtos','ancProdutosLista');
+    document.querySelectorAll('.sidebarSub').forEach(b=>b.classList.toggle(
+      'active',
+      b.dataset.goTab==='produtos' && b.dataset.target==='ancProdutosLista'
+    ));
+    abrirSubmenuDoBotao(document.querySelector('.sidebarMain[data-menu-tab="produtos"]'));
   }
 });
 
