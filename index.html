@@ -364,6 +364,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
     <div class="sidebarSubs">
       <button class="sidebarSub" data-go-tab="produtos" data-target="ancProdutosCadastro">Cadastrar produto</button>
       <button class="sidebarSub" data-go-tab="produtos" data-target="ancProdutosLista">Produtos cadastrados</button>
+      <button class="sidebarSub" data-go-tab="produtos" data-target="ancProdutosDesativados">Produtos desativados</button>
     </div>
   </div>
 
@@ -657,6 +658,12 @@ body.sidebarCollapsed .sidebarBrand{display:none}
     <div class="searchBox"><span class="searchIcon">🔎</span><input id="buscaProdutos" placeholder="Buscar por nome ou código de barras"></div>
     <div id="resultadoBuscaProdutos" class="small"></div>
     <div id="listaProdutos"></div>
+  </div>
+  <div class="card">
+    <h3 id="ancProdutosDesativados">⏸️ Produtos desativados</h3>
+    <div class="searchBox"><span class="searchIcon">🔎</span><input id="buscaProdutosDesativados" placeholder="Buscar produto desativado por nome ou código"></div>
+    <div id="resultadoBuscaProdutosDesativados" class="small"></div>
+    <div id="listaProdutosDesativados"></div>
   </div>
 </section>
 
@@ -3460,36 +3467,70 @@ $('cancelarProdutoBtn').addEventListener('click',limparProdutoForm);
 
 function renderProdutos(){
   const termo=String($('buscaProdutos')?.value||'').trim().toLowerCase();
-  const todos=Object.entries(produtos).sort((a,b)=>a[1].nome.localeCompare(b[1].nome,'pt-BR'));
-  const a=termo?todos.filter(([c,p])=>
+  const todosAtivos=Object.entries(produtos)
+    .filter(([,p])=>p.ativo!==false)
+    .sort((a,b)=>a[1].nome.localeCompare(b[1].nome,'pt-BR'));
+  const a=termo?todosAtivos.filter(([c,p])=>
     String(p.nome||'').toLowerCase().includes(termo) ||
     String(c).toLowerCase().includes(termo)
-  ):todos;
+  ):todosAtivos;
 
   if($('resultadoBuscaProdutos')){
     $('resultadoBuscaProdutos').textContent=termo
-      ? a.length+' produto(s) encontrado(s)'
-      : todos.length+' produto(s) cadastrado(s)';
+      ? a.length+' produto(s) ativo(s) encontrado(s)'
+      : todosAtivos.length+' produto(s) ativo(s)';
   }
 
   $('listaProdutos').innerHTML=a.length?'<table><tr><th>Produto</th><th>Valores</th><th>Estoque</th><th>Ações</th></tr>'+
   a.map(([c,p])=>{
     const baixo=num(p.estoque)<=num(p.minimo);
     return `<tr>
-      <td><b>${esc(p.nome)}</b><br><small>${esc(c)}</small><br><span class="badge ${p.ativo===false?'low':'okstock'}">${p.ativo===false?'INATIVO':'ATIVO'}</span></td>
+      <td><b>${esc(p.nome)}</b><br><small>${esc(c)}</small></td>
       <td>Venda ${money(p.preco)}<br><small>Custo ${money(p.custo)} · Lucro un. ${money(num(p.preco)-num(p.custo))}</small></td>
       <td><span class="badge ${baixo?'low':'okstock'}">${num(p.estoque)} un.</span><br><small>mín. ${num(p.minimo)}</small></td>
       <td><button type="button" class="btn primary action reporProduto" data-c="${encodeURIComponent(c)}" title="Adicionar à lista de reposição">🛍️</button>
       <button type="button" class="btn blue action etiquetaProduto" data-c="${encodeURIComponent(c)}" title="Imprimir etiqueta">🏷️</button>
       <button type="button" class="btn gray action editProduto" data-c="${encodeURIComponent(c)}">✏️</button>
-      <button type="button" class="btn ${p.ativo===false?'primary':'gray'} action toggleProduto" data-c="${encodeURIComponent(c)}">${p.ativo===false?'✅ Reativar':'⏸️ Desativar'}</button>
+      <button type="button" class="btn gray action desativarProduto" data-c="${encodeURIComponent(c)}">⏸️ Desativar</button>
       <button type="button" class="btn red action delProduto" data-c="${encodeURIComponent(c)}">🗑</button></td>
     </tr>`;
-  }).join('')+'</table>':(termo?'Nenhum produto encontrado.':'Nenhum produto cadastrado.');
+  }).join('')+'</table>':(termo?'Nenhum produto ativo encontrado.':'Nenhum produto ativo cadastrado.');
+
+  renderProdutosDesativados();
 }
+
+function renderProdutosDesativados(){
+  const box=$('listaProdutosDesativados');
+  if(!box)return;
+  const termo=String($('buscaProdutosDesativados')?.value||'').trim().toLowerCase();
+  const todos=Object.entries(produtos)
+    .filter(([,p])=>p.ativo===false)
+    .sort((a,b)=>a[1].nome.localeCompare(b[1].nome,'pt-BR'));
+  const a=termo?todos.filter(([c,p])=>
+    String(p.nome||'').toLowerCase().includes(termo) ||
+    String(c).toLowerCase().includes(termo)
+  ):todos;
+
+  if($('resultadoBuscaProdutosDesativados')){
+    $('resultadoBuscaProdutosDesativados').textContent=termo
+      ? a.length+' produto(s) desativado(s) encontrado(s)'
+      : todos.length+' produto(s) desativado(s)';
+  }
+
+  box.innerHTML=a.length?'<table><tr><th>Produto</th><th>Valores</th><th>Estoque</th><th>Ação</th></tr>'+
+  a.map(([c,p])=>`<tr>
+      <td><b>${esc(p.nome)}</b><br><small>${esc(c)}</small><br><span class="badge low">INATIVO</span></td>
+      <td>Venda ${money(p.preco)}<br><small>Custo ${money(p.custo)}</small></td>
+      <td>${num(p.estoque)} un.<br><small>mín. ${num(p.minimo)}</small></td>
+      <td><button type="button" class="btn primary action reativarProduto" data-c="${encodeURIComponent(c)}">✅ Reativar</button></td>
+    </tr>`).join('')+'</table>':(termo?'Nenhum produto desativado encontrado.':'Nenhum produto desativado.');
+}
+
 $('buscaProdutos').addEventListener('input',renderProdutos);
+$('buscaProdutosDesativados').addEventListener('input',renderProdutosDesativados);
+
 $('listaProdutos').addEventListener('click',e=>{
-  const repor=e.target.closest('.reporProduto'),etiqueta=e.target.closest('.etiquetaProduto'),edit=e.target.closest('.editProduto'),toggle=e.target.closest('.toggleProduto'),del=e.target.closest('.delProduto');
+  const repor=e.target.closest('.reporProduto'),etiqueta=e.target.closest('.etiquetaProduto'),edit=e.target.closest('.editProduto'),desativar=e.target.closest('.desativarProduto'),del=e.target.closest('.delProduto');
   if(repor){
     const c=decodeURIComponent(repor.dataset.c),p=produtos[c];if(!p)return;
     abrirAbaSidebar('estoque');mostrarSomenteFuncao('estoque','ancEstoqueReposicao');
@@ -3497,42 +3538,36 @@ $('listaProdutos').addEventListener('click',e=>{
     $('reposicaoProduto').value=c;$('reposicaoCusto').value=num(p.custo)||'';$('reposicaoQtd').value='1';atualizarInfoReposicao();
     setTimeout(()=>{$('reposicaoQtd').focus();$('ancEstoqueReposicao').scrollIntoView({behavior:'smooth',block:'start'});},80);return;
   }
-  if(etiqueta){
-    const c=decodeURIComponent(etiqueta.dataset.c);
-    abrirEtiquetaProduto(c);
-    return;
-  }
+  if(etiqueta){ abrirEtiquetaProduto(decodeURIComponent(etiqueta.dataset.c)); return; }
   if(edit){
     const c=decodeURIComponent(edit.dataset.c),p=produtos[c];if(!p)return;
     produtoEditando=c;$('produtoNome').value=p.nome;$('produtoCodigo').value=c;$('produtoCusto').value=p.custo;
     $('produtoPreco').value=p.preco;$('produtoEstoque').value=p.estoque;$('produtoMinimo').value=p.minimo;
     $('cancelarProdutoBtn').classList.remove('hidden');$('salvarProdutoBtn').textContent='💾 ATUALIZAR';
-
-    // A lista e o formulário são funções separadas no menu lateral.
-    // Ao editar, abre automaticamente o card de Cadastro para tornar o formulário visível.
-    abrirAbaSidebar('produtos');
-    mostrarSomenteFuncao('produtos','ancProdutosCadastro');
+    abrirAbaSidebar('produtos');mostrarSomenteFuncao('produtos','ancProdutosCadastro');
     abrirSubmenuDoBotao(document.querySelector('.sidebarMain[data-menu-tab="produtos"]'));
-    document.querySelectorAll('.sidebarSub').forEach(b=>b.classList.toggle(
-      'active',
-      b.dataset.goTab==='produtos' && b.dataset.target==='ancProdutosCadastro'
-    ));
-    setTimeout(()=>{ $('ancProdutosCadastro').scrollIntoView({behavior:'smooth',block:'start'}); },90);
-    return;
+    document.querySelectorAll('.sidebarSub').forEach(b=>b.classList.toggle('active',b.dataset.goTab==='produtos' && b.dataset.target==='ancProdutosCadastro'));
+    setTimeout(()=>{$('ancProdutosCadastro').scrollIntoView({behavior:'smooth',block:'start'});},90);return;
   }
-  if(toggle){
-    const c=decodeURIComponent(toggle.dataset.c),p=produtos[c];if(!p)return;
-    const vaiAtivar=p.ativo===false;
-    if(confirm((vaiAtivar?'Reativar':'Desativar')+' o produto "'+p.nome+'"?')){
-      p.ativo=vaiAtivar;
-      persist();
-      atualizarTudo();
+  if(desativar){
+    const c=decodeURIComponent(desativar.dataset.c),p=produtos[c];if(!p)return;
+    if(confirm('Desativar o produto "'+p.nome+'"? Ele será movido para Produtos desativados.')){
+      p.ativo=false;persist();atualizarTudo();
     }
     return;
   }
   if(del){
     const c=decodeURIComponent(del.dataset.c),p=produtos[c];if(!p)return;
     if(confirm('Excluir o produto "'+p.nome+'"?')){delete produtos[c];persist();atualizarTudo();}
+  }
+});
+
+$('listaProdutosDesativados').addEventListener('click',e=>{
+  const reativar=e.target.closest('.reativarProduto');
+  if(!reativar)return;
+  const c=decodeURIComponent(reativar.dataset.c),p=produtos[c];if(!p)return;
+  if(confirm('Reativar o produto "'+p.nome+'"?')){
+    p.ativo=true;persist();atualizarTudo();
   }
 });
 
