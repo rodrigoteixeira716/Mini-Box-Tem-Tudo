@@ -1379,7 +1379,8 @@ function migrarProdutos(){
       preco:num(p.preco),
       custo:num(p.custo),
       estoque:Number.isFinite(Number(p.estoque))?Number(p.estoque):0,
-      minimo:Number.isFinite(Number(p.minimo))?Number(p.minimo):3
+      minimo:Number.isFinite(Number(p.minimo))?Number(p.minimo):3,
+      ativo:p.ativo!==false
     };
   });
 }
