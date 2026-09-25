@@ -273,6 +273,30 @@ body.sidebarCollapsed .sidebarBrand{display:none}
 .saleCheckoutDivider{display:flex;align-items:center;gap:10px;margin:24px 0 14px;color:#777;font-size:11px;font-weight:950;letter-spacing:.3px}
 .saleCheckoutDivider:before,.saleCheckoutDivider:after{content:"";height:1px;background:#dfe3e7;flex:1}
 
+
+@media print{
+  body.modoImpressaoEtiqueta *{visibility:hidden!important}
+  body.modoImpressaoEtiqueta #etiquetaPreview,
+  body.modoImpressaoEtiqueta #etiquetaPreview *{visibility:visible!important}
+  body.modoImpressaoEtiqueta #etiquetaPreview{
+    position:absolute!important;
+    left:0!important;
+    top:0!important;
+    width:80mm!important;
+    max-width:80mm!important;
+    margin:0!important;
+    padding:4mm!important;
+    border:0!important;
+    border-radius:0!important;
+    background:#fff!important;
+  }
+  body.modoImpressaoEtiqueta #etiquetaBarcode{
+    max-width:72mm!important;
+    height:auto!important;
+  }
+  @page{margin:4mm}
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
@@ -284,7 +308,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
     <p id="loginDescricao">Entre com sua conta da nuvem.</p>
 
     <div id="loginNormal">
-      <div class="msg">☁️ Versão 13.5.5.29 — dados sincronizados pelo Supabase.</div>
+      <div class="msg">☁️ Versão 13.5.5.30 — dados sincronizados pelo Supabase.</div>
       <label>E-mail</label>
       <input id="loginUsuario" type="email" autocomplete="username" placeholder="Seu e-mail">
       <label>Senha</label>
@@ -3400,35 +3424,28 @@ function abrirEtiquetaProduto(codigo){
 
 function imprimirEtiquetaProduto(){
   if(!etiquetaProdutoAtual)return;
-  const svg=$('etiquetaBarcode').outerHTML;
-  const nome=esc(etiquetaProdutoAtual.nome);
-  const preco=esc(money(etiquetaProdutoAtual.preco));
-  const w=window.open('','_blank','width=520,height=650');
-  if(!w){alert('O navegador bloqueou a janela de impressão. Permita pop-ups e tente novamente.');return;}
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Etiqueta - ${nome}</title>
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;padding:12px;font-family:Arial,sans-serif;color:#000;background:#fff}
-    .etiqueta{width:360px;max-width:100%;margin:auto;text-align:center;border:1px dashed #999;padding:14px}
-    .loja{font-size:12px;font-weight:900}
-    .nome{font-size:19px;font-weight:900;margin:7px 0 3px}
-    svg{max-width:100%;height:auto}
-    .preco{font-size:24px;font-weight:900;margin-top:4px}
-    @media print{
-      body{padding:0}
-      .etiqueta{border:0;margin:0}
-      @page{margin:5mm}
+
+  const area=$('etiquetaPreview');
+  if(!area)return;
+
+  // Imprime a própria etiqueta exibida no modal, sem window.open/pop-up.
+  const classe='modoImpressaoEtiqueta';
+  document.body.classList.add(classe);
+
+  const limpar=()=>document.body.classList.remove(classe);
+  window.addEventListener('afterprint',limpar,{once:true});
+
+  // Pequeno atraso garante que o navegador aplique o CSS de impressão.
+  setTimeout(()=>{
+    try{
+      window.print();
+    }catch(e){
+      limpar();
+      alert('Não foi possível abrir a impressão neste navegador.');
     }
-  </style></head><body>
-  <div class="etiqueta">
-    <div class="loja">MINI BOX TEM TUDO</div>
-    <div class="nome">${nome}</div>
-    ${svg}
-    <div class="preco">${preco}</div>
-  </div>
-  <script>window.onload=function(){setTimeout(function(){window.print();},150)};<\/script>
-  </body></html>`);
-  w.document.close();
+    // Segurança para ambientes que não disparam afterprint.
+    setTimeout(limpar,1500);
+  },80);
 }
 
 $('imprimirEtiquetaBtn').addEventListener('click',imprimirEtiquetaProduto);
