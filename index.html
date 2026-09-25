@@ -661,8 +661,6 @@ body.sidebarCollapsed .sidebarBrand{display:none}
   </div>
   <div class="card">
     <h3 id="ancProdutosDesativados">⏸️ Produtos desativados</h3>
-    <div class="searchBox"><span class="searchIcon">🔎</span><input id="buscaProdutosDesativados" placeholder="Buscar produto desativado por nome ou código"></div>
-    <div id="resultadoBuscaProdutosDesativados" class="small"></div>
     <div id="listaProdutosDesativados"></div>
   </div>
 </section>
@@ -2818,13 +2816,13 @@ function prepararProdutoParaVenda(origemScanner=false){
   if(!codigo){alert('Digite ou escaneie o código do produto.');return;}
 
   let p=produtos[codigo];
-  if(!p && origemScanner){
-    mostrarScannerStatus('⚠️ O código lido não está cadastrado. Nenhum item foi adicionado.','err');
+  if(p && p.ativo===false){
+    if(origemScanner)mostrarScannerStatus('⚠️ Este produto está desativado. Reative-o em Produtos > Produtos desativados.','err');
+    else alert('Este produto está desativado. Reative-o em Produtos > Produtos desativados.');
     return;
   }
-
-  if(p && p.ativo===false){
-    alert('Este produto está desativado. Reative-o na lista de produtos antes de vender.');
+  if(!p && origemScanner){
+    mostrarScannerStatus('⚠️ O código lido não está cadastrado. Nenhum item foi adicionado.','err');
     return;
   }
 
@@ -3458,7 +3456,7 @@ $('salvarProdutoBtn').addEventListener('click',function(){
   }
   const eraEdicao=!!produtoEditando;
   if(produtoEditando&&produtoEditando!==codigo)delete produtos[produtoEditando];
-  const ativoAnterior=produtoEditando && produtos[produtoEditando] ? produtos[produtoEditando].ativo!==false : true;
+  const ativoAnterior=produtoEditando&&produtos[produtoEditando]?produtos[produtoEditando].ativo!==false:true;
   produtos[codigo]={nome,preco,custo,estoque,minimo,ativo:ativoAnterior};persist();limparProdutoForm();atualizarTudo();
   $('produtoMsg').innerHTML='<div class="msg ok">✅ Produto salvo!</div>';beep();
   if(!eraEdicao)abrirEtiquetaProduto(codigo);
@@ -3467,18 +3465,16 @@ $('cancelarProdutoBtn').addEventListener('click',limparProdutoForm);
 
 function renderProdutos(){
   const termo=String($('buscaProdutos')?.value||'').trim().toLowerCase();
-  const todosAtivos=Object.entries(produtos)
-    .filter(([,p])=>p.ativo!==false)
-    .sort((a,b)=>a[1].nome.localeCompare(b[1].nome,'pt-BR'));
-  const a=termo?todosAtivos.filter(([c,p])=>
+  const todos=Object.entries(produtos).filter(([,p])=>p.ativo!==false).sort((a,b)=>a[1].nome.localeCompare(b[1].nome,'pt-BR'));
+  const a=termo?todos.filter(([c,p])=>
     String(p.nome||'').toLowerCase().includes(termo) ||
     String(c).toLowerCase().includes(termo)
-  ):todosAtivos;
+  ):todos;
 
   if($('resultadoBuscaProdutos')){
     $('resultadoBuscaProdutos').textContent=termo
-      ? a.length+' produto(s) ativo(s) encontrado(s)'
-      : todosAtivos.length+' produto(s) ativo(s)';
+      ? a.length+' produto(s) encontrado(s)'
+      : todos.length+' produto(s) cadastrado(s)';
   }
 
   $('listaProdutos').innerHTML=a.length?'<table><tr><th>Produto</th><th>Valores</th><th>Estoque</th><th>Ações</th></tr>'+
@@ -3494,40 +3490,16 @@ function renderProdutos(){
       <button type="button" class="btn gray action desativarProduto" data-c="${encodeURIComponent(c)}">⏸️ Desativar</button>
       <button type="button" class="btn red action delProduto" data-c="${encodeURIComponent(c)}">🗑</button></td>
     </tr>`;
-  }).join('')+'</table>':(termo?'Nenhum produto ativo encontrado.':'Nenhum produto ativo cadastrado.');
+  }).join('')+'</table>':(termo?'Nenhum produto encontrado.':'Nenhum produto cadastrado.');
 
-  renderProdutosDesativados();
+  const inativos=Object.entries(produtos).filter(([,p])=>p.ativo===false).sort((a,b)=>a[1].nome.localeCompare(b[1].nome,'pt-BR'));
+  $('listaProdutosDesativados').innerHTML=inativos.length?inativos.map(([c,p])=>`
+    <div class="item between">
+      <div><b>${esc(p.nome)}</b><div class="small">${esc(c)} · estoque preservado: ${num(p.estoque)} un. · venda ${money(p.preco)}</div></div>
+      <button type="button" class="btn green action reativarProduto" data-c="${encodeURIComponent(c)}">♻️ REATIVAR</button>
+    </div>`).join(''):'Nenhum produto desativado.';
 }
-
-function renderProdutosDesativados(){
-  const box=$('listaProdutosDesativados');
-  if(!box)return;
-  const termo=String($('buscaProdutosDesativados')?.value||'').trim().toLowerCase();
-  const todos=Object.entries(produtos)
-    .filter(([,p])=>p.ativo===false)
-    .sort((a,b)=>a[1].nome.localeCompare(b[1].nome,'pt-BR'));
-  const a=termo?todos.filter(([c,p])=>
-    String(p.nome||'').toLowerCase().includes(termo) ||
-    String(c).toLowerCase().includes(termo)
-  ):todos;
-
-  if($('resultadoBuscaProdutosDesativados')){
-    $('resultadoBuscaProdutosDesativados').textContent=termo
-      ? a.length+' produto(s) desativado(s) encontrado(s)'
-      : todos.length+' produto(s) desativado(s)';
-  }
-
-  box.innerHTML=a.length?'<table><tr><th>Produto</th><th>Valores</th><th>Estoque</th><th>Ação</th></tr>'+
-  a.map(([c,p])=>`<tr>
-      <td><b>${esc(p.nome)}</b><br><small>${esc(c)}</small><br><span class="badge low">INATIVO</span></td>
-      <td>Venda ${money(p.preco)}<br><small>Custo ${money(p.custo)}</small></td>
-      <td>${num(p.estoque)} un.<br><small>mín. ${num(p.minimo)}</small></td>
-      <td><button type="button" class="btn primary action reativarProduto" data-c="${encodeURIComponent(c)}">✅ Reativar</button></td>
-    </tr>`).join('')+'</table>':(termo?'Nenhum produto desativado encontrado.':'Nenhum produto desativado.');
-}
-
 $('buscaProdutos').addEventListener('input',renderProdutos);
-$('buscaProdutosDesativados').addEventListener('input',renderProdutosDesativados);
 
 $('listaProdutos').addEventListener('click',e=>{
   const repor=e.target.closest('.reporProduto'),etiqueta=e.target.closest('.etiquetaProduto'),edit=e.target.closest('.editProduto'),desativar=e.target.closest('.desativarProduto'),del=e.target.closest('.delProduto');
@@ -3544,23 +3516,23 @@ $('listaProdutos').addEventListener('click',e=>{
     produtoEditando=c;$('produtoNome').value=p.nome;$('produtoCodigo').value=c;$('produtoCusto').value=p.custo;
     $('produtoPreco').value=p.preco;$('produtoEstoque').value=p.estoque;$('produtoMinimo').value=p.minimo;
     $('cancelarProdutoBtn').classList.remove('hidden');$('salvarProdutoBtn').textContent='💾 ATUALIZAR';
-    abrirAbaSidebar('produtos');mostrarSomenteFuncao('produtos','ancProdutosCadastro');
+    abrirAbaSidebar('produtos');
+    mostrarSomenteFuncao('produtos','ancProdutosCadastro');
     abrirSubmenuDoBotao(document.querySelector('.sidebarMain[data-menu-tab="produtos"]'));
     document.querySelectorAll('.sidebarSub').forEach(b=>b.classList.toggle('active',b.dataset.goTab==='produtos' && b.dataset.target==='ancProdutosCadastro'));
-    setTimeout(()=>{$('ancProdutosCadastro').scrollIntoView({behavior:'smooth',block:'start'});},90);return;
+    setTimeout(()=>{$('ancProdutosCadastro').scrollIntoView({behavior:'smooth',block:'start'});},90);
+    return;
   }
   if(desativar){
     const c=decodeURIComponent(desativar.dataset.c),p=produtos[c];if(!p)return;
-    if(confirm('Desativar o produto "'+p.nome+'"? Ele será movido para Produtos desativados.')){
+    if(confirm('Desativar o produto "'+p.nome+'"?')){
       p.ativo=false;
       persist();
-      atualizarTudo();
+      renderProdutos();
       mostrarSomenteFuncao('produtos','ancProdutosDesativados');
-      document.querySelectorAll('.sidebarSub').forEach(b=>b.classList.toggle(
-        'active',
-        b.dataset.goTab==='produtos' && b.dataset.target==='ancProdutosDesativados'
-      ));
+      document.querySelectorAll('.sidebarSub').forEach(b=>b.classList.toggle('active',b.dataset.goTab==='produtos' && b.dataset.target==='ancProdutosDesativados'));
       abrirSubmenuDoBotao(document.querySelector('.sidebarMain[data-menu-tab="produtos"]'));
+      beep();
     }
     return;
   }
@@ -3571,19 +3543,13 @@ $('listaProdutos').addEventListener('click',e=>{
 });
 
 $('listaProdutosDesativados').addEventListener('click',e=>{
-  const reativar=e.target.closest('.reativarProduto');
-  if(!reativar)return;
-  const c=decodeURIComponent(reativar.dataset.c),p=produtos[c];if(!p)return;
+  const bt=e.target.closest('.reativarProduto');if(!bt)return;
+  const c=decodeURIComponent(bt.dataset.c),p=produtos[c];if(!p)return;
   if(confirm('Reativar o produto "'+p.nome+'"?')){
     p.ativo=true;
     persist();
-    atualizarTudo();
-    mostrarSomenteFuncao('produtos','ancProdutosLista');
-    document.querySelectorAll('.sidebarSub').forEach(b=>b.classList.toggle(
-      'active',
-      b.dataset.goTab==='produtos' && b.dataset.target==='ancProdutosLista'
-    ));
-    abrirSubmenuDoBotao(document.querySelector('.sidebarMain[data-menu-tab="produtos"]'));
+    renderProdutos();
+    beep();
   }
 });
 
@@ -3592,7 +3558,7 @@ function preencherSelectEntrada(){
   const sel=$('entradaProdutoSelect');
   if(!sel)return;
   const atual=sel.value;
-  const lista=Object.entries(produtos).sort((a,b)=>String(a[1].nome).localeCompare(String(b[1].nome),'pt-BR'));
+  const lista=Object.entries(produtos).filter(([,p])=>p.ativo!==false).sort((a,b)=>String(a[1].nome).localeCompare(String(b[1].nome),'pt-BR'));
   sel.innerHTML='<option value="">Selecione um produto...</option>'+
     lista.map(([c,p])=>'<option value="'+esc(c)+'">'+esc(p.nome)+' — estoque: '+num(p.estoque)+'</option>').join('');
   if(produtos[atual])sel.value=atual;
@@ -3680,7 +3646,7 @@ $('registrarEntradaBtn').addEventListener('click',function(){
   }
 });
 function renderEstoque(){
-  const a=Object.entries(produtos).sort((a,b)=>num(a[1].estoque)-num(b[1].estoque));
+  const a=Object.entries(produtos).filter(([,p])=>p.ativo!==false).sort((a,b)=>num(a[1].estoque)-num(b[1].estoque));
   $('listaEstoque').innerHTML=a.length?a.map(([c,p])=>`
     <div class="item between">
       <div><b>${esc(p.nome)}</b><div class="small">${esc(c)} · custo ${money(p.custo)}</div></div>
