@@ -483,6 +483,8 @@ body.sidebarCollapsed .sidebarBrand{display:none}
       <div class="metric"><small>Clima atual</small><b id="climaCondicaoAtual">—</b></div>
       <div class="metric"><small>Temperatura</small><b id="climaTemperaturaAtual">—</b></div>
       <div class="metric"><small>Precipitação</small><b id="climaPrecipitacaoAtual">—</b></div>
+      <div class="metric"><small>Cobertura de nuvens</small><b id="climaNuvensAtual">—</b></div>
+      <div class="metric"><small>Radiação solar</small><b id="climaRadiacaoAtual">—</b></div>
     </div>
     <div id="climaStatus" class="msg" style="margin-top:10px">Aguardando consulta do clima.</div>
     <div class="sale-actions" style="margin-top:10px">
@@ -2500,17 +2502,23 @@ const CLIMA_LOJA={
 };
 let climaUltimo=null;
 
-function climaDescricaoWMO(c){
-  c=Number(c);
-  if(c===0)return 'Ensolarado';
-  if(c===1||c===2)return 'Parcialmente nublado';
-  if(c===3)return 'Nublado';
-  if([45,48].includes(c))return 'Neblina';
-  if([51,53,55,56,57].includes(c))return 'Garoa';
-  if([61,63,66,80,81].includes(c))return 'Chuva';
-  if([65,67,82].includes(c))return 'Chuva forte';
+function climaDescricaoInteligente(codigo,precipitacao,nuvens,radiacao,isDay){
+  const c=Number(codigo), p=Number(precipitacao||0), n=Number(nuvens), r=Number(radiacao), dia=Number(isDay)===1;
+  // Fenômenos relevantes sempre têm prioridade sobre nuvens/radiação.
   if([95,96,99].includes(c))return 'Tempestade';
-  return 'Condição '+c;
+  if([65,67,82].includes(c))return 'Chuva forte';
+  if(p>=0.2 || [61,63,66,80,81].includes(c))return 'Chuva';
+  if([51,53,55,56,57].includes(c))return 'Garoa';
+  if([45,48].includes(c))return 'Neblina';
+  // Para o comércio, o que importa é a presença efetiva de sol no local, não só o rótulo WMO.
+  if(dia){
+    if((Number.isFinite(r)&&r>=450) || (Number.isFinite(n)&&n<=25))return 'Ensolarado';
+    if((Number.isFinite(r)&&r>=200) || (Number.isFinite(n)&&n<=60))return 'Sol entre nuvens';
+    return 'Nublado';
+  }
+  if(Number.isFinite(n)&&n<=25)return 'Céu limpo';
+  if(Number.isFinite(n)&&n<=70)return 'Parcialmente nublado';
+  return 'Nublado';
 }
 function climaSetStatus(txt,tipo=''){
   const el=$('climaStatus'); if(!el)return;
@@ -2523,12 +2531,14 @@ function climaRender(d){
   if($('climaCondicaoAtual'))$('climaCondicaoAtual').textContent=d.condicao||'—';
   if($('climaTemperaturaAtual'))$('climaTemperaturaAtual').textContent=Number.isFinite(Number(d.temperatura))?Number(d.temperatura).toFixed(1).replace('.',',')+' °C':'—';
   if($('climaPrecipitacaoAtual'))$('climaPrecipitacaoAtual').textContent=Number.isFinite(Number(d.precipitacao))?Number(d.precipitacao).toFixed(1).replace('.',',')+' mm':'—';
+  if($('climaNuvensAtual'))$('climaNuvensAtual').textContent=Number.isFinite(Number(d.nuvens))?Math.round(Number(d.nuvens))+'%':'—';
+  if($('climaRadiacaoAtual'))$('climaRadiacaoAtual').textContent=Number.isFinite(Number(d.radiacao_solar))?Math.round(Number(d.radiacao_solar))+' W/m²':'—';
 }
 async function climaBuscarAPI(){
   const q=new URLSearchParams({
     latitude:String(CLIMA_LOJA.latitude),
     longitude:String(CLIMA_LOJA.longitude),
-    current:'temperature_2m,precipitation,weather_code',
+    current:'temperature_2m,precipitation,weather_code,cloud_cover,shortwave_radiation,is_day',
     timezone:CLIMA_LOJA.timezone
   });
   const r=await fetch('https://api.open-meteo.com/v1/forecast?'+q.toString(),{cache:'no-store'});
@@ -2539,14 +2549,17 @@ async function climaBuscarAPI(){
     temperatura:Number(c.temperature_2m),
     precipitacao:Number(c.precipitation||0),
     codigo_clima:Number(c.weather_code),
-    condicao:climaDescricaoWMO(c.weather_code),
+    nuvens:Number(c.cloud_cover),
+    radiacao_solar:Number(c.shortwave_radiation),
+    is_day:Number(c.is_day),
+    condicao:climaDescricaoInteligente(c.weather_code,c.precipitation,c.cloud_cover,c.shortwave_radiation,c.is_day),
     data_api:c.time||null
   };
 }
 async function climaUltimoRegistro(){
   if(!sb||!lojaIdNuvem)return null;
   const {data,error}=await sb.from('historico_clima')
-    .select('id,data_hora,cidade,estado,temperatura,precipitacao,codigo_clima,condicao,origem,corrigido')
+    .select('id,data_hora,cidade,estado,temperatura,precipitacao,codigo_clima,condicao,origem,corrigido,nuvens,radiacao_solar,is_day')
     .eq('loja_id',lojaIdNuvem).order('data_hora',{ascending:false}).limit(1).maybeSingle();
   if(error)throw error;
   return data||null;
@@ -2573,6 +2586,9 @@ async function climaRegistrarAutomatico(forcar=false){
       temperatura:c.temperatura,
       precipitacao:c.precipitacao,
       codigo_clima:c.codigo_clima,
+      nuvens:c.nuvens,
+      radiacao_solar:c.radiacao_solar,
+      is_day:c.is_day,
       condicao:c.condicao,
       origem:'automatico',
       observacao:'Open-Meteo · '+CLIMA_LOJA.cidade+'/'+CLIMA_LOJA.estado,
