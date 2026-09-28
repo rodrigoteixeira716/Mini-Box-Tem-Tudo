@@ -2519,7 +2519,7 @@ function climaSetStatus(txt,tipo=''){
 function climaRender(d){
   if(!d)return;
   climaUltimo=d;
-  if($('climaCidadeAtual'))$('climaCidadeAtual').textContent='Rio de Janeiro/RJ';
+  if($('climaCidadeAtual'))$('climaCidadeAtual').textContent=CLIMA_LOJA.cidade+'/'+CLIMA_LOJA.estado;
   if($('climaCondicaoAtual'))$('climaCondicaoAtual').textContent=d.condicao||'—';
   if($('climaTemperaturaAtual'))$('climaTemperaturaAtual').textContent=Number.isFinite(Number(d.temperatura))?Number(d.temperatura).toFixed(1).replace('.',',')+' °C':'—';
   if($('climaPrecipitacaoAtual'))$('climaPrecipitacaoAtual').textContent=Number.isFinite(Number(d.precipitacao))?Number(d.precipitacao).toFixed(1).replace('.',',')+' mm':'—';
@@ -2554,7 +2554,7 @@ async function climaUltimoRegistro(){
 async function climaRegistrarAutomatico(forcar=false){
   if(MODO_DEMO||!sb||!usuarioNuvem||!lojaIdNuvem)return;
   try{
-    climaSetStatus('🌦️ Consultando o clima de Rio de Janeiro/RJ...');
+    climaSetStatus('🌦️ Consultando o clima de '+CLIMA_LOJA.cidade+'/'+CLIMA_LOJA.estado+'...');
     const ultimo=await climaUltimoRegistro();
     if(!forcar && ultimo && ultimo.origem==='automatico'){
       const idade=Date.now()-new Date(ultimo.data_hora).getTime();
@@ -2575,7 +2575,7 @@ async function climaRegistrarAutomatico(forcar=false){
       codigo_clima:c.codigo_clima,
       condicao:c.condicao,
       origem:'automatico',
-      observacao:'Open-Meteo · Rio de Janeiro/RJ',
+      observacao:'Open-Meteo · '+CLIMA_LOJA.cidade+'/'+CLIMA_LOJA.estado,
       corrigido:false
     };
     const {data,error}=await sb.from('historico_clima').insert(payload).select().single();
