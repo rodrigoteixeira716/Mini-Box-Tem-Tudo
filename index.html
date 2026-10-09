@@ -468,7 +468,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
         <div class="iaFinanceiraIcone">🤖</div>
         <div>
           <h3 id="ancPainelIA">IA Financeira Interna</h3>
-          <div class="small">Analisa automaticamente vendas, lucro, taxas, estoque e tendência do mês.</div>
+          <div class="small">Analisa automaticamente vendas, lucro, taxas, estoque, tendência do mês e sinais históricos do clima.</div>
         </div>
       </div>
       <button id="iaFinanceiraAtualizar" class="iaAtualizar" type="button">↻ Analisar</button>
@@ -4233,7 +4233,74 @@ function iaPeriodoMesmoTrechoMesAnterior(agora){
 function iaInsightHtml(tipo,icone,titulo,texto){
   return '<div class="iaInsight '+tipo+'"><div class="ico">'+icone+'</div><div class="txt"><b>'+esc(titulo)+'</b><br>'+texto+'</div></div>';
 }
-function analisarFinanceiroInterno(){
+
+function iaInsightsClimaFinanceiro(registros){
+  const saida={html:[],alertas:0};
+  const dias=climaResumoPorDia(registros||[]);
+  const vendasDia=climaVendasPorDia();
+  const base=dias.map(c=>({...c,v:vendasDia[c.data]})).filter(x=>x.v&&Number.isFinite(x.media));
+
+  if(base.length<5){
+    saida.html.push(iaInsightHtml('info','🌦️','Clima ainda em aprendizado',
+      'Existem <b>'+base.length+'</b> dia(s) com clima e vendas coincidentes. A IA só começa a sugerir efeitos do clima a partir de pelo menos 5 dias comparáveis.'));
+    return saida;
+  }
+
+  const quentes=base.filter(x=>x.max>=30);
+  const amenos=base.filter(x=>x.max<30);
+  const chuvosos=base.filter(x=>x.chuva>=0.2);
+  const secos=base.filter(x=>x.chuva<0.2);
+  const resumo=g=>({
+    dias:g.length,
+    fat:g.reduce((s,x)=>s+x.v.fat,0)/Math.max(1,g.length)
+  });
+
+  const comparar=(a,b,icone,titulo,rotA,rotB)=>{
+    if(a.length<2||b.length<2)return;
+    const A=resumo(a),B=resumo(b);
+    if(!B.fat)return;
+    const pct=(A.fat-B.fat)/B.fat*100;
+    const forte=Math.abs(pct)>=15;
+    const tipo=forte?(pct>0?'good':'warn'):'info';
+    if(forte&&pct<0)saida.alertas++;
+    const orientacao=pct>=0
+      ?'O comportamento pode ser usado como sinal de oportunidade, mas ainda deve ser confirmado com mais histórico.'
+      :'Use o resultado como sinal de atenção no planejamento; a associação histórica não prova que o clima causou a diferença.';
+    saida.html.push(iaInsightHtml(tipo,icone,titulo,
+      'Em <b>'+A.dias+'</b> dia(s) '+rotA+', o faturamento médio foi <b>'+money(A.fat)+'</b>; em <b>'+B.dias+'</b> dia(s) '+rotB+', <b>'+money(B.fat)+'</b>. Diferença observada: <b>'+(pct>=0?'+':'')+iaPct(pct)+'</b>. '+orientacao));
+  };
+
+  comparar(quentes,amenos,'☀️','Clima: calor × faturamento','com máxima de 30 °C ou mais','com máxima abaixo de 30 °C');
+  comparar(chuvosos,secos,'🌧️','Clima: chuva × movimento','com chuva registrada','sem chuva relevante');
+
+  if(quentes.length>=2&&amenos.length>=2){
+    const itensGrupo=g=>{
+      const m={};
+      g.forEach(x=>Object.entries(x.v.itens).forEach(([n,q])=>m[n]=(m[n]||0)+q));
+      return m;
+    };
+    const h=itensGrupo(quentes),a=itensGrupo(amenos),cand=[];
+    Object.keys({...h,...a}).forEach(n=>{
+      const ph=(h[n]||0)/quentes.length,pa=(a[n]||0)/amenos.length;
+      if(ph>=0.5&&pa>0)cand.push({n,ph,pa,pct:(ph-pa)/pa*100});
+    });
+    cand.sort((x,y)=>y.pct-x.pct);
+    const top=cand.find(x=>x.pct>=25);
+    if(top){
+      saida.html.push(iaInsightHtml('good','🥤','Oportunidade de estoque ligada ao calor',
+        '<b>'+esc(top.n)+'</b> vendeu em média <b>'+climaNumero(top.ph,2)+'</b> un./dia nos dias quentes contra <b>'+climaNumero(top.pa,2)+'</b> un./dia nos dias mais amenos (<b>+'+iaPct(top.pct)+'</b>). Se esse padrão continuar com mais dados, considere reforçar o estoque antes de períodos quentes.'));
+    }
+  }
+
+  if(!saida.html.length){
+    saida.html.push(iaInsightHtml('info','🌦️','Clima sem sinal forte ainda',
+      'Já existem dias com clima e vendas comparáveis, mas os grupos ainda não mostram uma diferença suficientemente consistente para gerar recomendação comercial.'));
+  }
+  return saida;
+}
+
+async function analisarFinanceiroInterno(){
+
   const box=$('iaFinanceiraInsights');
   if(!box)return;
 
@@ -4348,9 +4415,28 @@ function analisarFinanceiroInterno(){
       'Mantendo a média diária atual, o faturamento fecharia perto de <b>'+money(proj)+'</b>. É apenas uma estimativa baseada no ritmo atual.'));
   }
 
+  // Etapa 3 — incorpora sinais históricos do clima à IA Financeira.
+  // A coleta do clima não é alterada: aqui fazemos somente leitura do histórico existente.
+  if(!MODO_DEMO && sb && lojaIdNuvem){
+    try{
+      let registrosClima=Array.isArray(climaHistoricoCache)?climaHistoricoCache:[];
+      if(!registrosClima.length)registrosClima=await climaBuscarHistorico(30);
+      const climaIA=iaInsightsClimaFinanceiro(registrosClima);
+      insights.push(...climaIA.html);
+      alertas+=climaIA.alertas;
+    }catch(e){
+      console.error('IA Financeira · clima:',e);
+      insights.push(iaInsightHtml('info','🌦️','Clima temporariamente indisponível',
+        'A análise financeira continua funcionando, mas o histórico climático não pôde ser consultado agora.'));
+    }
+  }else if(MODO_DEMO){
+    insights.push(iaInsightHtml('info','🌦️','Clima no modo demonstração',
+      'A inteligência climática usa o histórico real da loja e fica disponível após entrar na conta da nuvem.'));
+  }
+
   $('iaQtdAlertas').textContent=String(alertas);
   box.innerHTML=insights.join('');
-  $('iaFinanceiraRodape').textContent='Análise local atualizada em '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' · nenhuma informação é enviada para uma IA externa.';
+  $('iaFinanceiraRodape').textContent='Análise local atualizada em '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' · inclui sinais históricos de clima × vendas · nenhuma informação é enviada para uma IA externa.';
 }
 function renderPainel(){
   const agora=new Date();
