@@ -721,6 +721,14 @@ body.sidebarCollapsed .sidebarBrand{display:none}
       <div><label>Estoque atual</label><input id="produtoEstoque" type="number" step="1"></div>
       <div><label>Alerta abaixo de</label><input id="produtoMinimo" type="number" min="0" step="1" value="3"></div>
     </div>
+    <div class="note" style="margin-top:12px">
+      <label style="display:flex;gap:8px;align-items:center;margin:0;cursor:pointer"><input id="produtoPromocaoAtiva" type="checkbox" style="width:auto"> <b>🏷️ Promoção por quantidade</b></label>
+      <div id="produtoPromocaoCampos" class="grid2 hidden" style="margin-top:10px">
+        <div><label>A partir de quantas unidades?</label><input id="produtoPromocaoQtd" type="number" min="2" step="1" placeholder="Ex.: 10"></div>
+        <div><label>Preço unitário promocional</label><input id="produtoPromocaoPreco" type="number" min="0" step="0.01" placeholder="Ex.: 1,20"></div>
+      </div>
+      <div id="produtoPromocaoResumo" class="small hidden" style="margin-top:8px"></div>
+    </div>
     <br>
     <div class="grid2">
       <button id="salvarProdutoBtn" class="btn primary" type="button">💾 SALVAR</button>
@@ -1455,7 +1463,10 @@ function migrarProdutos(){
       custo:num(p.custo),
       estoque:Number.isFinite(Number(p.estoque))?Number(p.estoque):0,
       minimo:Number.isFinite(Number(p.minimo))?Number(p.minimo):3,
-      ativo:p.ativo!==false
+      ativo:p.ativo!==false,
+      promocaoQtdAtiva:p.promocaoQtdAtiva===true,
+      promocaoQtdMinima:Math.max(0,Math.floor(num(p.promocaoQtdMinima))),
+      promocaoPrecoUnitario:Math.max(0,num(p.promocaoPrecoUnitario))
     };
   });
 }
@@ -3121,6 +3132,16 @@ $('scanBtn').addEventListener('click',async function(){
 });
 
 // VENDA
+function promocaoQuantidadeValida(p){
+  return !!(p && p.promocaoQtdAtiva===true && Math.floor(num(p.promocaoQtdMinima))>=2 && num(p.promocaoPrecoUnitario)>=0 && num(p.promocaoPrecoUnitario)<num(p.preco));
+}
+function precoUnitarioProduto(p,qtd){
+  return promocaoQuantidadeValida(p) && num(qtd)>=Math.floor(num(p.promocaoQtdMinima)) ? num(p.promocaoPrecoUnitario) : num(p?.preco);
+}
+function textoPromocaoProduto(p){
+  if(!promocaoQuantidadeValida(p))return '';
+  return '🏷️ A partir de '+Math.floor(num(p.promocaoQtdMinima))+' un.: '+money(num(p.promocaoPrecoUnitario))+' cada';
+}
 let produtoPendenteVenda=null;
 
 function quantidadeModalAtual(){
@@ -3134,8 +3155,16 @@ function atualizarModalQuantidadeVenda(){
 
   const p=produtoPendenteVenda.produto;
   const estoque=num(p.estoque);
-  $('qtdVendaSubtotal').textContent=money(num(p.preco)*q);
+  const precoAplicado=precoUnitarioProduto(p,q);
+  $('qtdVendaSubtotal').textContent=money(precoAplicado*q);
   $('qtdVendaEstoque').textContent=String(estoque);
+  const info=$('qtdVendaProdutoInfo');
+  if(info){
+    const promo=promocaoQuantidadeValida(p);
+    info.innerHTML='Código '+esc(produtoPendenteVenda.codigo)+' · '+money(num(p.preco))+' preço normal'+
+      (promo?' · <b>'+esc(textoPromocaoProduto(p))+'</b>':'')+
+      (promo && q>=num(p.promocaoQtdMinima)?'<br><span style="font-weight:900">✅ Promoção aplicada: '+money(precoAplicado)+' cada</span>':'');
+  }
 
   const aviso=$('qtdVendaAviso');
   if(q>estoque){
@@ -3211,8 +3240,15 @@ function confirmarQuantidadeVenda(){
   }
 
   const existente=carrinho.find(x=>x.c===codigo);
-  if(existente)existente.q+=q;
-  else carrinho.push({c:codigo,n:p.nome,p:num(p.preco),custo:num(p.custo),q});
+  if(existente){
+    existente.q+=q;
+    existente.p=precoUnitarioProduto(p,existente.q);
+    existente.precoNormal=num(p.preco);
+    existente.promocaoAplicada=promocaoQuantidadeValida(p) && existente.q>=num(p.promocaoQtdMinima);
+  }else{
+    const precoAplicado=precoUnitarioProduto(p,q);
+    carrinho.push({c:codigo,n:p.nome,p:precoAplicado,precoNormal:num(p.preco),custo:num(p.custo),q,promocaoAplicada:promocaoQuantidadeValida(p) && q>=num(p.promocaoQtdMinima)});
+  }
 
   fecharModalQuantidadeVenda(true);
   renderCarrinho();
@@ -3259,7 +3295,8 @@ function renderCarrinho(){
   $('carrinho').innerHTML=carrinho.map((x,i)=>`
     <div class="item">
       <div class="between"><b>${x.q}x ${esc(x.n)}</b><b>${money(x.p*x.q)}</b></div>
-      <div class="small">${money(x.p)} cada · estoque atual: ${num(produtos[x.c]?.estoque)}
+      <div class="small">${money(x.p)} cada${x.promocaoAplicada?' · <b>🏷️ Promoção aplicada</b>':''} · estoque atual: ${num(produtos[x.c]?.estoque)}
+        ${x.promocaoAplicada && num(x.precoNormal)>num(x.p)?'<br>Preço normal '+money(x.precoNormal)+' · economia '+money((num(x.precoNormal)-num(x.p))*num(x.q)):''}
         <button type="button" class="btn gray action removerCarrinho" data-i="${i}">Remover</button>
       </div>
     </div>`).join('');
@@ -3715,9 +3752,25 @@ $('confirmarPagamentoFiadoBtn').addEventListener('click',function(){
 // PRODUTOS
 function limparProdutoForm(){
   produtoEditando=null;
-  ['produtoNome','produtoCodigo','produtoCusto','produtoPreco','produtoEstoque'].forEach(id=>$(id).value='');
-  $('produtoMinimo').value='3';$('cancelarProdutoBtn').classList.add('hidden');$('salvarProdutoBtn').textContent='💾 SALVAR';
+  ['produtoNome','produtoCodigo','produtoCusto','produtoPreco','produtoEstoque','produtoPromocaoQtd','produtoPromocaoPreco'].forEach(id=>$(id).value='');
+  $('produtoMinimo').value='3';
+  $('produtoPromocaoAtiva').checked=false;
+  atualizarCamposPromocaoProduto();
+  $('cancelarProdutoBtn').classList.add('hidden');$('salvarProdutoBtn').textContent='💾 SALVAR';
 }
+function atualizarCamposPromocaoProduto(){
+  const ativa=$('produtoPromocaoAtiva').checked;
+  $('produtoPromocaoCampos').classList.toggle('hidden',!ativa);
+  const resumo=$('produtoPromocaoResumo');
+  if(!ativa){resumo.classList.add('hidden');resumo.textContent='';return;}
+  const q=Math.floor(num($('produtoPromocaoQtd').value)),pr=num($('produtoPromocaoPreco').value),normal=num($('produtoPreco').value);
+  resumo.classList.remove('hidden');
+  resumo.innerHTML=q>=2 && pr>=0 ? 'Ao vender <b>'+q+' ou mais</b>, o preço muda de <b>'+money(normal)+'</b> para <b>'+money(pr)+'</b> por unidade.' : 'Informe a quantidade mínima e o preço promocional.';
+}
+$('produtoPromocaoAtiva').addEventListener('change',atualizarCamposPromocaoProduto);
+$('produtoPromocaoQtd').addEventListener('input',atualizarCamposPromocaoProduto);
+$('produtoPromocaoPreco').addEventListener('input',atualizarCamposPromocaoProduto);
+$('produtoPreco').addEventListener('input',atualizarCamposPromocaoProduto);
 function gerarCodigoInternoProduto(){
   // Faixa 100000–999999: sempre exatamente 6 dígitos.
   for(let tentativa=0;tentativa<1000;tentativa++){
@@ -3804,7 +3857,13 @@ $('salvarProdutoBtn').addEventListener('click',function(){
   const nome=$('produtoNome').value.trim(),codigo=$('produtoCodigo').value.trim();
   const custo=num($('produtoCusto').value),preco=num($('produtoPreco').value);
   const estoque=num($('produtoEstoque').value),minimo=Math.max(0,num($('produtoMinimo').value));
+  const promocaoQtdAtiva=$('produtoPromocaoAtiva').checked;
+  const promocaoQtdMinima=Math.floor(num($('produtoPromocaoQtd').value));
+  const promocaoPrecoUnitario=num($('produtoPromocaoPreco').value);
   if(!nome||!codigo||preco<0||custo<0){alert('Preencha nome, código e preços corretamente.');return;}
+  if(promocaoQtdAtiva && (promocaoQtdMinima<2 || promocaoPrecoUnitario<0 || promocaoPrecoUnitario>=preco)){
+    alert('Na promoção por quantidade, informe no mínimo 2 unidades e um preço promocional menor que o preço normal.');return;
+  }
   if(Object.prototype.hasOwnProperty.call(produtos,codigo) && produtoEditando!==codigo){
     alert('Este código já pertence a outro produto. Use o código existente ou gere outro código interno.');
     $('produtoCodigo').focus();
@@ -3813,7 +3872,7 @@ $('salvarProdutoBtn').addEventListener('click',function(){
   const eraEdicao=!!produtoEditando;
   if(produtoEditando&&produtoEditando!==codigo)delete produtos[produtoEditando];
   const ativoAnterior=produtoEditando&&produtos[produtoEditando]?produtos[produtoEditando].ativo!==false:true;
-  produtos[codigo]={nome,preco,custo,estoque,minimo,ativo:ativoAnterior};persist();limparProdutoForm();atualizarTudo();
+  produtos[codigo]={nome,preco,custo,estoque,minimo,ativo:ativoAnterior,promocaoQtdAtiva,promocaoQtdMinima:promocaoQtdAtiva?promocaoQtdMinima:0,promocaoPrecoUnitario:promocaoQtdAtiva?promocaoPrecoUnitario:0};persist();limparProdutoForm();atualizarTudo();
   $('produtoMsg').innerHTML='<div class="msg ok">✅ Produto salvo!</div>';beep();
   if(!eraEdicao)abrirEtiquetaProduto(codigo);
 });
@@ -3838,7 +3897,7 @@ function renderProdutos(){
     const baixo=num(p.estoque)<=num(p.minimo);
     return `<tr>
       <td><b>${esc(p.nome)}</b><br><small>${esc(c)}</small></td>
-      <td>Venda ${money(p.preco)}<br><small>Custo ${money(p.custo)} · Lucro un. ${money(num(p.preco)-num(p.custo))}</small></td>
+      <td>Venda ${money(p.preco)}<br><small>Custo ${money(p.custo)} · Lucro un. ${money(num(p.preco)-num(p.custo))}</small>${promocaoQuantidadeValida(p)?'<br><span class="badge okstock">'+esc(textoPromocaoProduto(p))+'</span>':''}</td>
       <td><span class="badge ${baixo?'low':'okstock'}">${num(p.estoque)} un.</span><br><small>mín. ${num(p.minimo)}</small></td>
       <td><button type="button" class="btn primary action reporProduto" data-c="${encodeURIComponent(c)}" title="Adicionar à lista de reposição">🛍️</button>
       <button type="button" class="btn blue action etiquetaProduto" data-c="${encodeURIComponent(c)}" title="Imprimir etiqueta">🏷️</button>
@@ -3871,6 +3930,10 @@ $('listaProdutos').addEventListener('click',e=>{
     const c=decodeURIComponent(edit.dataset.c),p=produtos[c];if(!p)return;
     produtoEditando=c;$('produtoNome').value=p.nome;$('produtoCodigo').value=c;$('produtoCusto').value=p.custo;
     $('produtoPreco').value=p.preco;$('produtoEstoque').value=p.estoque;$('produtoMinimo').value=p.minimo;
+    $('produtoPromocaoAtiva').checked=p.promocaoQtdAtiva===true;
+    $('produtoPromocaoQtd').value=p.promocaoQtdMinima||'';
+    $('produtoPromocaoPreco').value=p.promocaoQtdAtiva?num(p.promocaoPrecoUnitario):'';
+    atualizarCamposPromocaoProduto();
     $('cancelarProdutoBtn').classList.remove('hidden');$('salvarProdutoBtn').textContent='💾 ATUALIZAR';
     abrirAbaSidebar('produtos');
     mostrarSomenteFuncao('produtos','ancProdutosCadastro');
