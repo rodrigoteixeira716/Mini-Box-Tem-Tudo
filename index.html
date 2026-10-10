@@ -3909,6 +3909,19 @@ async function compartilharPdfEtiquetaProduto(){
   try{
     const blob=await gerarPdfEtiquetaProduto();
     const nome=nomeArquivoEtiqueta();
+
+    // No APK Android, entrega o PDF diretamente à ponte nativa.
+    if(window.MiniBoxAndroid && typeof window.MiniBoxAndroid.compartilharPdf==='function'){
+      const dataUrl=await new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(String(reader.result||''));
+        reader.onerror=()=>reject(new Error('Não foi possível preparar o PDF para o Android.'));
+        reader.readAsDataURL(blob);
+      });
+      window.MiniBoxAndroid.compartilharPdf(nome,dataUrl);
+      return;
+    }
+
     const arquivo=new File([blob],nome,{type:'application/pdf'});
     if(navigator.share && (!navigator.canShare || navigator.canShare({files:[arquivo]}))){
       try{
