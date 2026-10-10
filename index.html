@@ -288,6 +288,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
 <div id="loginScreen" class="loginScreen">
@@ -324,8 +325,9 @@ body.sidebarCollapsed .sidebarBrand{display:none}
       <svg id="etiquetaBarcode"></svg>
       <div id="etiquetaPreco" style="font-size:22px;font-weight:950;margin-top:6px"></div>
     </div>
-    <div class="grid2" style="margin-top:14px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:14px">
       <button id="imprimirEtiquetaBtn" class="btn primary" type="button">🖨️ IMPRIMIR ETIQUETA</button>
+      <button id="pdfEtiquetaBtn" class="btn green" type="button">📄 PDF / COMPARTILHAR</button>
       <button id="fecharEtiquetaBtn" class="btn gray" type="button">❌ AGORA NÃO</button>
     </div>
     <div class="note" style="margin-top:9px;text-align:center">Você poderá imprimir novamente pela lista de produtos.</div>
@@ -3850,7 +3852,83 @@ function imprimirEtiquetaProduto(){
   w.document.close();
 }
 
+async function gerarPdfEtiquetaProduto(){
+  if(!etiquetaProdutoAtual)return null;
+  if(!(window.jspdf && window.jspdf.jsPDF))throw new Error('Gerador de PDF não carregado. Verifique a internet e tente novamente.');
+  const svg=$('etiquetaBarcode');
+  if(!svg)throw new Error('Código de barras não encontrado.');
+
+  const svgTexto=new XMLSerializer().serializeToString(svg);
+  const blobSvg=new Blob([svgTexto],{type:'image/svg+xml;charset=utf-8'});
+  const url=URL.createObjectURL(blobSvg);
+  try{
+    const img=await new Promise((resolve,reject)=>{
+      const im=new Image();
+      im.onload=()=>resolve(im);
+      im.onerror=()=>reject(new Error('Não foi possível preparar o código de barras.'));
+      im.src=url;
+    });
+    const canvas=document.createElement('canvas');
+    const escala=3;
+    const largura=Math.max(900,Math.round((img.naturalWidth||300)*escala));
+    const altura=Math.max(240,Math.round((img.naturalHeight||80)*escala));
+    canvas.width=largura;canvas.height=altura;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,largura,altura);
+    ctx.drawImage(img,0,0,largura,altura);
+    const barcodePng=canvas.toDataURL('image/png',1);
+
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:[100,60]});
+    pdf.setTextColor(0,0,0);
+    pdf.setFont('helvetica','bold');
+    pdf.setFontSize(9);
+    pdf.text('MINI BOX TEM TUDO',50,8,{align:'center'});
+    pdf.setFontSize(14);
+    const nome=String(etiquetaProdutoAtual.nome||'Produto');
+    const linhasNome=pdf.splitTextToSize(nome,88).slice(0,2);
+    pdf.text(linhasNome,50,15,{align:'center'});
+    const yBarcode=linhasNome.length>1?25:21;
+    pdf.addImage(barcodePng,'PNG',15,yBarcode,70,22);
+    pdf.setFontSize(18);
+    pdf.text(money(etiquetaProdutoAtual.preco),50,55,{align:'center'});
+    return pdf.output('blob');
+  }finally{URL.revokeObjectURL(url);}
+}
+
+function nomeArquivoEtiqueta(){
+  const base=String(etiquetaProdutoAtual?.nome||'produto').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,45)||'produto';
+  return 'Etiqueta_'+base+'.pdf';
+}
+
+async function compartilharPdfEtiquetaProduto(){
+  if(!etiquetaProdutoAtual)return;
+  const btn=$('pdfEtiquetaBtn');
+  const textoOriginal=btn.textContent;
+  btn.disabled=true;btn.textContent='⏳ GERANDO PDF...';
+  try{
+    const blob=await gerarPdfEtiquetaProduto();
+    const nome=nomeArquivoEtiqueta();
+    const arquivo=new File([blob],nome,{type:'application/pdf'});
+    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[arquivo]}))){
+      try{
+        await navigator.share({title:'Etiqueta - '+etiquetaProdutoAtual.nome,text:'Etiqueta de produto - Mini Box Tem Tudo',files:[arquivo]});
+        return;
+      }catch(e){
+        if(e && e.name==='AbortError')return;
+      }
+    }
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=nome;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+    alert('PDF gerado. Como o compartilhamento de arquivo não está disponível neste navegador/app, o PDF foi salvo para você compartilhar ou imprimir.');
+  }catch(e){
+    alert('Não foi possível gerar o PDF da etiqueta. '+(e?.message||String(e)));
+  }finally{btn.disabled=false;btn.textContent=textoOriginal;}
+}
+
 $('imprimirEtiquetaBtn').addEventListener('click',imprimirEtiquetaProduto);
+$('pdfEtiquetaBtn').addEventListener('click',compartilharPdfEtiquetaProduto);
 $('fecharEtiquetaBtn').addEventListener('click',()=>{$('modalEtiquetaProduto').classList.add('hidden');etiquetaProdutoAtual=null;});
 
 $('salvarProdutoBtn').addEventListener('click',function(){
