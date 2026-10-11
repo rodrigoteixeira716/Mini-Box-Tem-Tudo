@@ -337,7 +337,14 @@ body.sidebarCollapsed .sidebarBrand{display:none}
 <div id="modalEtiquetasA4" class="modal hidden">
   <div class="modalBox" style="max-width:760px">
     <h3>📄 Etiquetas em folha A4</h3>
-    <div class="note">Escolha quantas etiquetas deseja de cada produto. O PDF será montado em A4 com até 24 etiquetas por página (3 colunas × 8 linhas).</div>
+    <div class="note">Escolha os produtos, as quantidades e o tamanho das etiquetas. O sistema organiza automaticamente a folha A4.</div>
+    <label style="margin-top:12px">Tamanho das etiquetas</label>
+    <select id="tamanhoEtiquetasA4">
+      <option value="pequena">Pequena — até 48 por página (4 × 12)</option>
+      <option value="media" selected>Média — até 40 por página (4 × 10)</option>
+      <option value="grande">Grande — até 24 por página (3 × 8)</option>
+    </select>
+    <div id="infoTamanhoEtiquetasA4" class="small" style="margin-top:5px">Média: boa leitura com maior aproveitamento da folha.</div>
     <div class="searchBox" style="margin-top:12px"><span class="searchIcon">🔎</span><input id="buscaEtiquetasA4" placeholder="Buscar produto ou código"></div>
     <div id="listaEtiquetasA4" style="max-height:48vh;overflow:auto;margin-top:10px"></div>
     <div id="resumoEtiquetasA4" class="msg" style="margin-top:10px">0 etiquetas selecionadas</div>
@@ -3963,14 +3970,26 @@ $('fecharEtiquetaBtn').addEventListener('click',()=>{$('modalEtiquetaProduto').c
 // ETIQUETAS EM FOLHA A4 -------------------------------------------------------
 let quantidadesEtiquetasA4={};
 
+const configuracoesEtiquetasA4={
+  pequena:{nome:'Pequena',colunas:4,linhas:12,porPagina:48,gapX:1.5,gapY:1.5,margemX:6,margemY:7,fonteLoja:5,fonteNome:6.5,fontePreco:8.5,barAltura:7.5,descricao:'Pequena: maior aproveitamento da folha — até 48 etiquetas por página.'},
+  media:{nome:'Média',colunas:4,linhas:10,porPagina:40,gapX:1.5,gapY:1.5,margemX:6,margemY:7,fonteLoja:5.5,fonteNome:7,fontePreco:9,barAltura:9,descricao:'Média: boa leitura com maior aproveitamento da folha — até 40 etiquetas por página.'},
+  grande:{nome:'Grande',colunas:3,linhas:8,porPagina:24,gapX:2,gapY:2,margemX:7,margemY:8,fonteLoja:6.5,fonteNome:8.5,fontePreco:11,barAltura:12,descricao:'Grande: mais espaço para nome, código de barras e preço — até 24 etiquetas por página.'}
+};
+
+function configEtiquetasA4(){
+  return configuracoesEtiquetasA4[$('tamanhoEtiquetasA4')?.value]||configuracoesEtiquetasA4.media;
+}
+
 function produtosAtivosEtiquetasA4(){
   return Object.entries(produtos).filter(([,p])=>p.ativo!==false).sort((a,b)=>String(a[1].nome||'').localeCompare(String(b[1].nome||''),'pt-BR'));
 }
 
 function atualizarResumoEtiquetasA4(){
   const total=Object.values(quantidadesEtiquetasA4).reduce((s,q)=>s+Math.max(0,Math.floor(num(q))),0);
-  const paginas=total?Math.ceil(total/24):0;
-  $('resumoEtiquetasA4').innerHTML=total?`<b>${total}</b> etiqueta(s) selecionada(s) · <b>${paginas}</b> página(s) A4`:'0 etiquetas selecionadas';
+  const cfg=configEtiquetasA4();
+  const paginas=total?Math.ceil(total/cfg.porPagina):0;
+  $('infoTamanhoEtiquetasA4').textContent=cfg.descricao;
+  $('resumoEtiquetasA4').innerHTML=total?`<b>${total}</b> etiqueta(s) selecionada(s) · tamanho <b>${cfg.nome}</b> · <b>${paginas}</b> página(s) A4`:'0 etiquetas selecionadas · tamanho '+cfg.nome;
 }
 
 function renderEtiquetasA4(){
@@ -4017,21 +4036,23 @@ async function gerarPdfEtiquetasA4(){
   if(!itens.length)throw new Error('Selecione pelo menos uma etiqueta.');
   const cache={};
   for(const item of itens){if(!cache[item.codigo])cache[item.codigo]=await barcodePngParaA4(item.codigo);}
+  const cfg=configEtiquetasA4();
   const {jsPDF}=window.jspdf;
   const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const margemX=7,margemY=8,gapX=2,gapY=2,colunas=3,linhas=8;
-  const largura=(210-(margemX*2)-(gapX*(colunas-1)))/colunas;
-  const altura=(297-(margemY*2)-(gapY*(linhas-1)))/linhas;
+  const largura=(210-(cfg.margemX*2)-(cfg.gapX*(cfg.colunas-1)))/cfg.colunas;
+  const altura=(297-(cfg.margemY*2)-(cfg.gapY*(cfg.linhas-1)))/cfg.linhas;
   itens.forEach((item,i)=>{
-    if(i>0&&i%24===0)pdf.addPage('a4','portrait');
-    const pos=i%24,col=pos%colunas,row=Math.floor(pos/colunas);
-    const x=margemX+col*(largura+gapX),y=margemY+row*(altura+gapY);
+    if(i>0&&i%cfg.porPagina===0)pdf.addPage('a4','portrait');
+    const pos=i%cfg.porPagina,col=pos%cfg.colunas,row=Math.floor(pos/cfg.colunas);
+    const x=cfg.margemX+col*(largura+cfg.gapX),y=cfg.margemY+row*(altura+cfg.gapY);
     pdf.setDrawColor(170);pdf.setLineWidth(.2);pdf.rect(x,y,largura,altura);
-    pdf.setTextColor(0);pdf.setFont('helvetica','bold');pdf.setFontSize(6.5);pdf.text('MINI BOX TEM TUDO',x+largura/2,y+3.5,{align:'center'});
-    pdf.setFontSize(8.5);const nomeLinhas=pdf.splitTextToSize(item.nome,largura-5).slice(0,2);pdf.text(nomeLinhas,x+largura/2,y+7.2,{align:'center'});
-    const yBar=y+(nomeLinhas.length>1?13:11);
-    pdf.addImage(cache[item.codigo],'PNG',x+5,yBar,largura-10,12);
-    pdf.setFontSize(11);pdf.text(money(item.preco),x+largura/2,y+altura-2.7,{align:'center'});
+    pdf.setTextColor(0);pdf.setFont('helvetica','bold');pdf.setFontSize(cfg.fonteLoja);pdf.text('MINI BOX TEM TUDO',x+largura/2,y+3,{align:'center'});
+    pdf.setFontSize(cfg.fonteNome);const nomeLinhas=pdf.splitTextToSize(item.nome,largura-4).slice(0,2);pdf.text(nomeLinhas,x+largura/2,y+6.2,{align:'center'});
+    const yBar=y+(nomeLinhas.length>1?10.5:8.5);
+    const espacoPreco=5.5;
+    const barAlt=Math.min(cfg.barAltura,Math.max(5,altura-(yBar-y)-espacoPreco));
+    pdf.addImage(cache[item.codigo],'PNG',x+3,yBar,largura-6,barAlt);
+    pdf.setFontSize(cfg.fontePreco);pdf.text(money(item.preco),x+largura/2,y+altura-2.2,{align:'center'});
   });
   return pdf.output('blob');
 }
@@ -4053,6 +4074,7 @@ async function compartilharPdfEtiquetasA4(){
 }
 
 $('abrirEtiquetasA4Btn').addEventListener('click',abrirEtiquetasA4);
+$('tamanhoEtiquetasA4').addEventListener('change',atualizarResumoEtiquetasA4);
 $('fecharEtiquetasA4Btn').addEventListener('click',()=>$('modalEtiquetasA4').classList.add('hidden'));
 $('buscaEtiquetasA4').addEventListener('input',renderEtiquetasA4);
 $('listaEtiquetasA4').addEventListener('input',e=>{const inp=e.target.closest('.qtdEtiquetaA4');if(!inp)return;const c=decodeURIComponent(inp.dataset.c);quantidadesEtiquetasA4[c]=Math.max(0,Math.floor(num(inp.value)));atualizarResumoEtiquetasA4();});
