@@ -345,6 +345,12 @@ body.sidebarCollapsed .sidebarBrand{display:none}
       <option value="grande">Grande — até 24 por página (3 × 8)</option>
     </select>
     <div id="infoTamanhoEtiquetasA4" class="small" style="margin-top:5px">Média: boa leitura com maior aproveitamento da folha.</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px">
+      <button id="todas1EtiquetaA4Btn" class="btn primary" type="button">✅ TODAS — 1 DE CADA</button>
+      <button id="todas2EtiquetasA4Btn" class="btn primary" type="button">✅ TODAS — 2 DE CADA</button>
+      <button id="limparEtiquetasA4TopoBtn" class="btn gray" type="button">🧹 LIMPAR TODAS</button>
+    </div>
+    <div class="small" style="margin-top:6px">Seleção rápida aplica a quantidade a todos os produtos ativos. Depois você pode ajustar produtos individuais abaixo.</div>
     <div class="searchBox" style="margin-top:12px"><span class="searchIcon">🔎</span><input id="buscaEtiquetasA4" placeholder="Buscar produto ou código"></div>
     <div id="listaEtiquetasA4" style="max-height:48vh;overflow:auto;margin-top:10px"></div>
     <div id="resumoEtiquetasA4" class="msg" style="margin-top:10px">0 etiquetas selecionadas</div>
@@ -4078,6 +4084,16 @@ $('tamanhoEtiquetasA4').addEventListener('change',atualizarResumoEtiquetasA4);
 $('fecharEtiquetasA4Btn').addEventListener('click',()=>$('modalEtiquetasA4').classList.add('hidden'));
 $('buscaEtiquetasA4').addEventListener('input',renderEtiquetasA4);
 $('listaEtiquetasA4').addEventListener('input',e=>{const inp=e.target.closest('.qtdEtiquetaA4');if(!inp)return;const c=decodeURIComponent(inp.dataset.c);quantidadesEtiquetasA4[c]=Math.max(0,Math.floor(num(inp.value)));atualizarResumoEtiquetasA4();});
+function preencherTodasEtiquetasA4(qtd){
+  const quantidade=Math.max(0,Math.floor(num(qtd)));
+  quantidadesEtiquetasA4={};
+  for(const [codigo] of produtosAtivosEtiquetasA4()) quantidadesEtiquetasA4[codigo]=quantidade;
+  renderEtiquetasA4();
+}
+
+$('todas1EtiquetaA4Btn').addEventListener('click',()=>preencherTodasEtiquetasA4(1));
+$('todas2EtiquetasA4Btn').addEventListener('click',()=>preencherTodasEtiquetasA4(2));
+$('limparEtiquetasA4TopoBtn').addEventListener('click',()=>{quantidadesEtiquetasA4={};renderEtiquetasA4();});
 $('limparEtiquetasA4Btn').addEventListener('click',()=>{quantidadesEtiquetasA4={};renderEtiquetasA4();});
 $('gerarEtiquetasA4Btn').addEventListener('click',compartilharPdfEtiquetasA4);
 
