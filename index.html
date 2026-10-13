@@ -337,7 +337,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
 <div id="modalEtiquetasA4" class="modal hidden">
   <div class="modalBox" style="max-width:760px">
     <h3>📄 Etiquetas em folha A4</h3>
-    <div class="note">Escolha os produtos, as quantidades e o tamanho das etiquetas. O sistema organiza automaticamente a folha A4.</div>
+    <div class="note">Escolha os produtos e combos, as quantidades e o tamanho das etiquetas. O sistema organiza automaticamente a folha A4.</div>
     <label style="margin-top:12px">Tamanho das etiquetas</label>
     <select id="tamanhoEtiquetasA4">
       <option value="pequena">Pequena — até 48 por página (4 × 12)</option>
@@ -350,7 +350,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
       <button id="todas2EtiquetasA4Btn" class="btn primary" type="button">✅ TODAS — 2 DE CADA</button>
       <button id="limparEtiquetasA4TopoBtn" class="btn gray" type="button">🧹 LIMPAR TODAS</button>
     </div>
-    <div class="small" style="margin-top:6px">Seleção rápida aplica a quantidade a todos os produtos ativos. Depois você pode ajustar produtos individuais abaixo.</div>
+    <div class="small" style="margin-top:6px">Seleção rápida aplica a quantidade a todos os produtos e combos ativos. Depois você pode ajustar cada item individualmente abaixo.</div>
     <div class="searchBox" style="margin-top:12px"><span class="searchIcon">🔎</span><input id="buscaEtiquetasA4" placeholder="Buscar produto ou código"></div>
     <div id="listaEtiquetasA4" style="max-height:48vh;overflow:auto;margin-top:10px"></div>
     <div id="resumoEtiquetasA4" class="msg" style="margin-top:10px">0 etiquetas selecionadas</div>
@@ -3095,6 +3095,16 @@ async function aceitarCodigoScanner(codigo){
 
   // Segurança: leitura de câmera não cadastra produto automaticamente.
   // Se o código não existir, mostramos para conferência manual.
+  const comboLido=comboPorCodigo(code);
+  if(comboLido){
+    await pararScanner();
+    $('codigoVenda').value='';
+    mostrarScannerStatus('✅ Combo confirmado: <b>'+esc(comboLido.nome)+'</b> · código '+esc(code),'ok');
+    beep();try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}
+    adicionarComboAoCarrinho(comboLido.id);
+    return;
+  }
+
   if(!produtos[code]){
     await pararScanner();
     $('codigoVenda').value=code;
@@ -3263,6 +3273,13 @@ function prepararProdutoParaVenda(origemScanner=false){
   const codigo=$('codigoVenda').value.trim();
   if(!codigo){alert('Digite ou escaneie o código do produto.');return;}
 
+  const comboLido=comboPorCodigo(codigo);
+  if(comboLido){
+    $('codigoVenda').value='';
+    adicionarComboAoCarrinho(comboLido.id);
+    return;
+  }
+
   let p=produtos[codigo];
   if(p && p.ativo===false){
     if(origemScanner)mostrarScannerStatus('⚠️ Este produto está desativado. Reative-o em Produtos > Produtos desativados.','err');
@@ -3371,11 +3388,29 @@ function renderComboEdicao(){
   if($('comboResumoEdicao'))$('comboResumoEdicao').innerHTML='Preço separado: <b>'+money(normal)+'</b>'+(preco>0?' · Combo: <b>'+money(preco)+'</b> · Economia: <b>'+money(Math.max(0,normal-preco))+'</b>':'');
 }
 function limparEdicaoCombo(){comboEditandoId=null;comboItensTemp=[];$('comboNome').value='';$('comboPreco').value='';$('comboQtd').value='1';$('salvarComboBtn').textContent='💾 SALVAR COMBO';$('cancelarComboBtn').classList.add('hidden');renderComboEdicao();}
+function codigoComboEmUso(codigo,ignorarId=null){
+  const c=String(codigo||'');
+  if(!/^\d{6}$/.test(c))return true;
+  if(Object.prototype.hasOwnProperty.call(produtos,c))return true;
+  return combos.some(x=>x.id!==ignorarId && String(x.codigo||'')===c);
+}
+function gerarCodigoCombo6(ignorarId=null){
+  for(let n=900001;n<=999999;n++){const c=String(n);if(!codigoComboEmUso(c,ignorarId))return c;}
+  for(let n=100000;n<=899999;n++){const c=String(n);if(!codigoComboEmUso(c,ignorarId))return c;}
+  throw new Error('Não há código interno de 6 dígitos disponível para um novo combo.');
+}
+function comboPorCodigo(codigo){return combos.find(c=>c.ativo!==false && String(c.codigo||'')===String(codigo||''));}
+function garantirCodigosCombos(){
+  let alterou=false;
+  combos.forEach(c=>{if(!/^\d{6}$/.test(String(c.codigo||'')) || codigoComboEmUso(String(c.codigo||''),c.id)){c.codigo=gerarCodigoCombo6(c.id);alterou=true;}});
+  if(alterou)persist();
+}
 function renderCombos(){
+  garantirCodigosCombos();
   preencherSelectComboProduto();
   const lista=$('listaCombos');if(lista)lista.innerHTML=combos.length?combos.map(c=>{
     const itens=(c.itens||[]).map(i=>num(i.q)+'x '+esc(produtos[i.c]?.nome||i.n||'Produto')).join(' + '), disp=comboDisponivel(c);
-    return '<div class="item"><div class="between"><div><b>🎁 '+esc(c.nome)+'</b><div class="small">'+itens+'<br><b>'+money(c.preco)+'</b> · '+(c.ativo===false?'⏸️ Desativado':disp?'✅ Disponível':'⚠️ Sem estoque suficiente')+'</div></div><div><button class="btn gray action editarCombo" data-id="'+c.id+'" type="button">Editar</button> <button class="btn '+(c.ativo===false?'green':'gray')+' action alternarCombo" data-id="'+c.id+'" type="button">'+(c.ativo===false?'Ativar':'Desativar')+'</button></div></div></div>';
+    return '<div class="item"><div class="between"><div><b>🎁 '+esc(c.nome)+'</b><div class="small">'+itens+'<br><b>'+money(c.preco)+'</b> · Código <b>'+esc(c.codigo||'')+'</b> · '+(c.ativo===false?'⏸️ Desativado':disp?'✅ Disponível':'⚠️ Sem estoque suficiente')+'</div></div><div><button class="btn gray action editarCombo" data-id="'+c.id+'" type="button">Editar</button> <button class="btn '+(c.ativo===false?'green':'gray')+' action alternarCombo" data-id="'+c.id+'" type="button">'+(c.ativo===false?'Ativar':'Desativar')+'</button></div></div></div>';
   }).join(''):'<div class="small">Nenhum combo cadastrado.</div>';
   const venda=$('combosVendaRapida');if(venda){
     const ativos=combos.filter(comboAtivo);
@@ -3398,7 +3433,7 @@ function adicionarComboAoCarrinho(id){
 $('comboAdicionarItemBtn').addEventListener('click',()=>{const c=$('comboProduto').value,q=Math.max(1,Math.floor(num($('comboQtd').value)));if(!produtos[c]){alert('Selecione um produto.');return;}const ex=comboItensTemp.find(i=>i.c===c);if(ex)ex.q+=q;else comboItensTemp.push({c,q,n:produtos[c].nome});$('comboQtd').value='1';renderComboEdicao();});
 $('comboItensEdicao').addEventListener('click',e=>{const b=e.target.closest('.comboRemoverItem');if(!b)return;comboItensTemp.splice(Number(b.dataset.i),1);renderComboEdicao();});
 $('comboPreco').addEventListener('input',renderComboEdicao);
-$('salvarComboBtn').addEventListener('click',()=>{if(MODO_DEMO){bloquearAcaoDemo();return;}const nome=$('comboNome').value.trim(),preco=num($('comboPreco').value);if(!nome){alert('Informe o nome do combo.');return;}if(preco<=0){alert('Informe um preço válido para o combo.');return;}if(!comboItensTemp.length){alert('Adicione pelo menos um produto ao combo.');return;}const dados={nome,preco:Number(preco.toFixed(2)),itens:comboItensTemp.map(i=>({...i})),ativo:true};if(comboEditandoId){const i=combos.findIndex(c=>c.id===comboEditandoId);if(i>=0)combos[i]={...combos[i],...dados};}else combos.push({id:'cb_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),...dados});persist();limparEdicaoCombo();renderCombos();$('comboMsg').innerHTML='<div class="msg ok">✅ Combo salvo.</div>';});
+$('salvarComboBtn').addEventListener('click',()=>{if(MODO_DEMO){bloquearAcaoDemo();return;}const nome=$('comboNome').value.trim(),preco=num($('comboPreco').value);if(!nome){alert('Informe o nome do combo.');return;}if(preco<=0){alert('Informe um preço válido para o combo.');return;}if(!comboItensTemp.length){alert('Adicione pelo menos um produto ao combo.');return;}const dados={nome,preco:Number(preco.toFixed(2)),itens:comboItensTemp.map(i=>({...i})),ativo:true};if(comboEditandoId){const i=combos.findIndex(c=>c.id===comboEditandoId);if(i>=0)combos[i]={...combos[i],...dados};}else {const id='cb_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);combos.push({id,codigo:gerarCodigoCombo6(id),...dados});}persist();limparEdicaoCombo();renderCombos();$('comboMsg').innerHTML='<div class="msg ok">✅ Combo salvo.</div>';});
 $('cancelarComboBtn').addEventListener('click',limparEdicaoCombo);
 $('listaCombos').addEventListener('click',e=>{const edit=e.target.closest('.editarCombo'),alt=e.target.closest('.alternarCombo');if(edit){const c=combos.find(x=>x.id===edit.dataset.id);if(!c)return;comboEditandoId=c.id;comboItensTemp=(c.itens||[]).map(i=>({...i}));$('comboNome').value=c.nome;$('comboPreco').value=c.preco;$('salvarComboBtn').textContent='💾 ATUALIZAR COMBO';$('cancelarComboBtn').classList.remove('hidden');renderComboEdicao();document.getElementById('ancProdutosCombos')?.scrollIntoView({behavior:'smooth'});}if(alt){const c=combos.find(x=>x.id===alt.dataset.id);if(!c)return;c.ativo=c.ativo===false;persist();renderCombos();}});
 $('combosVendaRapida').addEventListener('click',e=>{const b=e.target.closest('.adicionarComboVenda');if(b&&!b.disabled)adicionarComboAoCarrinho(b.dataset.id);});
@@ -4068,6 +4103,12 @@ function configEtiquetasA4(){
   return configuracoesEtiquetasA4[$('tamanhoEtiquetasA4')?.value]||configuracoesEtiquetasA4.media;
 }
 
+function itensAtivosEtiquetasA4(){
+  garantirCodigosCombos();
+  const itens=Object.entries(produtos).filter(([,p])=>p.ativo!==false).map(([codigo,p])=>({codigo,nome:String(p.nome||'Produto'),preco:num(p.preco),tipo:'produto'}));
+  combos.filter(c=>c.ativo!==false && /^\d{6}$/.test(String(c.codigo||''))).forEach(c=>itens.push({codigo:String(c.codigo),nome:String(c.nome||'Combo'),preco:num(c.preco),tipo:'combo'}));
+  return itens.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+}
 function produtosAtivosEtiquetasA4(){
   return Object.entries(produtos).filter(([,p])=>p.ativo!==false).sort((a,b)=>String(a[1].nome||'').localeCompare(String(b[1].nome||''),'pt-BR'));
 }
@@ -4082,8 +4123,8 @@ function atualizarResumoEtiquetasA4(){
 
 function renderEtiquetasA4(){
   const termo=String($('buscaEtiquetasA4')?.value||'').trim().toLowerCase();
-  const lista=produtosAtivosEtiquetasA4().filter(([c,p])=>!termo||String(p.nome||'').toLowerCase().includes(termo)||String(c).toLowerCase().includes(termo));
-  $('listaEtiquetasA4').innerHTML=lista.length?lista.map(([c,p])=>`<div class="item between" style="gap:10px;align-items:center"><div style="min-width:0"><b>${esc(p.nome)}</b><div class="small">${esc(c)} · ${money(p.preco)}</div></div><div style="width:105px;flex:0 0 105px"><label style="margin:0 0 3px">Quantidade</label><input class="qtdEtiquetaA4" data-c="${encodeURIComponent(c)}" type="number" min="0" max="999" step="1" inputmode="numeric" value="${Math.max(0,Math.floor(num(quantidadesEtiquetasA4[c]||0)))}" style="text-align:center"></div></div>`).join(''):'Nenhum produto encontrado.';
+  const lista=itensAtivosEtiquetasA4().filter(i=>!termo||i.nome.toLowerCase().includes(termo)||i.codigo.toLowerCase().includes(termo));
+  $('listaEtiquetasA4').innerHTML=lista.length?lista.map(i=>`<div class="item between" style="gap:10px;align-items:center"><div style="min-width:0"><b>${i.tipo==='combo'?'🎁 ':''}${esc(i.nome)}</b><div class="small">${esc(i.codigo)} · ${money(i.preco)}${i.tipo==='combo'?' · COMBO':''}</div></div><div style="width:105px;flex:0 0 105px"><label style="margin:0 0 3px">Quantidade</label><input class="qtdEtiquetaA4" data-c="${encodeURIComponent(i.codigo)}" type="number" min="0" max="999" step="1" inputmode="numeric" value="${Math.max(0,Math.floor(num(quantidadesEtiquetasA4[i.codigo]||0)))}" style="text-align:center"></div></div>`).join(''):'Nenhum produto ou combo encontrado.';
   atualizarResumoEtiquetasA4();
 }
 
@@ -4117,9 +4158,9 @@ async function gerarPdfEtiquetasA4(){
   if(!(window.jspdf&&window.jspdf.jsPDF))throw new Error('Gerador de PDF não carregado. Verifique a internet e tente novamente.');
   if(typeof JsBarcode!=='function')throw new Error('Gerador de código de barras não carregado.');
   const itens=[];
-  for(const [codigo,p] of produtosAtivosEtiquetasA4()){
-    const qtd=Math.max(0,Math.floor(num(quantidadesEtiquetasA4[codigo]||0)));
-    for(let i=0;i<qtd;i++)itens.push({codigo,nome:String(p.nome||'Produto'),preco:num(p.preco)});
+  for(const itemBase of itensAtivosEtiquetasA4()){
+    const qtd=Math.max(0,Math.floor(num(quantidadesEtiquetasA4[itemBase.codigo]||0)));
+    for(let i=0;i<qtd;i++)itens.push({...itemBase});
   }
   if(!itens.length)throw new Error('Selecione pelo menos uma etiqueta.');
   const cache={};
@@ -4169,7 +4210,7 @@ $('listaEtiquetasA4').addEventListener('input',e=>{const inp=e.target.closest('.
 function preencherTodasEtiquetasA4(qtd){
   const quantidade=Math.max(0,Math.floor(num(qtd)));
   quantidadesEtiquetasA4={};
-  for(const [codigo] of produtosAtivosEtiquetasA4()) quantidadesEtiquetasA4[codigo]=quantidade;
+  for(const item of itensAtivosEtiquetasA4()) quantidadesEtiquetasA4[item.codigo]=quantidade;
   renderEtiquetasA4();
 }
 
