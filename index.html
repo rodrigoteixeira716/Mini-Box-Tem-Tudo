@@ -408,6 +408,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
       <button class="sidebarSub" data-go-tab="produtos" data-target="ancProdutosCadastro">Cadastrar produto</button>
       <button class="sidebarSub" data-go-tab="produtos" data-target="ancProdutosLista">Produtos cadastrados</button>
       <button class="sidebarSub" data-go-tab="produtos" data-target="ancProdutosDesativados">Produtos desativados</button>
+      <button class="sidebarSub" data-go-tab="produtos" data-target="ancProdutosCombos">🎁 Combos</button>
     </div>
   </div>
 
@@ -636,6 +637,11 @@ body.sidebarCollapsed .sidebarBrand{display:none}
     <br>
     <button id="addBtn" class="btn primary" style="width:100%" type="button">➕ CONTINUAR</button>
 
+    <div id="areaCombosVenda" style="margin-top:16px">
+      <div class="saleCheckoutDivider"><span>🎁 COMBOS</span></div>
+      <div id="combosVendaRapida"></div>
+    </div>
+
     <div class="saleCheckoutDivider"><span>ITENS E FINALIZAÇÃO DA VENDA</span></div>
     <h3 id="ancVendaItens">🧾 Itens da venda</h3>
     <div id="carrinho">Nenhum produto adicionado.</div>
@@ -776,6 +782,27 @@ body.sidebarCollapsed .sidebarBrand{display:none}
   <div class="card">
     <h3 id="ancProdutosDesativados">⏸️ Produtos desativados</h3>
     <div id="listaProdutosDesativados"></div>
+  </div>
+  <div class="card">
+    <h2 id="ancProdutosCombos">🎁 Combos</h2>
+    <div class="note">Monte ofertas com produtos já cadastrados. Ao vender um combo, o estoque de cada item é baixado normalmente.</div>
+    <label>Nome do combo</label><input id="comboNome" placeholder="Ex.: Combo Lanche">
+    <label>Preço do combo</label><input id="comboPreco" type="number" min="0" step="0.01" placeholder="0,00">
+    <div class="saleCheckoutDivider"><span>PRODUTOS DO COMBO</span></div>
+    <div class="grid2">
+      <div><label>Produto</label><select id="comboProduto"><option value="">Selecione...</option></select></div>
+      <div><label>Quantidade</label><input id="comboQtd" type="number" min="1" step="1" value="1"></div>
+    </div>
+    <button id="comboAdicionarItemBtn" class="btn blue" type="button" style="width:100%;margin-top:8px">➕ ADICIONAR PRODUTO AO COMBO</button>
+    <div id="comboItensEdicao" style="margin-top:10px"></div>
+    <div id="comboResumoEdicao" class="msg">Adicione pelo menos um produto.</div>
+    <div class="grid2" style="margin-top:10px">
+      <button id="salvarComboBtn" class="btn green" type="button">💾 SALVAR COMBO</button>
+      <button id="cancelarComboBtn" class="btn gray hidden" type="button">Cancelar edição</button>
+    </div>
+    <div id="comboMsg"></div>
+    <div class="saleCheckoutDivider"><span>COMBOS CADASTRADOS</span></div>
+    <div id="listaCombos"></div>
   </div>
 </section>
 
@@ -1449,13 +1476,13 @@ async function registrarAcessoDemo(){
 const sbCadastro=window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}):null;
 
 
-const PK='MB_P_V4', VK='MB_V_V4', EK='MB_E_V1', CK='MB_CX_V1', MK='MB_MAQ_V1', UK='MB_USR_V1', SK='MB_SESSION_V1', CLK='MB_CLIENTES_V1', FRK='MB_FIADOS_V1', RK='MB_REMEMBER_SESSION_V1', CXCFGK='MB_CAIXA_CONFIG_V1', CXSNOOZEK='MB_CAIXA_SNOOZE_V1', LRK='MB_LISTA_REPOSICAO_V1', IK='MB_INVENTARIO_V1', SCK='MB_SAIDAS_CONSUMO_V1', VCK='MB_VENCIMENTOS_V1';
+const PK='MB_P_V4', VK='MB_V_V4', EK='MB_E_V1', CK='MB_CX_V1', MK='MB_MAQ_V1', UK='MB_USR_V1', SK='MB_SESSION_V1', CLK='MB_CLIENTES_V1', FRK='MB_FIADOS_V1', RK='MB_REMEMBER_SESSION_V1', CXCFGK='MB_CAIXA_CONFIG_V1', CXSNOOZEK='MB_CAIXA_SNOOZE_V1', LRK='MB_LISTA_REPOSICAO_V1', IK='MB_INVENTARIO_V1', SCK='MB_SAIDAS_CONSUMO_V1', VCK='MB_VENCIMENTOS_V1', CBK='MB_COMBOS_V1';
 const $=id=>document.getElementById(id);
 const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const num=v=>{ const n=Number(v); return Number.isFinite(n)?n:0; };
 
-let produtos={}, vendas=[], entradas=[], fechamentos=[], maquinas=[], usuarios=[], clientes=[], fiados=[], listaReposicao=[], inventarioAtual=null, saidasConsumo=[], vencimentos=[], carrinho=[];
+let produtos={}, vendas=[], entradas=[], fechamentos=[], maquinas=[], usuarios=[], clientes=[], fiados=[], listaReposicao=[], inventarioAtual=null, saidasConsumo=[], vencimentos=[], combos=[], carrinho=[];
 let caixaConfig={ativo:true,hora:'22:00'};
 let scanner=null, produtoEditando=null;
 let leituraCandidata='', leituraRepeticoes=0, ultimaLeituraEm=0, scannerProcessando=false;
@@ -1472,6 +1499,7 @@ try{listaReposicao=JSON.parse(localStorage.getItem(LRK)||'[]')||[]}catch(e){list
 try{inventarioAtual=JSON.parse(localStorage.getItem(IK)||'null')}catch(e){inventarioAtual=null}
 try{saidasConsumo=JSON.parse(localStorage.getItem(SCK)||'[]')||[]}catch(e){saidasConsumo=[]}
 try{vencimentos=JSON.parse(localStorage.getItem(VCK)||'[]')||[]}catch(e){vencimentos=[]}
+try{combos=JSON.parse(localStorage.getItem(CBK)||'[]')||[]}catch(e){combos=[]}
 try{caixaConfig={...caixaConfig,...(JSON.parse(localStorage.getItem(CXCFGK)||'{}')||{})}}catch(e){}
 caixaConfig.ativo=caixaConfig.ativo!==false;
 if(!/^\d{2}:\d{2}$/.test(String(caixaConfig.hora||'')))caixaConfig.hora='22:00';
@@ -1483,7 +1511,7 @@ if(!Array.isArray(usuarios))usuarios=[];
 if(!Array.isArray(clientes))clientes=[];
 if(!Array.isArray(fiados))fiados=[];
 if(!Array.isArray(listaReposicao))listaReposicao=[];
-if(!Array.isArray(saidasConsumo))saidasConsumo=[];if(!Array.isArray(vencimentos))vencimentos=[];
+if(!Array.isArray(saidasConsumo))saidasConsumo=[];if(!Array.isArray(vencimentos))vencimentos=[];if(!Array.isArray(combos))combos=[];
 
 function migrarProdutos(){
   Object.keys(produtos).forEach(c=>{
@@ -1517,6 +1545,7 @@ function persist(sincronizar=true){
   localStorage.setItem(IK,JSON.stringify(inventarioAtual));
   localStorage.setItem(SCK,JSON.stringify(saidasConsumo));
   localStorage.setItem(VCK,JSON.stringify(vencimentos));
+  localStorage.setItem(CBK,JSON.stringify(combos));
   localStorage.setItem(CXCFGK,JSON.stringify(caixaConfig));
   if(sincronizar && !aplicandoNuvem && usuarioNuvem && lojaIdNuvem)agendarSyncNuvem();
 }
@@ -1595,7 +1624,7 @@ function aplicarBloqueiosDemo(){
   document.querySelectorAll('#appMain input,#appMain textarea').forEach(el=>{
     if(!liberarIds.has(el.id))el.disabled=true;
   });
-  const bloqueados=['gerarCodigoProdutoBtn','scanBtn','addBtn','finalizarBtn','salvarClienteBtn','cancelarClienteBtn','salvarProdutoBtn','cancelarProdutoBtn','registrarEntradaBtn','adicionarReposicaoBtn','limparCompradosReposicaoBtn','salvarCaixaBtn','salvarConfigCaixaBtn','ativarPushCaixaBtn','testarPushCaixaBtn','desativarPushCaixaBtn','sincronizarAgoraBtn','enviarLocalNuvemBtn','alterarMinhaSenhaBtn','salvarFuncionarioBtn','cancelarFuncionarioBtn','salvarMaquinaBtn','cancelarMaquinaBtn','restoreBtn','apagarBtn','confirmarRegistrarVendaBtn','salvarVendaEditBtn','confirmarExcluirVendaBtn','confirmarPagamentoFiadoBtn','salvarEdicaoFechamentoBtn','confirmarExcluirFechamentoBtn','confirmarSenhaUsuarioBtn','lembreteFecharAgoraBtn','lembreteDepoisBtn'];
+  const bloqueados=['gerarCodigoProdutoBtn','scanBtn','addBtn','finalizarBtn','salvarClienteBtn','cancelarClienteBtn','salvarProdutoBtn','cancelarProdutoBtn','registrarEntradaBtn','adicionarReposicaoBtn','limparCompradosReposicaoBtn','salvarCaixaBtn','salvarConfigCaixaBtn','ativarPushCaixaBtn','testarPushCaixaBtn','desativarPushCaixaBtn','sincronizarAgoraBtn','enviarLocalNuvemBtn','alterarMinhaSenhaBtn','salvarFuncionarioBtn','cancelarFuncionarioBtn','salvarMaquinaBtn','cancelarMaquinaBtn','restoreBtn','apagarBtn','confirmarRegistrarVendaBtn','salvarVendaEditBtn','confirmarExcluirVendaBtn','confirmarPagamentoFiadoBtn','salvarEdicaoFechamentoBtn','confirmarExcluirFechamentoBtn','confirmarSenhaUsuarioBtn','lembreteFecharAgoraBtn','lembreteDepoisBtn','comboAdicionarItemBtn','salvarComboBtn','cancelarComboBtn'];
   bloqueados.forEach(id=>{const b=$(id);if(b){b.classList.add('demo-bloqueado');b.setAttribute('aria-disabled','true');b.title='Bloqueado no modo demonstração';}});
   if($('cloudStatus'))$('cloudStatus').innerHTML='<b>👁️ Ambiente de demonstração</b><br><span class="small">Nenhum dado real da loja é consultado. Apenas o contador anônimo de acesso à demonstração pode ser enviado ao Supabase.</span>';
   if($('pushCaixaStatus'))$('pushCaixaStatus').innerHTML='🔔 Push externo disponível na versão real. Testes ficam bloqueados no modo demonstração.';
@@ -1622,6 +1651,7 @@ function restaurarDadosLocaisAposDemo(){
   try{clientes=JSON.parse(localStorage.getItem(CLK)||'[]')||[]}catch(e){clientes=[]}
   try{fiados=JSON.parse(localStorage.getItem(FRK)||'[]')||[]}catch(e){fiados=[]}
   try{listaReposicao=JSON.parse(localStorage.getItem(LRK)||'[]')||[]}catch(e){listaReposicao=[]}
+  try{combos=JSON.parse(localStorage.getItem(CBK)||'[]')||[]}catch(e){combos=[]}
   caixaConfig={ativo:true,hora:'22:00'};
   try{caixaConfig={...caixaConfig,...(JSON.parse(localStorage.getItem(CXCFGK)||'{}')||{})}}catch(e){}
   caixaConfig.ativo=caixaConfig.ativo!==false;
@@ -1728,6 +1758,7 @@ function estadoLocal(){
     inventarioAtual,
     saidasConsumo,
     vencimentos,
+    combos,
     caixaConfig,
     atualizadoEm:new Date().toISOString()
   };
@@ -1736,7 +1767,7 @@ function temDadosLocaisRelevantes(){
   return Object.keys(produtos||{}).length>0 ||
     (vendas||[]).length>0 || (entradas||[]).length>0 ||
     (fechamentos||[]).length>0 || (maquinas||[]).length>0 ||
-    (clientes||[]).length>0 || (fiados||[]).length>0 || (listaReposicao||[]).length>0 || (saidasConsumo||[]).length>0 || (vencimentos||[]).length>0;
+    (clientes||[]).length>0 || (fiados||[]).length>0 || (listaReposicao||[]).length>0 || (saidasConsumo||[]).length>0 || (vencimentos||[]).length>0 || (combos||[]).length>0;
 }
 function aplicarEstadoNuvem(d){
   if(!d || typeof d!=='object')return;
@@ -1753,6 +1784,7 @@ function aplicarEstadoNuvem(d){
     inventarioAtual=d.inventarioAtual&&typeof d.inventarioAtual==='object'?d.inventarioAtual:null;
     saidasConsumo=Array.isArray(d.saidasConsumo)?d.saidasConsumo:[];
     vencimentos=Array.isArray(d.vencimentos)?d.vencimentos:[];
+    combos=Array.isArray(d.combos)?d.combos:[];
     caixaConfig={ativo:true,hora:'22:00',...(d.caixaConfig&&typeof d.caixaConfig==='object'?d.caixaConfig:{})};
     caixaConfig.ativo=caixaConfig.ativo!==false;
     if(!/^\d{2}:\d{2}$/.test(String(caixaConfig.hora||'')))caixaConfig.hora='22:00';
@@ -3321,12 +3353,62 @@ document.querySelectorAll('[data-qtd-venda]').forEach(b=>{
 $('qtdVendaCancelar').addEventListener('click',()=>fecharModalQuantidadeVenda(false));
 $('qtdVendaConfirmar').addEventListener('click',confirmarQuantidadeVenda);
 
+
+// COMBOS ----------------------------------------------------------------------
+let comboEditandoId=null, comboItensTemp=[];
+function comboAtivo(c){return c && c.ativo!==false;}
+function comboDisponivel(c){
+  return comboAtivo(c) && Array.isArray(c.itens) && c.itens.length && c.itens.every(i=>produtos[i.c] && produtos[i.c].ativo!==false && num(produtos[i.c].estoque)>=num(i.q));
+}
+function preencherSelectComboProduto(){
+  const el=$('comboProduto');if(!el)return;
+  el.innerHTML='<option value="">Selecione...</option>'+Object.entries(produtos).filter(([,p])=>p.ativo!==false).sort((a,b)=>String(a[1].nome).localeCompare(String(b[1].nome),'pt-BR')).map(([c,p])=>'<option value="'+esc(c)+'">'+esc(p.nome)+' · estoque '+num(p.estoque)+'</option>').join('');
+}
+function renderComboEdicao(){
+  const el=$('comboItensEdicao');if(!el)return;
+  el.innerHTML=comboItensTemp.length?comboItensTemp.map((i,idx)=>'<div class="item"><div class="between"><b>'+num(i.q)+'x '+esc(produtos[i.c]?.nome||i.n||'Produto')+'</b><button class="btn gray action comboRemoverItem" data-i="'+idx+'" type="button">Remover</button></div></div>').join(''):'<div class="small">Nenhum produto adicionado ao combo.</div>';
+  const normal=comboItensTemp.reduce((s,i)=>s+num(produtos[i.c]?.preco)*num(i.q),0), preco=num($('comboPreco')?.value);
+  if($('comboResumoEdicao'))$('comboResumoEdicao').innerHTML='Preço separado: <b>'+money(normal)+'</b>'+(preco>0?' · Combo: <b>'+money(preco)+'</b> · Economia: <b>'+money(Math.max(0,normal-preco))+'</b>':'');
+}
+function limparEdicaoCombo(){comboEditandoId=null;comboItensTemp=[];$('comboNome').value='';$('comboPreco').value='';$('comboQtd').value='1';$('salvarComboBtn').textContent='💾 SALVAR COMBO';$('cancelarComboBtn').classList.add('hidden');renderComboEdicao();}
+function renderCombos(){
+  preencherSelectComboProduto();
+  const lista=$('listaCombos');if(lista)lista.innerHTML=combos.length?combos.map(c=>{
+    const itens=(c.itens||[]).map(i=>num(i.q)+'x '+esc(produtos[i.c]?.nome||i.n||'Produto')).join(' + '), disp=comboDisponivel(c);
+    return '<div class="item"><div class="between"><div><b>🎁 '+esc(c.nome)+'</b><div class="small">'+itens+'<br><b>'+money(c.preco)+'</b> · '+(c.ativo===false?'⏸️ Desativado':disp?'✅ Disponível':'⚠️ Sem estoque suficiente')+'</div></div><div><button class="btn gray action editarCombo" data-id="'+c.id+'" type="button">Editar</button> <button class="btn '+(c.ativo===false?'green':'gray')+' action alternarCombo" data-id="'+c.id+'" type="button">'+(c.ativo===false?'Ativar':'Desativar')+'</button></div></div></div>';
+  }).join(''):'<div class="small">Nenhum combo cadastrado.</div>';
+  const venda=$('combosVendaRapida');if(venda){
+    const ativos=combos.filter(comboAtivo);
+    venda.innerHTML=ativos.length?'<div class="grid2">'+ativos.map(c=>{const disp=comboDisponivel(c);return '<button type="button" class="btn '+(disp?'green':'gray')+' adicionarComboVenda" data-id="'+c.id+'" '+(disp?'':'disabled')+'>🎁 '+esc(c.nome)+'<br><span style="font-size:11px">'+money(c.preco)+(disp?'':' · INDISPONÍVEL')+'</span></button>';}).join('')+'</div>':'<div class="small">Nenhum combo ativo cadastrado.</div>';
+  }
+}
+function adicionarComboAoCarrinho(id){
+  const c=combos.find(x=>x.id===id);if(!c)return;
+  if(!comboDisponivel(c)){alert('Este combo está indisponível porque falta estoque de um ou mais produtos.');renderCombos();return;}
+  const totalNormal=(c.itens||[]).reduce((s,i)=>s+num(produtos[i.c]?.preco)*num(i.q),0);
+  if(totalNormal<=0){alert('Não foi possível calcular os produtos do combo.');return;}
+  const instancia='combo_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);let acumulado=0;
+  c.itens.forEach((i,idx)=>{
+    const p=produtos[i.c], q=Math.max(1,Math.floor(num(i.q)));let subtotal;
+    if(idx===c.itens.length-1)subtotal=Number((num(c.preco)-acumulado).toFixed(2));else{subtotal=Number((num(c.preco)*(num(p.preco)*q/totalNormal)).toFixed(2));acumulado+=subtotal;}
+    carrinho.push({c:i.c,n:p.nome,p:Number((subtotal/q).toFixed(4)),precoNormal:num(p.preco),custo:num(p.custo),q,promocaoAplicada:false,comboId:c.id,comboInstancia:instancia,comboNome:c.nome});
+  });
+  renderCarrinho();mostrarMsg('🎁 Combo '+c.nome+' adicionado à venda.','ok');
+}
+$('comboAdicionarItemBtn').addEventListener('click',()=>{const c=$('comboProduto').value,q=Math.max(1,Math.floor(num($('comboQtd').value)));if(!produtos[c]){alert('Selecione um produto.');return;}const ex=comboItensTemp.find(i=>i.c===c);if(ex)ex.q+=q;else comboItensTemp.push({c,q,n:produtos[c].nome});$('comboQtd').value='1';renderComboEdicao();});
+$('comboItensEdicao').addEventListener('click',e=>{const b=e.target.closest('.comboRemoverItem');if(!b)return;comboItensTemp.splice(Number(b.dataset.i),1);renderComboEdicao();});
+$('comboPreco').addEventListener('input',renderComboEdicao);
+$('salvarComboBtn').addEventListener('click',()=>{if(MODO_DEMO){bloquearAcaoDemo();return;}const nome=$('comboNome').value.trim(),preco=num($('comboPreco').value);if(!nome){alert('Informe o nome do combo.');return;}if(preco<=0){alert('Informe um preço válido para o combo.');return;}if(!comboItensTemp.length){alert('Adicione pelo menos um produto ao combo.');return;}const dados={nome,preco:Number(preco.toFixed(2)),itens:comboItensTemp.map(i=>({...i})),ativo:true};if(comboEditandoId){const i=combos.findIndex(c=>c.id===comboEditandoId);if(i>=0)combos[i]={...combos[i],...dados};}else combos.push({id:'cb_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),...dados});persist();limparEdicaoCombo();renderCombos();$('comboMsg').innerHTML='<div class="msg ok">✅ Combo salvo.</div>';});
+$('cancelarComboBtn').addEventListener('click',limparEdicaoCombo);
+$('listaCombos').addEventListener('click',e=>{const edit=e.target.closest('.editarCombo'),alt=e.target.closest('.alternarCombo');if(edit){const c=combos.find(x=>x.id===edit.dataset.id);if(!c)return;comboEditandoId=c.id;comboItensTemp=(c.itens||[]).map(i=>({...i}));$('comboNome').value=c.nome;$('comboPreco').value=c.preco;$('salvarComboBtn').textContent='💾 ATUALIZAR COMBO';$('cancelarComboBtn').classList.remove('hidden');renderComboEdicao();document.getElementById('ancProdutosCombos')?.scrollIntoView({behavior:'smooth'});}if(alt){const c=combos.find(x=>x.id===alt.dataset.id);if(!c)return;c.ativo=c.ativo===false;persist();renderCombos();}});
+$('combosVendaRapida').addEventListener('click',e=>{const b=e.target.closest('.adicionarComboVenda');if(b&&!b.disabled)adicionarComboAoCarrinho(b.dataset.id);});
+
 function renderCarrinho(){
   if(!carrinho.length){$('carrinho').innerHTML='Nenhum produto adicionado.';$('totalVenda').textContent=money(0);atualizarAreaTarifa();return;}
   $('carrinho').innerHTML=carrinho.map((x,i)=>`
     <div class="item">
       <div class="between"><b>${x.q}x ${esc(x.n)}</b><b>${money(x.p*x.q)}</b></div>
-      <div class="small">${money(x.p)} cada${x.promocaoAplicada?' · <b>🏷️ Promoção aplicada</b>':''} · estoque atual: ${num(produtos[x.c]?.estoque)}
+      <div class="small">${money(x.p)} cada${x.comboNome?' · <b>🎁 '+esc(x.comboNome)+'</b>':''}${x.promocaoAplicada?' · <b>🏷️ Promoção aplicada</b>':''} · estoque atual: ${num(produtos[x.c]?.estoque)}
         ${x.promocaoAplicada && num(x.precoNormal)>num(x.p)?'<br>Preço normal '+money(x.precoNormal)+' · economia '+money((num(x.precoNormal)-num(x.p))*num(x.q)):''}
         <button type="button" class="btn gray action removerCarrinho" data-i="${i}">Remover</button>
       </div>
@@ -3336,7 +3418,7 @@ function renderCarrinho(){
 }
 $('carrinho').addEventListener('click',e=>{
   const b=e.target.closest('.removerCarrinho');if(!b)return;
-  carrinho.splice(Number(b.dataset.i),1);renderCarrinho();
+  const idx=Number(b.dataset.i), item=carrinho[idx];if(item?.comboInstancia)carrinho=carrinho.filter(x=>x.comboInstancia!==item.comboInstancia);else carrinho.splice(idx,1);renderCarrinho();
 });
 $('finalizarBtn').addEventListener('click',function(){
   if(!carrinho.length){alert('Adicione pelo menos um produto.');return;}
@@ -5704,7 +5786,7 @@ $('csvBtn').addEventListener('click',function(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='mini-box-vendas.csv';a.click();
 });
 $('backupBtn').addEventListener('click',function(){
-  const dados={versao:'13.5.5.26',ps:produtos,vs:vendas,entradas,fechamentos,maquinas,usuarios,clientes,fiados,listaReposicao,inventarioAtual,saidasConsumo,vencimentos,caixaConfig};
+  const dados={versao:'13.5.5.26',ps:produtos,vs:vendas,entradas,fechamentos,maquinas,usuarios,clientes,fiados,listaReposicao,inventarioAtual,saidasConsumo,vencimentos,combos,caixaConfig};
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(dados,null,2)],{type:'application/json'}));a.download='backup-mini-box-v13-5-5-24.json';a.click();
 });
 $('restoreBtn').addEventListener('click',function(){
@@ -5716,6 +5798,7 @@ $('restoreBtn').addEventListener('click',function(){
       clientes=Array.isArray(d.clientes)?d.clientes:[];
       fiados=Array.isArray(d.fiados)?d.fiados:[];
       listaReposicao=Array.isArray(d.listaReposicao)?d.listaReposicao:[];
+      combos=Array.isArray(d.combos)?d.combos:[];
       if(d.caixaConfig&&typeof d.caixaConfig==='object')caixaConfig={ativo:true,hora:'22:00',...d.caixaConfig};
       if(!Array.isArray(vendas))vendas=[];if(!Array.isArray(entradas))entradas=[];if(!Array.isArray(fechamentos))fechamentos=[];if(!Array.isArray(maquinas))maquinas=[];if(!Array.isArray(usuarios))usuarios=[];
 if(!Array.isArray(clientes))clientes=[];
@@ -5733,7 +5816,7 @@ if(!Array.isArray(fiados))fiados=[];
 });
 $('apagarBtn').addEventListener('click',function(){
   if(confirm('Apagar TODOS os dados comerciais do Mini Box (produtos, vendas, estoque, máquinas, clientes, fiados e fechamentos)?\n\nA conta de login na nuvem será preservada. Faça backup antes.')){
-    produtos={};vendas=[];entradas=[];fechamentos=[];maquinas=[];clientes=[];fiados=[];listaReposicao=[];inventarioAtual=null;saidasConsumo=[];vencimentos=[];carrinho=[];persist();renderCarrinho();atualizarTudo();
+    produtos={};vendas=[];entradas=[];fechamentos=[];maquinas=[];clientes=[];fiados=[];listaReposicao=[];inventarioAtual=null;saidasConsumo=[];vencimentos=[];combos=[];carrinho=[];persist();renderCarrinho();atualizarTudo();
   }
 });
 
@@ -5754,8 +5837,8 @@ document.addEventListener('click',function(e){
 },true);
 document.addEventListener('submit',function(e){if(MODO_DEMO){e.preventDefault();e.stopImmediatePropagation();bloquearAcaoDemo();}},true);
 
-function atualizarTudo(){renderPainel();renderProdutos();renderEstoque();preencherSelectReposicao();renderListaReposicao();renderInventario();renderConsumos();renderVencimentos();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();if(MODO_DEMO)setTimeout(()=>aplicarBloqueiosDemo(),0);}
-renderCarrinho();iniciarAutenticacao();
+function atualizarTudo(){renderPainel();renderProdutos();renderCombos();renderEstoque();preencherSelectReposicao();renderListaReposicao();renderInventario();renderConsumos();renderVencimentos();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();if(MODO_DEMO)setTimeout(()=>aplicarBloqueiosDemo(),0);}
+renderComboEdicao();renderCarrinho();iniciarAutenticacao();
 });
 </script>
 </body>
