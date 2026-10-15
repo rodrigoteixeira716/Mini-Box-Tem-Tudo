@@ -285,6 +285,14 @@ body.sidebarCollapsed .sidebarBrand{display:none}
 .climaAnaliseItem.good{background:#f0fff5;border-color:#ccebd7}.climaAnaliseItem.warn{background:#fff8e8;border-color:#ffe0a1}
 @media(max-width:650px){.climaResumoGrid{grid-template-columns:1fr 1fr}.climaHistoricoLinha{grid-template-columns:1.2fr .9fr .8fr}.climaHistoricoLinha>*:nth-child(4){display:none}}
 
+
+/* CARDÁPIO DE ATENDIMENTO */
+.cardapioGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.cardapioItem{border:1px solid var(--border,#dfe3e8);border-radius:16px;padding:14px;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+.cardapioItem.esgotado{opacity:.72}
+.cardapioNome{font-size:16px;font-weight:900;margin-bottom:5px}.cardapioPreco{font-size:22px;font-weight:950;margin:6px 0}.cardapioQtd{font-weight:800;margin-top:7px}
+.cardapioStatus{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}.cardapioStatus.ok{background:#e8f7ee;color:#16733a}.cardapioStatus.low{background:#fff4d6;color:#8a5a00}.cardapioStatus.out{background:#fde8e8;color:#a12626}
+.cardapioFiltros{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.cardapioFiltros .btn.active{outline:3px solid rgba(0,0,0,.12)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
@@ -399,6 +407,13 @@ body.sidebarCollapsed .sidebarBrand{display:none}
     <button class="sidebarMain" data-menu-tab="venda"><span class="sideIcon">🛒</span><span class="sideText">Vendas</span><span class="sideArrow">⌄</span></button>
     <div class="sidebarSubs">
       <button class="sidebarSub" data-go-tab="venda" data-target="ancVendaAdicionar">Nova venda / scanner / finalizar</button>
+    </div>
+  </div>
+
+  <div class="sidebarGroup">
+    <button class="sidebarMain" data-menu-tab="cardapio"><span class="sideIcon">📋</span><span class="sideText">Cardápio</span><span class="sideArrow">⌄</span></button>
+    <div class="sidebarSubs">
+      <button class="sidebarSub" data-go-tab="cardapio" data-target="ancCardapio">Produtos disponíveis</button>
     </div>
   </div>
 
@@ -738,6 +753,23 @@ body.sidebarCollapsed .sidebarBrand{display:none}
     <h3 id="ancFiadosClientes">👥 Clientes cadastrados</h3>
     <div class="searchBox"><span class="searchIcon">🔎</span><input id="buscaClientes" placeholder="Buscar cliente"></div>
     <div id="listaClientes"></div>
+  </div>
+</section>
+
+<section id="cardapio" class="hidden">
+  <div class="card">
+    <h2 id="ancCardapio">📋 Cardápio</h2>
+    <div class="note">Consulta rápida para atendimento. Quantidades são calculadas automaticamente pelo estoque atual; combos usam o estoque real dos componentes.</div>
+    <div class="searchBox" style="margin-top:12px"><span class="searchIcon">🔎</span><input id="buscaCardapio" placeholder="Buscar produto ou combo"></div>
+    <div class="cardapioFiltros">
+      <button class="btn primary filtroCardapio active" data-filtro="todos" type="button">Todos</button>
+      <button class="btn gray filtroCardapio" data-filtro="disponivel" type="button">🟢 Disponíveis</button>
+      <button class="btn gray filtroCardapio" data-filtro="ultimas" type="button">🟡 Últimas unidades</button>
+      <button class="btn gray filtroCardapio" data-filtro="esgotado" type="button">🔴 Esgotados</button>
+      <button class="btn gray filtroCardapio" data-filtro="combos" type="button">🎁 Combos</button>
+    </div>
+    <div id="resumoCardapio" class="small" style="margin-bottom:10px"></div>
+    <div id="listaCardapio" class="cardapioGrid"></div>
   </div>
 </section>
 
@@ -2888,7 +2920,7 @@ function areaDaAba(tab){
 function abrirAbaSidebar(tab){
   const area=areaDaAba(tab);
   if(!podeAcessar(area)){alert('Seu acesso não permite abrir esta área.');return false;}
-  ['painel','venda','produtos','estoque','vendas','fiados','menu'].forEach(id=>$(id).classList.toggle('hidden',id!==tab));
+  ['painel','venda','cardapio','produtos','estoque','vendas','fiados','menu'].forEach(id=>$(id).classList.toggle('hidden',id!==tab));
   document.querySelectorAll('.sidebarMain').forEach(b=>b.classList.toggle('on',b.dataset.menuTab===tab));
   atualizarTudo();
   return true;
@@ -4245,6 +4277,43 @@ $('salvarProdutoBtn').addEventListener('click',function(){
 });
 $('cancelarProdutoBtn').addEventListener('click',limparProdutoForm);
 
+let filtroCardapioAtual='todos';
+function quantidadeDisponivelComboCardapio(c){
+  if(!c || c.ativo===false || !(c.itens||[]).length)return 0;
+  let max=Infinity;
+  for(const i of c.itens||[]){
+    const q=Math.max(1,num(i.q));
+    const p=produtos[i.c];
+    if(!p || p.ativo===false)return 0;
+    max=Math.min(max,Math.floor(Math.max(0,num(p.estoque))/q));
+  }
+  return Number.isFinite(max)?Math.max(0,max):0;
+}
+function statusCardapio(q,minimo){
+  q=Math.max(0,Math.floor(num(q))); minimo=Math.max(0,num(minimo));
+  if(q<=0)return {id:'esgotado',texto:'🔴 ESGOTADO',classe:'out'};
+  if(minimo>0 && q<=minimo)return {id:'ultimas',texto:'🟡 ÚLTIMAS UNIDADES',classe:'low'};
+  return {id:'disponivel',texto:'🟢 DISPONÍVEL',classe:'ok'};
+}
+function renderCardapio(){
+  const box=$('listaCardapio');if(!box)return;
+  const termo=String($('buscaCardapio')?.value||'').trim().toLowerCase();
+  const itens=[];
+  Object.entries(produtos).filter(([,p])=>p.ativo!==false).forEach(([codigo,p])=>{
+    const q=Math.max(0,Math.floor(num(p.estoque))), st=statusCardapio(q,p.minimo);
+    itens.push({tipo:'produto',codigo,nome:String(p.nome||'Produto'),preco:num(p.preco),q,status:st});
+  });
+  combos.filter(c=>c.ativo!==false).forEach(c=>{
+    const q=quantidadeDisponivelComboCardapio(c), st=statusCardapio(q,0);
+    const componentes=(c.itens||[]).map(i=>num(i.q)+'x '+String(produtos[i.c]?.nome||i.n||'Produto')).join(' + ');
+    itens.push({tipo:'combo',codigo:String(c.codigo||''),nome:String(c.nome||'Combo'),preco:num(c.preco),q,status:st,componentes});
+  });
+  itens.sort((a,b)=>{if(a.status.id==='esgotado'&&b.status.id!=='esgotado')return 1;if(b.status.id==='esgotado'&&a.status.id!=='esgotado')return -1;return a.nome.localeCompare(b.nome,'pt-BR');});
+  const filtrados=itens.filter(i=>(!termo||i.nome.toLowerCase().includes(termo)||i.codigo.toLowerCase().includes(termo)||String(i.componentes||'').toLowerCase().includes(termo)) && (filtroCardapioAtual==='todos'||(filtroCardapioAtual==='combos'?i.tipo==='combo':i.status.id===filtroCardapioAtual)));
+  $('resumoCardapio').textContent=filtrados.length+' item(ns) exibido(s) · '+itens.filter(i=>i.status.id==='esgotado').length+' esgotado(s)';
+  box.innerHTML=filtrados.length?filtrados.map(i=>`<div class="cardapioItem ${i.status.id==='esgotado'?'esgotado':''}"><div class="cardapioNome">${i.tipo==='combo'?'🎁 ':''}${esc(i.nome)}</div><span class="cardapioStatus ${i.status.classe}">${i.status.texto}</span><div class="cardapioPreco">${money(i.preco)}</div><div class="cardapioQtd">${i.q} ${i.tipo==='combo'?'combo(s)':'unidade(s)'} disponível(is)</div>${i.tipo==='combo'?`<div class="small" style="margin-top:7px">${esc(i.componentes||'')}</div>`:''}<div class="small" style="margin-top:6px">Código: ${esc(i.codigo)}</div></div>`).join(''):'<div class="msg">Nenhum item encontrado neste filtro.</div>';
+}
+
 function renderProdutos(){
   garantirCodigosCombos();
   const termo=String($('buscaProdutos')?.value||'').trim().toLowerCase();
@@ -4306,6 +4375,13 @@ function renderProdutos(){
       <button type="button" class="btn green action reativarProduto" data-c="${encodeURIComponent(c)}">♻️ REATIVAR</button>
     </div>`).join(''):'Nenhum produto desativado.';
 }
+if($('buscaCardapio'))$('buscaCardapio').addEventListener('input',renderCardapio);
+document.querySelectorAll('.filtroCardapio').forEach(btn=>btn.addEventListener('click',function(){
+  filtroCardapioAtual=this.dataset.filtro||'todos';
+  document.querySelectorAll('.filtroCardapio').forEach(b=>{b.classList.remove('active');b.classList.toggle('primary',b===this);b.classList.toggle('gray',b!==this);});
+  renderCardapio();
+}));
+
 $('buscaProdutos').addEventListener('input',renderProdutos);
 
 $('listaProdutos').addEventListener('click',e=>{
@@ -5917,7 +5993,7 @@ document.addEventListener('click',function(e){
 },true);
 document.addEventListener('submit',function(e){if(MODO_DEMO){e.preventDefault();e.stopImmediatePropagation();bloquearAcaoDemo();}},true);
 
-function atualizarTudo(){renderPainel();renderProdutos();renderCombos();renderEstoque();preencherSelectReposicao();renderListaReposicao();renderInventario();renderConsumos();renderVencimentos();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();if(MODO_DEMO)setTimeout(()=>aplicarBloqueiosDemo(),0);}
+function atualizarTudo(){renderPainel();renderProdutos();renderCombos();renderCardapio();renderEstoque();preencherSelectReposicao();renderListaReposicao();renderInventario();renderConsumos();renderVencimentos();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();if(MODO_DEMO)setTimeout(()=>aplicarBloqueiosDemo(),0);}
 renderComboEdicao();renderCarrinho();iniciarAutenticacao();
 });
 </script>
