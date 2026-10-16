@@ -696,6 +696,13 @@ body.sidebarCollapsed .sidebarBrand{display:none}
         <option value="">Sem máquina / sem tarifa</option>
       </select>
 
+      <div id="areaBandeira" class="hidden">
+        <label>Bandeira do cartão</label>
+        <select id="bandeiraVenda">
+          <option value="Mastercard">Mastercard</option><option value="Visa">Visa</option><option value="Elo">Elo</option>
+        </select>
+      </div>
+
       <div id="areaParcelas" class="hidden">
         <label>Parcelas</label>
         <select id="parcelasVenda">
@@ -1202,11 +1209,29 @@ body.sidebarCollapsed .sidebarBrand{display:none}
 
     <div class="grid2">
       <div><label>PIX (%)</label><input id="taxaPix" type="number" min="0" step="0.01" placeholder="0,00"></div>
-      <div><label>Débito (%)</label><input id="taxaDebito" type="number" min="0" step="0.01" placeholder="0,00"></div>
-      <div><label>Crédito 1x (%)</label><input id="taxaCredito1" type="number" min="0" step="0.01" placeholder="0,00"></div>
-      <div><label>Crédito 2x a 6x (%)</label><input id="taxaCredito26" type="number" min="0" step="0.01" placeholder="0,00"></div>
-      <div><label>Crédito 7x a 12x (%)</label><input id="taxaCredito712" type="number" min="0" step="0.01" placeholder="0,00"></div>
     </div>
+    <div class="saleCheckoutDivider"><span>MASTERCARD</span></div>
+    <div class="grid2">
+      <div><label>Débito (%)</label><input id="taxaMasterDebito" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Crédito 1x (%)</label><input id="taxaMasterCredito1" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Crédito 2x a 6x (%)</label><input id="taxaMasterCredito26" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Crédito 7x a 12x (%)</label><input id="taxaMasterCredito712" type="number" min="0" step="0.01" placeholder="0,00"></div>
+    </div>
+    <div class="saleCheckoutDivider"><span>VISA</span></div>
+    <div class="grid2">
+      <div><label>Débito (%)</label><input id="taxaVisaDebito" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Crédito 1x (%)</label><input id="taxaVisaCredito1" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Crédito 2x a 6x (%)</label><input id="taxaVisaCredito26" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Crédito 7x a 12x (%)</label><input id="taxaVisaCredito712" type="number" min="0" step="0.01" placeholder="0,00"></div>
+    </div>
+    <div class="saleCheckoutDivider"><span>ELO</span></div>
+    <div class="grid2">
+      <div><label>Débito (%)</label><input id="taxaEloDebito" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Crédito 1x (%)</label><input id="taxaEloCredito1" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Crédito 2x a 6x (%)</label><input id="taxaEloCredito26" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label>Crédito 7x a 12x (%)</label><input id="taxaEloCredito712" type="number" min="0" step="0.01" placeholder="0,00"></div>
+    </div>
+    <div class="note">As taxas são editáveis por maquininha e bandeira. Cadastros antigos são preservados e passam a usar a taxa anterior como padrão nas três bandeiras.</div>
 
     <div class="grid2" style="margin-top:12px">
       <button id="salvarMaquinaBtn" class="btn primary" type="button">💾 SALVAR MÁQUINA</button>
@@ -1367,6 +1392,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
     </select>
     <div id="pagFiadoMaquinaArea" class="hidden">
       <label>Máquina</label><select id="pagFiadoMaquina"><option value="">Sem máquina / sem tarifa</option></select>
+      <div id="pagFiadoBandeiraArea" class="hidden"><label>Bandeira</label><select id="pagFiadoBandeira"><option>Mastercard</option><option>Visa</option><option>Elo</option></select></div>
       <div id="pagFiadoParcelasArea" class="hidden"><label>Parcelas</label><select id="pagFiadoParcelas">
         <option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option>
         <option value="5">5x</option><option value="6">6x</option><option value="7">7x</option><option value="8">8x</option>
@@ -2203,15 +2229,22 @@ function lucroAposTaxa(v){
 function maquinaPorId(id){
   return maquinas.find(m=>String(m.id)===String(id))||null;
 }
-function percentualDaMaquina(maquina,pagamento,parcelas){
+function taxasBandeiraMaquina(maquina,bandeira){
+  if(!maquina)return {debito:0,credito1:0,credito26:0,credito712:0};
+  const chave=String(bandeira||'Mastercard').toLowerCase();
+  const t=maquina.taxasBandeiras?.[chave];
+  return t||{debito:num(maquina.debito),credito1:num(maquina.credito1),credito26:num(maquina.credito26),credito712:num(maquina.credito712)};
+}
+function percentualDaMaquina(maquina,pagamento,parcelas,bandeira){
   if(!maquina)return 0;
   if(pagamento==='PIX')return num(maquina.pix);
-  if(pagamento==='Cartão de débito')return num(maquina.debito);
+  const t=taxasBandeiraMaquina(maquina,bandeira);
+  if(pagamento==='Cartão de débito')return num(t.debito);
   if(pagamento==='Cartão de crédito'){
     const p=Math.max(1,Math.floor(num(parcelas)||1));
-    if(p===1)return num(maquina.credito1);
-    if(p<=6)return num(maquina.credito26);
-    return num(maquina.credito712);
+    if(p===1)return num(t.credito1);
+    if(p<=6)return num(t.credito26);
+    return num(t.credito712);
   }
   return 0;
 }
@@ -2226,8 +2259,8 @@ function formasSplit(pagamento){
 }
 function ehPagamentoDividido(pagamento){return !!formasSplit(pagamento);}
 function valoresSplit(){return [Math.max(0,num($('splitValor1')?.value)),Math.max(0,num($('splitValor2')?.value))];}
-function dadosTarifaForma(forma,valor,maquina,parcelas){
-  const perc=percentualDaMaquina(maquina,forma,parcelas);
+function dadosTarifaForma(forma,valor,maquina,parcelas,bandeira){
+  const perc=percentualDaMaquina(maquina,forma,parcelas,bandeira);
   const taxa=Number((num(valor)*perc/100).toFixed(2));
   return {forma,valor:Number(num(valor).toFixed(2)),percentual:perc,taxa,liquido:Number((num(valor)-taxa).toFixed(2))};
 }
@@ -2235,17 +2268,18 @@ function dadosTarifaAtual(total){
   const pagamento=$('pagamento').value;
   const maquina=maquinaPorId($('maquinaVenda').value);
   const parcelas=(pagamento==='Cartão de crédito'||pagamento==='Crédito + Débito'||pagamento==='PIX + Crédito')?Math.max(1,Math.floor(num($('parcelasVenda').value)||1)):1;
+  const bandeira=$('bandeiraVenda')?.value||'Mastercard';
   const fs=formasSplit(pagamento);
   if(fs){
     const vs=valoresSplit();
-    const partes=[dadosTarifaForma(fs[0],vs[0],maquina,parcelas),dadosTarifaForma(fs[1],vs[1],maquina,parcelas)];
+    const partes=[dadosTarifaForma(fs[0],vs[0],maquina,parcelas,bandeira),dadosTarifaForma(fs[1],vs[1],maquina,parcelas,bandeira)];
     const taxa=Number(partes.reduce((a,x)=>a+x.taxa,0).toFixed(2));
-    return {maquina,parcelas,percentual:0,taxa,liquido:Number((num(total)-taxa).toFixed(2)),partes};
+    return {maquina,parcelas,bandeira,percentual:0,taxa,liquido:Number((num(total)-taxa).toFixed(2)),partes};
   }
-  const percentual=percentualDaMaquina(maquina,pagamento,parcelas);
+  const percentual=percentualDaMaquina(maquina,pagamento,parcelas,bandeira);
   const taxa=Number((num(total)*percentual/100).toFixed(2));
   const liquido=Number((num(total)-taxa).toFixed(2));
-  return {maquina,parcelas,percentual,taxa,liquido,partes:null};
+  return {maquina,parcelas,bandeira,percentual,taxa,liquido,partes:null};
 }
 
 function vendasDoPeriodo(periodo){
@@ -3044,6 +3078,8 @@ function atualizarAreaTarifa(){
   const usa=pg==='PIX'||pg==='Cartão de débito'||pg==='Cartão de crédito'||(fs&&fs.some(x=>x==='PIX'||x==='Cartão de débito'||x==='Cartão de crédito'));
   $('areaMaquinaVenda').classList.toggle('hidden',!usa);
   const temCredito=pg==='Cartão de crédito'||(fs&&fs.includes('Cartão de crédito'));
+  const temCartao=pg==='Cartão de débito'||pg==='Cartão de crédito'||(fs&&fs.some(x=>x==='Cartão de débito'||x==='Cartão de crédito'));
+  $('areaBandeira').classList.toggle('hidden',!temCartao);
   $('areaParcelas').classList.toggle('hidden',!temCredito);
   if(!usa){$('maquinaVenda').value='';$('parcelasVenda').value='1';return;}
   const total=carrinho.reduce((s,x)=>s+num(x.p)*num(x.q),0);
@@ -3055,10 +3091,11 @@ function atualizarAreaTarifa(){
   if(!d.maquina){$('tarifaPreview').innerHTML='Sem máquina selecionada: <b>nenhuma tarifa será descontada</b>.';return;}
   if(d.partes){
     $('tarifaPreview').innerHTML=d.partes.map(x=>'<b>'+esc(x.forma)+'</b>: '+money(x.valor)+' · taxa '+x.percentual.toFixed(2).replace('.',',')+'% = '+money(x.taxa)).join('<br>')+'<br>Total de tarifas: <b>'+money(d.taxa)+'</b> · Líquido: <b>'+money(d.liquido)+'</b>';
-  }else $('tarifaPreview').innerHTML='<b>'+esc(d.maquina.nome)+'</b><br>Taxa: <b>'+d.percentual.toFixed(2).replace('.',',')+'%</b> · desconto: <b>'+money(d.taxa)+'</b><br>Você recebe líquido: <b>'+money(d.liquido)+'</b>';
+  }else $('tarifaPreview').innerHTML='<b>'+esc(d.maquina.nome)+'</b>'+(($('pagamento').value||'').includes('Cartão')?' · <b>'+esc(d.bandeira)+'</b>':'')+'<br>Taxa: <b>'+d.percentual.toFixed(2).replace('.',',')+'%</b> · desconto: <b>'+money(d.taxa)+'</b><br>Você recebe líquido: <b>'+money(d.liquido)+'</b>';
 }
 $('pagamento').addEventListener('change',atualizarAreaTarifa);
 $('maquinaVenda').addEventListener('change',atualizarAreaTarifa);
+$('bandeiraVenda').addEventListener('change',atualizarAreaTarifa);
 $('parcelasVenda').addEventListener('change',atualizarAreaTarifa);
 $('splitValor1').addEventListener('input',atualizarAreaTarifa);
 $('splitValor2').addEventListener('input',atualizarAreaTarifa);
@@ -3632,11 +3669,12 @@ $('confirmarRegistrarVendaBtn').addEventListener('click',function(){
     clienteTelefone:clienteFiado?(clienteFiado.telefone||''):'',
     maquinaId:td.maquina?td.maquina.id:'',
     maquinaNome:td.maquina?td.maquina.nome:'',
+    bandeira:td.bandeira||'',
     parcelas:td.parcelas,
     taxaPercentual:td.percentual,
     taxaValor:td.taxa,
     liquido:td.liquido,
-    pagamentosDivididos:td.partes?td.partes.map(x=>({forma:x.forma,valor:x.valor,taxaPercentual:x.percentual,taxaValor:x.taxa,liquido:x.liquido,maquinaId:td.maquina?td.maquina.id:'',maquinaNome:td.maquina?td.maquina.nome:'',parcelas:x.forma==='Cartão de crédito'?td.parcelas:1})):[],
+    pagamentosDivididos:td.partes?td.partes.map(x=>({forma:x.forma,valor:x.valor,taxaPercentual:x.percentual,taxaValor:x.taxa,liquido:x.liquido,maquinaId:td.maquina?td.maquina.id:'',maquinaNome:td.maquina?td.maquina.nome:'',bandeira:(x.forma||'').includes('Cartão')?(td.bandeira||''):'',parcelas:x.forma==='Cartão de crédito'?td.parcelas:1})):[],
     operadorId:usuarioAtual()?.id||'',
     operadorNome:usuarioAtual()?.nome||usuarioAtual()?.usuario||''
   };
@@ -3868,14 +3906,15 @@ function preencherMaquinasPagamentoFiado(){
 function atualizarPagamentoFiadoPreview(){
   const forma=$('pagFiadoForma').value, usa=forma==='PIX'||forma==='Cartão de débito'||forma==='Cartão de crédito';
   $('pagFiadoMaquinaArea').classList.toggle('hidden',!usa);
+  $('pagFiadoBandeiraArea').classList.toggle('hidden',!(forma==='Cartão de débito'||forma==='Cartão de crédito'));
   $('pagFiadoParcelasArea').classList.toggle('hidden',forma!=='Cartão de crédito');
   if(!usa)return;
   const maq=maquinaPorId($('pagFiadoMaquina').value);
-  const valor=num($('pagFiadoValor').value),parcelas=Math.max(1,num($('pagFiadoParcelas').value));
-  const perc=maq?percentualDaMaquina(maq,forma,parcelas):0,taxa=valor*perc/100;
+  const valor=num($('pagFiadoValor').value),parcelas=Math.max(1,num($('pagFiadoParcelas').value)),bandeira=$('pagFiadoBandeira').value;
+  const perc=maq?percentualDaMaquina(maq,forma,parcelas,bandeira):0,taxa=valor*perc/100;
   $('pagFiadoTaxaPreview').innerHTML=maq?`Taxa: <b>${perc.toFixed(2).replace('.',',')}%</b> · ${money(taxa)} · Líquido ${money(valor-taxa)}`:'Sem tarifa.';
 }
-['pagFiadoForma','pagFiadoMaquina','pagFiadoParcelas','pagFiadoValor'].forEach(id=>$(id).addEventListener('change',atualizarPagamentoFiadoPreview));
+['pagFiadoForma','pagFiadoMaquina','pagFiadoBandeira','pagFiadoParcelas','pagFiadoValor'].forEach(id=>$(id).addEventListener('change',atualizarPagamentoFiadoPreview));
 $('pagFiadoValor').addEventListener('input',atualizarPagamentoFiadoPreview);
 
 $('listaFiados').addEventListener('click',e=>{
@@ -3883,7 +3922,7 @@ $('listaFiados').addEventListener('click',e=>{
   const btn=pay||cob||ed||del;if(!btn)return;
   const f=fiados.find(x=>String(x.id)===String(btn.dataset.id));if(!f)return;
   if(pay){
-    $('pagFiadoId').value=f.id;$('pagFiadoValor').value=saldoFiado(f).toFixed(2);$('pagFiadoForma').value='Dinheiro';$('pagFiadoParcelas').value='1';
+    $('pagFiadoId').value=f.id;$('pagFiadoValor').value=saldoFiado(f).toFixed(2);$('pagFiadoForma').value='Dinheiro';$('pagFiadoBandeira').value='Mastercard';$('pagFiadoParcelas').value='1';
     preencherMaquinasPagamentoFiado();$('pagFiadoMaquina').value='';
     $('pagFiadoInfo').innerHTML=`<b>${esc(f.clienteNome)}</b><br>Saldo atual: ${money(saldoFiado(f))}`;
     $('modalPagamentoFiado').classList.remove('hidden');atualizarPagamentoFiadoPreview();return;
@@ -3919,12 +3958,12 @@ $('confirmarPagamentoFiadoBtn').addEventListener('click',function(){
   const saldo=saldoFiado(f),valor=num($('pagFiadoValor').value);
   if(valor<=0){alert('Informe um valor recebido maior que zero.');return;}
   if(valor>saldo+0.009){alert('O pagamento não pode ser maior que o saldo devedor ('+money(saldo)+').');return;}
-  const forma=$('pagFiadoForma').value, maq=maquinaPorId($('pagFiadoMaquina').value), parcelas=Math.max(1,num($('pagFiadoParcelas').value));
-  const perc=maq?percentualDaMaquina(maq,forma,parcelas):0,taxa=valor*perc/100,liquido=valor-taxa;
+  const forma=$('pagFiadoForma').value, maq=maquinaPorId($('pagFiadoMaquina').value), parcelas=Math.max(1,num($('pagFiadoParcelas').value)), bandeira=$('pagFiadoBandeira').value;
+  const perc=maq?percentualDaMaquina(maq,forma,parcelas,bandeira):0,taxa=valor*perc/100,liquido=valor-taxa;
   f.pago=num(f.pago)+valor;
   f.status=saldoFiado(f)<=0.009?'pago':'pendente';
   f.pagamentos=f.pagamentos||[];
-  f.pagamentos.push({id:'pg_'+Date.now(),d:new Date().toISOString(),valor,forma,maquinaId:maq?.id||'',maquinaNome:maq?.nome||'',parcelas,taxaPercentual:perc,taxaValor:taxa,liquido,operadorId:usuarioAtual()?.id||'',operadorNome:usuarioAtual()?.nome||''});
+  f.pagamentos.push({id:'pg_'+Date.now(),d:new Date().toISOString(),valor,forma,maquinaId:maq?.id||'',maquinaNome:maq?.nome||'',bandeira:(forma||'').includes('Cartão')?bandeira:'',parcelas,taxaPercentual:perc,taxaValor:taxa,liquido,operadorId:usuarioAtual()?.id||'',operadorNome:usuarioAtual()?.nome||''});
   persist();$('modalPagamentoFiado').classList.add('hidden');renderFiados();beep();
   alert('Pagamento registrado!\\nRecebido: '+money(valor)+(taxa?'\\nTarifa: '+money(taxa)+'\\nLíquido: '+money(liquido):'')+'\\nSaldo: '+money(saldoFiado(f)));
 });
@@ -5868,67 +5907,37 @@ $('confirmarSenhaUsuarioBtn').addEventListener('click',async function(){
 });
 
 // MÁQUINAS E TARIFAS
+const bandeirasTaxa=['mastercard','visa','elo'];
+function idTaxaBandeira(b,campo){const pre={mastercard:'Master',visa:'Visa',elo:'Elo'}[b];const suf={debito:'Debito',credito1:'Credito1',credito26:'Credito26',credito712:'Credito712'}[campo];return 'taxa'+pre+suf;}
 function limparMaquinaForm(){
-  $('maquinaEditId').value='';
-  ['maquinaNome','taxaPix','taxaDebito','taxaCredito1','taxaCredito26','taxaCredito712'].forEach(id=>$(id).value='');
-  $('cancelarMaquinaBtn').classList.add('hidden');
-  $('salvarMaquinaBtn').textContent='💾 SALVAR MÁQUINA';
+  $('maquinaEditId').value='';$('maquinaNome').value='';$('taxaPix').value='';
+  bandeirasTaxa.forEach(b=>['debito','credito1','credito26','credito712'].forEach(c=>$(idTaxaBandeira(b,c)).value=''));
+  $('cancelarMaquinaBtn').classList.add('hidden');$('salvarMaquinaBtn').textContent='💾 SALVAR MÁQUINA';
 }
+function taxasBandeiraParaExibir(m,b){return taxasBandeiraMaquina(m,b);}
 function renderMaquinas(){
-  $('listaMaquinas').innerHTML=maquinas.length?maquinas.map(m=>`
-    <div class="item">
-      <div class="between"><b>${esc(m.nome)}</b><span class="badge">Ativa</span></div>
-      <div class="small">
-        PIX ${num(m.pix).toFixed(2).replace('.',',')}% ·
-        Débito ${num(m.debito).toFixed(2).replace('.',',')}%<br>
-        Crédito 1x ${num(m.credito1).toFixed(2).replace('.',',')}% ·
-        2–6x ${num(m.credito26).toFixed(2).replace('.',',')}% ·
-        7–12x ${num(m.credito712).toFixed(2).replace('.',',')}%
-      </div>
-      <div class="sale-actions">
-        <button type="button" class="btn gray action editarMaquinaBtn" data-id="${esc(m.id)}">✏️ Editar</button>
-        <button type="button" class="btn red action excluirMaquinaBtn" data-id="${esc(m.id)}">🗑 Excluir</button>
-      </div>
-    </div>`).join(''):'Nenhuma máquina cadastrada.';
+  $('listaMaquinas').innerHTML=maquinas.length?maquinas.map(m=>{
+    const ma=taxasBandeiraParaExibir(m,'mastercard'),vi=taxasBandeiraParaExibir(m,'visa'),el=taxasBandeiraParaExibir(m,'elo');
+    const linha=(nome,t)=>'<b>'+nome+'</b>: Débito '+num(t.debito).toFixed(2).replace('.',',')+'% · Crédito 1x '+num(t.credito1).toFixed(2).replace('.',',')+'% · 2–6x '+num(t.credito26).toFixed(2).replace('.',',')+'% · 7–12x '+num(t.credito712).toFixed(2).replace('.',',')+'%';
+    return `<div class="item"><div class="between"><b>${esc(m.nome)}</b><span class="badge">Ativa</span></div><div class="small">PIX ${num(m.pix).toFixed(2).replace('.',',')}%<br>${linha('Mastercard',ma)}<br>${linha('Visa',vi)}<br>${linha('Elo',el)}</div><div class="sale-actions"><button type="button" class="btn gray action editarMaquinaBtn" data-id="${esc(m.id)}">✏️ Editar</button> <button type="button" class="btn red action excluirMaquinaBtn" data-id="${esc(m.id)}">🗑 Excluir</button></div></div>`;
+  }).join(''):'Nenhuma máquina cadastrada.';
   renderSelectMaquinas();
 }
 $('salvarMaquinaBtn').addEventListener('click',function(){
-  const nome=$('maquinaNome').value.trim();
-  if(!nome){$('maquinaMsg').innerHTML='<div class="msg err">Informe o nome da máquina.</div>';return;}
-  const dados={
-    nome,
-    pix:Math.max(0,num($('taxaPix').value)),
-    debito:Math.max(0,num($('taxaDebito').value)),
-    credito1:Math.max(0,num($('taxaCredito1').value)),
-    credito26:Math.max(0,num($('taxaCredito26').value)),
-    credito712:Math.max(0,num($('taxaCredito712').value))
-  };
+  const nome=$('maquinaNome').value.trim();if(!nome){$('maquinaMsg').innerHTML='<div class="msg err">Informe o nome da máquina.</div>';return;}
+  const taxasBandeiras={};
+  bandeirasTaxa.forEach(b=>{taxasBandeiras[b]={};['debito','credito1','credito26','credito712'].forEach(c=>taxasBandeiras[b][c]=Math.max(0,num($(idTaxaBandeira(b,c)).value)));});
+  const dados={nome,pix:Math.max(0,num($('taxaPix').value)),taxasBandeiras};
   const id=$('maquinaEditId').value;
-  if(id){
-    const i=maquinas.findIndex(m=>String(m.id)===String(id));
-    if(i>=0)maquinas[i]={...maquinas[i],...dados};
-  }else{
-    maquinas.push({id:'maq_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),...dados});
-  }
-  persist();limparMaquinaForm();renderMaquinas();atualizarAreaTarifa();
-  $('maquinaMsg').innerHTML='<div class="msg ok">✅ Máquina e tarifas salvas.</div>';beep();
+  if(id){const i=maquinas.findIndex(m=>String(m.id)===String(id));if(i>=0)maquinas[i]={...maquinas[i],...dados};}
+  else maquinas.push({id:'maq_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),...dados});
+  persist();limparMaquinaForm();renderMaquinas();atualizarAreaTarifa();$('maquinaMsg').innerHTML='<div class="msg ok">✅ Máquina e tarifas por bandeira salvas.</div>';beep();
 });
 $('cancelarMaquinaBtn').addEventListener('click',limparMaquinaForm);
 $('listaMaquinas').addEventListener('click',function(e){
   const ed=e.target.closest('.editarMaquinaBtn'),del=e.target.closest('.excluirMaquinaBtn');
-  if(ed){
-    const m=maquinaPorId(ed.dataset.id);if(!m)return;
-    $('maquinaEditId').value=m.id;$('maquinaNome').value=m.nome;$('taxaPix').value=m.pix;
-    $('taxaDebito').value=m.debito;$('taxaCredito1').value=m.credito1;$('taxaCredito26').value=m.credito26;$('taxaCredito712').value=m.credito712;
-    $('cancelarMaquinaBtn').classList.remove('hidden');$('salvarMaquinaBtn').textContent='💾 ATUALIZAR MÁQUINA';
-    return;
-  }
-  if(del){
-    const m=maquinaPorId(del.dataset.id);if(!m)return;
-    if(confirm('Excluir a máquina "'+m.nome+'"? As vendas antigas continuarão com as tarifas já registradas.')){
-      maquinas=maquinas.filter(x=>String(x.id)!==String(m.id));persist();renderMaquinas();atualizarAreaTarifa();
-    }
-  }
+  if(ed){const m=maquinaPorId(ed.dataset.id);if(!m)return;$('maquinaEditId').value=m.id;$('maquinaNome').value=m.nome;$('taxaPix').value=m.pix;bandeirasTaxa.forEach(b=>{const t=taxasBandeiraMaquina(m,b);['debito','credito1','credito26','credito712'].forEach(c=>$(idTaxaBandeira(b,c)).value=num(t[c]));});$('cancelarMaquinaBtn').classList.remove('hidden');$('salvarMaquinaBtn').textContent='💾 ATUALIZAR MÁQUINA';return;}
+  if(del){const m=maquinaPorId(del.dataset.id);if(!m)return;if(confirm('Excluir a máquina "'+m.nome+'"? As vendas antigas continuarão com as tarifas já registradas.')){maquinas=maquinas.filter(x=>String(x.id)!==String(m.id));persist();renderMaquinas();atualizarAreaTarifa();}}
 });
 
 // EXPORTAÇÃO / BACKUP
