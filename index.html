@@ -497,7 +497,7 @@ body.sidebarCollapsed .sidebarBrand{display:none}
   <div class="card">
     <h2 id="ancPainelDashboard">📊 Dashboard</h2>
     <div class="dashboardGrid">
-      <div class="metric"><small>Faturamento total do ano</small><b id="dashAno">R$ 0,00</b><span class="sub">Ano atual</span></div>
+      <div class="metric"><small>Faturamento total do ano</small><b id="dashAno">R$ 0,00</b><span class="sub" id="dashAnoSub">Ano atual</span></div>
       <div class="metric"><small>Faturamento mês passado</small><b id="dashMesAnterior">R$ 0,00</b><span class="sub">Mês anterior completo</span></div>
       <div class="metric"><small>Faturamento mês atual</small><b id="dashMesAtual">R$ 0,00</b><span class="sub">Do dia 1º até hoje</span></div>
       <div class="metric"><small>Balanço geral do mês</small><b id="dashBalancoMes">R$ 0,00</b><span class="sub">Faturamento − compras de estoque − tarifas</span></div>
@@ -5032,7 +5032,14 @@ function renderPainel(){
   const tf=totaisFinanceiros(mes,'mes');
   const comprasMes=entradasEntre(iniMes,fimMes).reduce((s,e)=>s+num(e.q)*num(e.custo),0);
   const balanco=tf.fat-comprasMes-tf.taxas;
-  $('dashAno').textContent=money(ano.reduce((s,v)=>s+num(v.t),0));
+  // Histórico anterior do FluxPDV: usado EXCLUSIVAMENTE no card de faturamento anual de 2026.
+  // Não entra em vendas, relatórios, caixa, lucro, ticket médio, estoque, IA ou demais indicadores.
+  const faturamentoMiniBoxAno=ano.reduce((s,v)=>s+num(v.t),0);
+  const historicoAnteriorAno=agora.getFullYear()===2026?8206.15:0;
+  $('dashAno').textContent=money(faturamentoMiniBoxAno+historicoAnteriorAno);
+  if($('dashAnoSub')) $('dashAnoSub').textContent=historicoAnteriorAno>0
+    ? 'Mini Box '+money(faturamentoMiniBoxAno)+' + histórico anterior '+money(historicoAnteriorAno)
+    : 'Ano atual';
   $('dashMesAnterior').textContent=money(mesAnt.reduce((s,v)=>s+num(v.t),0));
   $('dashMesAtual').textContent=money(tf.fat);
   $('dashBalancoMes').textContent=money(balanco);
