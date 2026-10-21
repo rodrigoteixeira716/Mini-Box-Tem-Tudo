@@ -2203,7 +2203,25 @@ async function prepararSessaoNuvem(session){
   };
   usuarios=[usuarioNuvem];
 
+  // Migração segura da meta criada nas versões anteriores (localStorage).
+  // Guardamos o valor ANTES de baixar a nuvem, pois o estado remoto antigo ainda não tinha metasFaturamento.
+  const agoraMetaMigracao=new Date();
+  const chaveMetaMigracao=chaveMetaMes(agoraMetaMigracao);
+  let metaLocalLegada=0;
+  try{metaLocalLegada=Math.max(0,num(localStorage.getItem(chaveMetaFaturamento(agoraMetaMigracao))||0));}catch(e){}
+
   const remoto=await baixarEstadoNuvem();
+
+  // Se a nuvem ainda não conhece a meta deste mês, migra a meta antiga deste aparelho e envia imediatamente.
+  // Se a nuvem já possui uma meta, ela sempre prevalece.
+  const metaRemotaDoMes=remoto?.dados?.metasFaturamento && Object.prototype.hasOwnProperty.call(remoto.dados.metasFaturamento,chaveMetaMigracao);
+  if(metaLocalLegada>0 && !metaRemotaDoMes){
+    metasFaturamento[chaveMetaMigracao]=metaLocalLegada;
+    await enviarEstadoNuvem('migração da meta mensal');
+    try{localStorage.removeItem(chaveMetaFaturamento(agoraMetaMigracao));}catch(e){}
+    renderPainel();
+  }
+
   if(!remoto){
     if(temDadosLocaisRelevantes()){
       const ok=confirm(
