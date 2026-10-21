@@ -537,31 +537,15 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
       <div class="metric"><small>Total de vendas do dia</small><b id="dashTotalDia">R$ 0,00</b><span class="sub">Faturamento de hoje</span></div>
       <div class="metric"><small>Vendas no mês</small><b id="dashQtdMes">0</b><span class="sub">Quantidade de vendas</span></div>
     </div>
-  </div>
-
-  <div class="card" id="cardMetaFaturamento">
-    <div class="between" style="gap:12px;align-items:flex-start">
-      <div>
-        <h3 style="margin:0">🎯 Meta de faturamento do mês</h3>
-        <div class="small" id="metaMesTitulo">Acompanhe o progresso do mês atual.</div>
+    <div id="metaFaturamentoCard" class="note" style="margin-top:14px;padding:16px">
+      <div class="between" style="gap:10px;flex-wrap:wrap">
+        <div><b style="font-size:18px">🎯 Meta de faturamento do mês</b><div id="metaMesLabel" class="small">Mês atual</div></div>
+        <button id="definirMetaBtn" class="btn blue" type="button">🎯 DEFINIR META</button>
       </div>
-      <button id="metaEditarBtn" class="btn gray action" type="button">✏️ DEFINIR META</button>
-    </div>
-    <div id="metaEditor" class="note hidden" style="margin-top:12px">
-      <label>Meta de faturamento para este mês</label>
+      <div style="height:14px;background:#e9ecef;border-radius:999px;overflow:hidden;margin:14px 0 8px"><div id="metaBarra" style="height:100%;width:0%;background:#ff8a00;border-radius:999px;transition:width .25s"></div></div>
       <div class="grid2">
-        <input id="metaValorInput" type="number" min="0" step="0.01" placeholder="Ex.: 4000,00">
-        <button id="metaSalvarBtn" class="btn primary" type="button">💾 SALVAR META</button>
-      </div>
-      <div class="small">A meta é apenas para acompanhamento e não altera vendas, caixa, lucro ou relatórios.</div>
-    </div>
-    <div id="metaSemValor" class="msg" style="margin-top:12px">Defina uma meta para acompanhar o faturamento do mês.</div>
-    <div id="metaConteudo" class="hidden" style="margin-top:14px">
-      <div class="between" style="gap:10px;flex-wrap:wrap"><b id="metaProgressoTexto" style="font-size:20px">R$ 0,00 / R$ 0,00</b><b id="metaPercentual" style="font-size:20px">0%</b></div>
-      <div style="height:18px;background:#eceff3;border-radius:999px;overflow:hidden;margin:10px 0"><div id="metaBarra" style="height:100%;width:0%;background:linear-gradient(90deg,#ff8a00,#ffb000);border-radius:999px;transition:width .3s ease"></div></div>
-      <div class="grid2">
-        <div class="metric"><small>Falta para a meta</small><b id="metaFalta">R$ 0,00</b></div>
-        <div class="metric"><small>Necessário por dia</small><b id="metaPorDia">R$ 0,00</b><span class="sub">Até o fim do mês</span></div>
+        <div class="metric"><small>Progresso</small><b id="metaProgresso">Meta não definida</b><span class="sub" id="metaValores">Defina uma meta para acompanhar o mês.</span></div>
+        <div class="metric"><small>Falta para a meta</small><b id="metaFalta">—</b><span class="sub" id="metaPorDia">—</span></div>
       </div>
     </div>
   </div>
@@ -862,18 +846,20 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
       </div>
       <div class="small">Isso altera apenas a forma de reposição. Estoque, vendas, custo e lucro continuam sendo calculados por unidade.</div>
     </div>
-    <div class="note" style="margin-top:12px" id="calcPrecoProdutoBox">
-      <b>🧮 Calculadora de preço</b>
-      <div class="small">Ferramenta auxiliar: nada é alterado automaticamente. Você decide quando aplicar os valores calculados.</div>
+    <div class="note" id="calculadoraPrecoProduto" style="margin-top:12px;padding:14px">
+      <b style="font-size:17px">🧮 Calculadora de preço</b>
+      <div class="small" style="margin-top:4px">Ferramenta de apoio: nada é alterado até você tocar em “Usar”.</div>
+      <div id="calcEmbalagemArea" class="grid2 hidden" style="margin-top:10px">
+        <div><label id="calcValorEmbalagemLabel">Valor da caixa/fardo</label><input id="calcValorEmbalagem" type="number" min="0" step="0.01" placeholder="0,00"></div>
+        <div><label>Custo unitário calculado</label><input id="calcCustoUnitario" readonly placeholder="R$ 0,00"></div>
+      </div>
+      <button id="calcUsarCustoBtn" class="btn gray hidden" type="button" style="width:100%;margin-top:8px">📦 USAR CUSTO UNITÁRIO CALCULADO</button>
       <div class="grid2" style="margin-top:10px">
-        <div><label>Custo da caixa/fardo (opcional)</label><input id="calcCustoEmbalagem" type="number" min="0" step="0.01" placeholder="Ex.: 28,80"></div>
         <div><label>Margem desejada sobre a venda (%)</label><input id="calcMargemDesejada" type="number" min="0" max="99.99" step="0.01" placeholder="Ex.: 40"></div>
+        <div><label>Preço sugerido</label><input id="calcPrecoSugerido" readonly placeholder="R$ 0,00"></div>
       </div>
-      <div id="calcPrecoResumo" class="msg" style="margin-top:10px">Informe custo/preço acima para visualizar lucro e margem.</div>
-      <div class="sale-actions" style="margin-top:8px">
-        <button id="calcAplicarCustoBtn" class="btn gray action hidden" type="button">📦 USAR CUSTO UNITÁRIO CALCULADO</button>
-        <button id="calcAplicarPrecoBtn" class="btn blue action hidden" type="button">💲 USAR PREÇO SUGERIDO</button>
-      </div>
+      <button id="calcUsarPrecoBtn" class="btn blue" type="button" style="width:100%;margin-top:8px">💰 USAR PREÇO SUGERIDO</button>
+      <div id="calcPrecoResumo" class="msg" style="margin-top:10px">Informe custo e preço de venda para ver lucro e margem.</div>
     </div>
     <div class="note" style="margin-top:12px">
       <label style="display:flex;gap:8px;align-items:center;margin:0;cursor:pointer"><input id="produtoPromocaoAtiva" type="checkbox" style="width:auto"> <b>🏷️ Promoção por quantidade</b></label>
@@ -1648,7 +1634,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 const num=v=>{ const n=Number(v); return Number.isFinite(n)?n:0; };
 
 let produtos={}, vendas=[], entradas=[], fechamentos=[], maquinas=[], usuarios=[], clientes=[], fiados=[], listaReposicao=[], inventarioAtual=null, saidasConsumo=[], vencimentos=[], combos=[], carrinho=[];
-let caixaConfig={ativo:true,hora:'22:00',metas:{}};
+let caixaConfig={ativo:true,hora:'22:00'};
 let scanner=null, produtoEditando=null;
 let leituraCandidata='', leituraRepeticoes=0, ultimaLeituraEm=0, scannerProcessando=false;
 
@@ -1668,7 +1654,6 @@ try{combos=JSON.parse(localStorage.getItem(CBK)||'[]')||[]}catch(e){combos=[]}
 try{caixaConfig={...caixaConfig,...(JSON.parse(localStorage.getItem(CXCFGK)||'{}')||{})}}catch(e){}
 caixaConfig.ativo=caixaConfig.ativo!==false;
 if(!/^\d{2}:\d{2}$/.test(String(caixaConfig.hora||'')))caixaConfig.hora='22:00';
-if(!caixaConfig.metas||typeof caixaConfig.metas!=='object')caixaConfig.metas={};
 if(!Array.isArray(vendas))vendas=[];
 if(!Array.isArray(entradas))entradas=[];
 if(!Array.isArray(fechamentos))fechamentos=[];
@@ -1820,7 +1805,7 @@ function restaurarDadosLocaisAposDemo(){
   try{fiados=JSON.parse(localStorage.getItem(FRK)||'[]')||[]}catch(e){fiados=[]}
   try{listaReposicao=JSON.parse(localStorage.getItem(LRK)||'[]')||[]}catch(e){listaReposicao=[]}
   try{combos=JSON.parse(localStorage.getItem(CBK)||'[]')||[]}catch(e){combos=[]}
-  caixaConfig={ativo:true,hora:'22:00',metas:{}};
+  caixaConfig={ativo:true,hora:'22:00'};
   try{caixaConfig={...caixaConfig,...(JSON.parse(localStorage.getItem(CXCFGK)||'{}')||{})}}catch(e){}
   caixaConfig.ativo=caixaConfig.ativo!==false;
   if(!/^\d{2}:\d{2}$/.test(String(caixaConfig.hora||'')))caixaConfig.hora='22:00';
@@ -4083,7 +4068,7 @@ function limparProdutoForm(){
   produtoEditando=null;
   ['produtoNome','produtoCodigo','produtoCusto','produtoPreco','produtoEstoque','produtoPromocaoQtd','produtoPromocaoPreco'].forEach(id=>$(id).value='');
   $('produtoMinimo').value='3';
-  $('produtoFormaCompra').value='unidade';$('produtoUnidadesEmbalagem').value='1';atualizarCamposFormaCompra();
+  $('produtoFormaCompra').value='unidade';$('produtoUnidadesEmbalagem').value='1';atualizarCamposFormaCompra();if($('calcValorEmbalagem'))$('calcValorEmbalagem').value='';if($('calcMargemDesejada'))$('calcMargemDesejada').value='';atualizarCalculadoraPrecoProduto();
   $('produtoPromocaoAtiva').checked=false;
   atualizarCamposPromocaoProduto();
   $('cancelarProdutoBtn').classList.add('hidden');$('salvarProdutoBtn').textContent='💾 SALVAR';
@@ -4094,6 +4079,41 @@ function atualizarCamposFormaCompra(){
   if(forma==='unidade' && $('produtoUnidadesEmbalagem'))$('produtoUnidadesEmbalagem').value='1';
 }
 $('produtoFormaCompra').addEventListener('change',atualizarCamposFormaCompra);
+function atualizarCalculadoraPrecoProduto(){
+  const forma=$('produtoFormaCompra')?.value||'unidade';
+  const un=Math.max(1,Math.floor(num($('produtoUnidadesEmbalagem')?.value)||1));
+  const custo=num($('produtoCusto')?.value), preco=num($('produtoPreco')?.value);
+  const valorEmb=num($('calcValorEmbalagem')?.value);
+  const margemDesejada=num($('calcMargemDesejada')?.value);
+  const area=$('calcEmbalagemArea'), usarCusto=$('calcUsarCustoBtn');
+  if(area)area.classList.toggle('hidden',forma==='unidade');
+  if(usarCusto)usarCusto.classList.toggle('hidden',forma==='unidade');
+  if($('calcValorEmbalagemLabel'))$('calcValorEmbalagemLabel').textContent=forma==='caixa'?'Valor da caixa':forma==='fardo'?'Valor do fardo':'Valor da embalagem';
+  const custoCalc=forma==='unidade'?0:(un>0?valorEmb/un:0);
+  if($('calcCustoUnitario'))$('calcCustoUnitario').value=custoCalc>0?money(custoCalc):'';
+  let sugerido=0;
+  if(custo>0 && margemDesejada>0 && margemDesejada<100)sugerido=custo/(1-margemDesejada/100);
+  if($('calcPrecoSugerido'))$('calcPrecoSugerido').value=sugerido>0?money(sugerido):'';
+  const lucro=preco-custo;
+  const margem=preco>0?(lucro/preco*100):0;
+  const acrescimo=custo>0?(lucro/custo*100):0;
+  if($('calcPrecoResumo'))$('calcPrecoResumo').innerHTML=(custo>=0&&preco>0)
+    ? 'Venda: <b>'+money(preco)+'</b> · Custo: <b>'+money(custo)+'</b> · Lucro/un.: <b>'+money(lucro)+'</b><br>Margem sobre a venda: <b>'+margem.toFixed(2).replace('.',',')+'%</b> · Acréscimo sobre o custo: <b>'+acrescimo.toFixed(2).replace('.',',')+'%</b>'
+    : 'Informe custo e preço de venda para ver lucro e margem.';
+}
+['produtoCusto','produtoPreco','produtoUnidadesEmbalagem','calcValorEmbalagem','calcMargemDesejada'].forEach(id=>{if($(id))$(id).addEventListener('input',atualizarCalculadoraPrecoProduto);});
+$('produtoFormaCompra').addEventListener('change',atualizarCalculadoraPrecoProduto);
+if($('calcUsarCustoBtn'))$('calcUsarCustoBtn').addEventListener('click',()=>{
+  const forma=$('produtoFormaCompra').value, un=Math.max(1,Math.floor(num($('produtoUnidadesEmbalagem').value)||1)), valor=num($('calcValorEmbalagem').value);
+  if(forma==='unidade'||valor<=0){alert('Informe o valor da caixa/fardo.');return;}
+  $('produtoCusto').value=(valor/un).toFixed(2);atualizarCalculadoraPrecoProduto();
+});
+if($('calcUsarPrecoBtn'))$('calcUsarPrecoBtn').addEventListener('click',()=>{
+  const custo=num($('produtoCusto').value), m=num($('calcMargemDesejada').value);
+  if(custo<=0||m<=0||m>=100){alert('Informe um custo maior que zero e uma margem entre 0 e 100%.');return;}
+  $('produtoPreco').value=(custo/(1-m/100)).toFixed(2);atualizarCalculadoraPrecoProduto();atualizarCamposPromocaoProduto();
+});
+
 function atualizarCamposPromocaoProduto(){
   const ativa=$('produtoPromocaoAtiva').checked;
   $('produtoPromocaoCampos').classList.toggle('hidden',!ativa);
@@ -4570,7 +4590,7 @@ $('listaProdutos').addEventListener('click',e=>{
     const c=decodeURIComponent(edit.dataset.c),p=produtos[c];if(!p)return;
     produtoEditando=c;$('produtoNome').value=p.nome;$('produtoCodigo').value=c;$('produtoCusto').value=p.custo;
     $('produtoPreco').value=p.preco;$('produtoEstoque').value=p.estoque;$('produtoMinimo').value=p.minimo;
-    $('produtoFormaCompra').value=p.formaCompra||'unidade';$('produtoUnidadesEmbalagem').value=Math.max(1,Math.floor(num(p.unidadesEmbalagem)||1));atualizarCamposFormaCompra();
+    $('produtoFormaCompra').value=p.formaCompra||'unidade';$('produtoUnidadesEmbalagem').value=Math.max(1,Math.floor(num(p.unidadesEmbalagem)||1));atualizarCamposFormaCompra();atualizarCalculadoraPrecoProduto();
     $('produtoPromocaoAtiva').checked=p.promocaoQtdAtiva===true;
     $('produtoPromocaoQtd').value=p.promocaoQtdMinima||'';
     $('produtoPromocaoPreco').value=p.promocaoQtdAtiva?num(p.promocaoPrecoUnitario):'';
@@ -5187,58 +5207,32 @@ async function analisarFinanceiroInterno(){
   box.innerHTML=insights.join('');
   $('iaFinanceiraRodape').textContent='Análise local atualizada em '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' · inclui sinais históricos de clima × vendas · nenhuma informação é enviada para uma IA externa.';
 }
-function chaveMetaMes(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
-function renderMetaFaturamento(faturamentoMes,agora=new Date()){
-  if(!$('metaConteudo'))return;
-  if(!caixaConfig.metas||typeof caixaConfig.metas!=='object')caixaConfig.metas={};
-  const chave=chaveMetaMes(agora),meta=Math.max(0,num(caixaConfig.metas[chave]));
-  const nomeMes=agora.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-  $('metaMesTitulo').textContent='Meta de '+nomeMes.charAt(0).toUpperCase()+nomeMes.slice(1);
-  $('metaValorInput').value=meta>0?meta:'';
-  $('metaSemValor').classList.toggle('hidden',meta>0);$('metaConteudo').classList.toggle('hidden',!(meta>0));
-  if(!(meta>0))return;
-  const fat=Math.max(0,num(faturamentoMes)),pct=meta?fat/meta*100:0,falta=Math.max(0,meta-fat);
+
+function chaveMetaFaturamento(d=new Date()){return 'miniBoxMetaFaturamento_'+d.getFullYear()+'_'+String(d.getMonth()+1).padStart(2,'0');}
+function obterMetaFaturamento(d=new Date()){try{return Math.max(0,num(localStorage.getItem(chaveMetaFaturamento(d))||0));}catch(e){return 0;}}
+function renderMetaFaturamento(faturamento,agora=new Date()){
+  if(!$('metaFaturamentoCard'))return;
+  const meta=obterMetaFaturamento(agora);
+  $('metaMesLabel').textContent=agora.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  if(meta<=0){$('metaBarra').style.width='0%';$('metaProgresso').textContent='Meta não definida';$('metaValores').textContent='Faturamento atual: '+money(faturamento);$('metaFalta').textContent='—';$('metaPorDia').textContent='Defina uma meta para acompanhar o mês.';return;}
+  const pct=meta>0?faturamento/meta*100:0, falta=Math.max(0,meta-faturamento);
   const ultimoDia=new Date(agora.getFullYear(),agora.getMonth()+1,0).getDate();
   const diasRestantes=Math.max(1,ultimoDia-agora.getDate()+1);
-  $('metaProgressoTexto').textContent=money(fat)+' / '+money(meta);
-  $('metaPercentual').textContent=pct.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
-  $('metaBarra').style.width=Math.min(100,pct)+'%';
+  $('metaBarra').style.width=Math.min(100,pct).toFixed(2)+'%';
+  $('metaProgresso').textContent=pct.toFixed(1).replace('.',',')+'%';
+  $('metaValores').textContent=money(faturamento)+' / '+money(meta);
   $('metaFalta').textContent=falta>0?money(falta):'🎉 Meta atingida!';
-  $('metaPorDia').textContent=falta>0?money(falta/diasRestantes):money(0);
+  $('metaPorDia').textContent=falta>0?'Necessário por dia até o fim do mês: '+money(falta/diasRestantes):'Você ultrapassou a meta em '+money(Math.max(0,faturamento-meta))+'.';
 }
-$('metaEditarBtn').addEventListener('click',()=>{$('metaEditor').classList.toggle('hidden');if(!$('metaEditor').classList.contains('hidden'))$('metaValorInput').focus();});
-$('metaSalvarBtn').addEventListener('click',()=>{
-  if(MODO_DEMO){bloquearAcaoDemo();return;}
-  const v=num($('metaValorInput').value);if(v<0){alert('Informe uma meta válida.');return;}
-  if(!caixaConfig.metas||typeof caixaConfig.metas!=='object')caixaConfig.metas={};
-  const chave=chaveMetaMes(new Date());if(v>0)caixaConfig.metas[chave]=v;else delete caixaConfig.metas[chave];
-  persist();$('metaEditor').classList.add('hidden');renderPainel();beep();
+if($('definirMetaBtn'))$('definirMetaBtn').addEventListener('click',()=>{
+  const agora=new Date(), atual=obterMetaFaturamento(agora);
+  const entrada=prompt('Qual é a meta de faturamento para '+agora.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})+'?\n\nDigite 0 para remover a meta.',atual?atual.toFixed(2).replace('.',','):'');
+  if(entrada===null)return;
+  const valor=Number(String(entrada).replace(/\./g,'').replace(',','.'));
+  if(!Number.isFinite(valor)||valor<0){alert('Informe uma meta válida.');return;}
+  try{if(valor===0)localStorage.removeItem(chaveMetaFaturamento(agora));else localStorage.setItem(chaveMetaFaturamento(agora),String(valor));}catch(e){}
+  renderPainel();
 });
-
-function atualizarCalculadoraPrecoProduto(){
-  if(!$('calcPrecoResumo'))return;
-  const custoCampo=Math.max(0,num($('produtoCusto').value)),preco=Math.max(0,num($('produtoPreco').value));
-  const forma=$('produtoFormaCompra').value||'unidade',por=Math.max(1,Math.floor(num($('produtoUnidadesEmbalagem').value)||1));
-  const custoEmb=Math.max(0,num($('calcCustoEmbalagem').value)),margemDesejada=num($('calcMargemDesejada').value);
-  const custoCalculado=(forma!=='unidade'&&custoEmb>0)?custoEmb/por:0;
-  const custoBase=custoCalculado>0?custoCalculado:custoCampo;
-  const lucro=preco-custoBase,margem=preco>0?(lucro/preco*100):0,markup=custoBase>0?(lucro/custoBase*100):0;
-  let html='';
-  if(custoCalculado>0)html+='📦 '+money(custoEmb)+' ÷ '+por+' un. = <b>'+money(custoCalculado)+' por unidade</b><br>';
-  if(preco>0)html+='Venda <b>'+money(preco)+'</b> · lucro unitário <b>'+money(lucro)+'</b> · margem <b>'+margem.toLocaleString('pt-BR',{maximumFractionDigits:2})+'%</b> · acréscimo sobre custo <b>'+markup.toLocaleString('pt-BR',{maximumFractionDigits:2})+'%</b>';
-  if(!html)html='Informe custo/preço acima para visualizar lucro e margem.';
-  let sugerido=0;if(custoBase>0&&margemDesejada>0&&margemDesejada<100)sugerido=custoBase/(1-margemDesejada/100);
-  if(sugerido>0)html+='<br>🎯 Com margem desejada de <b>'+margemDesejada.toLocaleString('pt-BR',{maximumFractionDigits:2})+'%</b>, preço sugerido: <b>'+money(sugerido)+'</b>.';
-  else if(margemDesejada>=100)html+='<br>⚠️ A margem desejada deve ser menor que 100%.';
-  $('calcPrecoResumo').innerHTML=html;
-  $('calcAplicarCustoBtn').classList.toggle('hidden',!(custoCalculado>0));$('calcAplicarCustoBtn').dataset.valor=String(custoCalculado||0);
-  $('calcAplicarPrecoBtn').classList.toggle('hidden',!(sugerido>0));$('calcAplicarPrecoBtn').dataset.valor=String(sugerido||0);
-}
-['produtoCusto','produtoPreco','produtoFormaCompra','produtoUnidadesEmbalagem','calcCustoEmbalagem','calcMargemDesejada'].forEach(id=>$(id)?.addEventListener('input',atualizarCalculadoraPrecoProduto));
-$('produtoFormaCompra')?.addEventListener('change',atualizarCalculadoraPrecoProduto);
-$('calcAplicarCustoBtn')?.addEventListener('click',function(){const v=num(this.dataset.valor);if(v>0){$('produtoCusto').value=v.toFixed(2);atualizarCalculadoraPrecoProduto();}});
-$('calcAplicarPrecoBtn')?.addEventListener('click',function(){const v=num(this.dataset.valor);if(v>0){$('produtoPreco').value=v.toFixed(2);atualizarCalculadoraPrecoProduto();}});
-
 function renderPainel(){
   const agora=new Date();
   const iniHoje=inicioDia(agora),fimHoje=new Date(iniHoje);fimHoje.setDate(fimHoje.getDate()+1);
@@ -6285,7 +6279,7 @@ document.addEventListener('click',function(e){
 },true);
 document.addEventListener('submit',function(e){if(MODO_DEMO){e.preventDefault();e.stopImmediatePropagation();bloquearAcaoDemo();}},true);
 
-function atualizarTudo(){atualizarCalculadoraPrecoProduto();renderPainel();renderProdutos();renderCombos();renderCardapio();renderEstoque();preencherSelectReposicao();renderListaReposicao();renderInventario();renderConsumos();renderVencimentos();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();if(MODO_DEMO)setTimeout(()=>aplicarBloqueiosDemo(),0);}
+function atualizarTudo(){renderPainel();renderProdutos();renderCombos();renderCardapio();renderEstoque();preencherSelectReposicao();renderListaReposicao();renderInventario();renderConsumos();renderVencimentos();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();if(MODO_DEMO)setTimeout(()=>aplicarBloqueiosDemo(),0);}
 renderComboEdicao();renderCarrinho();iniciarAutenticacao();
 });
 </script>
