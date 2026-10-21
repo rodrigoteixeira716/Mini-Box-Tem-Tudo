@@ -797,6 +797,14 @@ body.sidebarCollapsed .sidebarBrand{display:none}
       <div><label>Alerta abaixo de</label><input id="produtoMinimo" type="number" min="0" step="1" value="3"></div>
     </div>
     <div class="note" style="margin-top:12px">
+      <b>📦 Forma de compra / reposição</b>
+      <div class="grid2" style="margin-top:8px">
+        <div><label>Como este produto é comprado?</label><select id="produtoFormaCompra"><option value="unidade">Unidade</option><option value="caixa">Caixa</option><option value="fardo">Fardo</option></select></div>
+        <div id="produtoUnidadesEmbalagemWrap" class="hidden"><label>Unidades por caixa/fardo</label><input id="produtoUnidadesEmbalagem" type="number" min="1" step="1" value="1"></div>
+      </div>
+      <div class="small">Isso altera apenas a forma de reposição. Estoque, vendas, custo e lucro continuam sendo calculados por unidade.</div>
+    </div>
+    <div class="note" style="margin-top:12px">
       <label style="display:flex;gap:8px;align-items:center;margin:0;cursor:pointer"><input id="produtoPromocaoAtiva" type="checkbox" style="width:auto"> <b>🏷️ Promoção por quantidade</b></label>
       <div id="produtoPromocaoCampos" class="grid2 hidden" style="margin-top:10px">
         <div><label>A partir de quantas unidades?</label><input id="produtoPromocaoQtd" type="number" min="2" step="1" placeholder="Ex.: 10"></div>
@@ -855,8 +863,8 @@ body.sidebarCollapsed .sidebarBrand{display:none}
     <div class="msg">Você também pode informar o código de barras abaixo.</div>
     <label>Código do produto</label><input id="entradaCodigo" inputmode="numeric" placeholder="Código de barras">
     <div class="grid2">
-      <div><label>Quantidade recebida</label><input id="entradaQtd" type="number" min="1" step="1" value="1"></div>
-      <div><label>Custo unitário</label><input id="entradaCusto" type="number" min="0" step="0.01"></div>
+      <div><label id="entradaQtdLabel">Quantidade recebida</label><input id="entradaQtd" type="number" min="1" step="1" value="1"><div id="entradaConversao" class="small"></div></div>
+      <div><label id="entradaCustoLabel">Custo unitário</label><input id="entradaCusto" type="number" min="0" step="0.01"></div>
     </div>
     <label>Fornecedor (opcional)</label><input id="entradaFornecedor" placeholder="Ex.: Atacadão">
     <br><br>
@@ -1574,6 +1582,8 @@ if(!Array.isArray(saidasConsumo))saidasConsumo=[];if(!Array.isArray(vencimentos)
 function migrarProdutos(){
   Object.keys(produtos).forEach(c=>{
     const p=produtos[c]||{};
+    if(!['unidade','caixa','fardo'].includes(p.formaCompra))p.formaCompra='unidade';
+    p.unidadesEmbalagem=Math.max(1,Math.floor(num(p.unidadesEmbalagem)||1));
     produtos[c]={
       nome:p.nome||'Produto',
       preco:num(p.preco),
@@ -3973,10 +3983,17 @@ function limparProdutoForm(){
   produtoEditando=null;
   ['produtoNome','produtoCodigo','produtoCusto','produtoPreco','produtoEstoque','produtoPromocaoQtd','produtoPromocaoPreco'].forEach(id=>$(id).value='');
   $('produtoMinimo').value='3';
+  $('produtoFormaCompra').value='unidade';$('produtoUnidadesEmbalagem').value='1';atualizarCamposFormaCompra();
   $('produtoPromocaoAtiva').checked=false;
   atualizarCamposPromocaoProduto();
   $('cancelarProdutoBtn').classList.add('hidden');$('salvarProdutoBtn').textContent='💾 SALVAR';
 }
+function atualizarCamposFormaCompra(){
+  const forma=$('produtoFormaCompra')?.value||'unidade';
+  $('produtoUnidadesEmbalagemWrap')?.classList.toggle('hidden',forma==='unidade');
+  if(forma==='unidade' && $('produtoUnidadesEmbalagem'))$('produtoUnidadesEmbalagem').value='1';
+}
+$('produtoFormaCompra').addEventListener('change',atualizarCamposFormaCompra);
 function atualizarCamposPromocaoProduto(){
   const ativa=$('produtoPromocaoAtiva').checked;
   $('produtoPromocaoCampos').classList.toggle('hidden',!ativa);
@@ -4295,6 +4312,8 @@ $('salvarProdutoBtn').addEventListener('click',function(){
   const nome=$('produtoNome').value.trim(),codigo=$('produtoCodigo').value.trim();
   const custo=num($('produtoCusto').value),preco=num($('produtoPreco').value);
   const estoque=num($('produtoEstoque').value),minimo=Math.max(0,num($('produtoMinimo').value));
+  const formaCompra=$('produtoFormaCompra').value||'unidade';
+  const unidadesEmbalagem=formaCompra==='unidade'?1:Math.max(1,Math.floor(num($('produtoUnidadesEmbalagem').value)));
   const promocaoQtdAtiva=$('produtoPromocaoAtiva').checked;
   const promocaoQtdMinima=Math.floor(num($('produtoPromocaoQtd').value));
   const promocaoPrecoUnitario=num($('produtoPromocaoPreco').value);
@@ -4310,7 +4329,7 @@ $('salvarProdutoBtn').addEventListener('click',function(){
   const eraEdicao=!!produtoEditando;
   if(produtoEditando&&produtoEditando!==codigo)delete produtos[produtoEditando];
   const ativoAnterior=produtoEditando&&produtos[produtoEditando]?produtos[produtoEditando].ativo!==false:true;
-  produtos[codigo]={nome,preco,custo,estoque,minimo,ativo:ativoAnterior,promocaoQtdAtiva,promocaoQtdMinima:promocaoQtdAtiva?promocaoQtdMinima:0,promocaoPrecoUnitario:promocaoQtdAtiva?promocaoPrecoUnitario:0};persist();limparProdutoForm();atualizarTudo();
+  produtos[codigo]={nome,preco,custo,estoque,minimo,ativo:ativoAnterior,formaCompra,unidadesEmbalagem,promocaoQtdAtiva,promocaoQtdMinima:promocaoQtdAtiva?promocaoQtdMinima:0,promocaoPrecoUnitario:promocaoQtdAtiva?promocaoPrecoUnitario:0};persist();limparProdutoForm();atualizarTudo();
   $('produtoMsg').innerHTML='<div class="msg ok">✅ Produto salvo!</div>';beep();
   if(!eraEdicao)abrirEtiquetaProduto(codigo);
 });
@@ -4451,6 +4470,7 @@ $('listaProdutos').addEventListener('click',e=>{
     const c=decodeURIComponent(edit.dataset.c),p=produtos[c];if(!p)return;
     produtoEditando=c;$('produtoNome').value=p.nome;$('produtoCodigo').value=c;$('produtoCusto').value=p.custo;
     $('produtoPreco').value=p.preco;$('produtoEstoque').value=p.estoque;$('produtoMinimo').value=p.minimo;
+    $('produtoFormaCompra').value=p.formaCompra||'unidade';$('produtoUnidadesEmbalagem').value=Math.max(1,Math.floor(num(p.unidadesEmbalagem)||1));atualizarCamposFormaCompra();
     $('produtoPromocaoAtiva').checked=p.promocaoQtdAtiva===true;
     $('produtoPromocaoQtd').value=p.promocaoQtdMinima||'';
     $('produtoPromocaoPreco').value=p.promocaoQtdAtiva?num(p.promocaoPrecoUnitario):'';
@@ -4510,7 +4530,11 @@ function carregarProdutoEntrada(codigo){
   $('entradaProdutoSelect').value=codigo;
   $('entradaCodigo').value=codigo;
   $('entradaCusto').value=num(p.custo)||'';
-  $('entradaMsg').innerHTML='<div class="msg">Produto: <b>'+esc(p.nome)+'</b> · estoque atual: <b>'+num(p.estoque)+' un.</b></div>';
+  const forma=p.formaCompra||'unidade', por=Math.max(1,Math.floor(num(p.unidadesEmbalagem)||1));
+  $('entradaQtdLabel').textContent=forma==='unidade'?'Quantidade recebida':('Quantidade de '+(forma==='caixa'?'caixas':'fardos')+' recebidos');
+  $('entradaCustoLabel').textContent='Custo unitário';
+  $('entradaConversao').innerHTML=forma==='unidade'?'':('Cada '+forma+' contém <b>'+por+' un.</b> · o estoque será convertido automaticamente para unidades.');
+  $('entradaMsg').innerHTML='<div class="msg">Produto: <b>'+esc(p.nome)+'</b> · estoque atual: <b>'+num(p.estoque)+' un.</b>'+(forma!=='unidade'?' · compra por <b>'+esc(forma)+'</b> ('+por+' un.)':'')+'</div>';
   return true;
 }
 
@@ -4527,7 +4551,7 @@ $('registrarEntradaBtn').addEventListener('click',function(){
   try{
     const codigo=($('entradaProdutoSelect').value || $('entradaCodigo').value || '').trim();
     const qtdBruta=num($('entradaQtd').value);
-    const q=Math.floor(qtdBruta);
+    const qtdInformada=Math.floor(qtdBruta);
     const custo=num($('entradaCusto').value);
     const fornecedor=$('entradaFornecedor').value.trim();
 
@@ -4542,7 +4566,7 @@ $('registrarEntradaBtn').addEventListener('click',function(){
       return;
     }
 
-    if(!Number.isFinite(q) || q < 1){
+    if(!Number.isFinite(qtdInformada) || qtdInformada < 1){
       $('entradaMsg').innerHTML='<div class="msg err">⚠️ Informe uma quantidade maior que zero.</div>';
       return;
     }
@@ -4552,6 +4576,8 @@ $('registrarEntradaBtn').addEventListener('click',function(){
       return;
     }
 
+    const formaCompra=p.formaCompra||'unidade', unidadesEmbalagem=Math.max(1,Math.floor(num(p.unidadesEmbalagem)||1));
+    const q=formaCompra==='unidade'?qtdInformada:qtdInformada*unidadesEmbalagem;
     const estoqueAnterior=num(p.estoque);
     p.estoque=estoqueAnterior+q;
     if(custo>0)p.custo=custo;
@@ -4562,6 +4588,7 @@ $('registrarEntradaBtn').addEventListener('click',function(){
       c:codigo,
       n:p.nome,
       q:q,
+      qtdCompra:qtdInformada,formaCompra,unidadesEmbalagem,
       custo:custo,
       fornecedor:fornecedor,
       estoqueAnterior:estoqueAnterior,
@@ -4573,6 +4600,7 @@ $('registrarEntradaBtn').addEventListener('click',function(){
     $('entradaProdutoSelect').value='';
     $('entradaCodigo').value='';
     $('entradaQtd').value='1';
+    $('entradaQtdLabel').textContent='Quantidade recebida';$('entradaConversao').textContent='';
     $('entradaCusto').value='';
     $('entradaFornecedor').value='';
 
@@ -4590,11 +4618,11 @@ function renderEstoque(){
   $('listaEstoque').innerHTML=a.length?a.map(([c,p])=>{
     const lr=listaReposicao.find(x=>!x.comprado&&x.codigo===c);
     const acaoReposicao=lr
-      ? `<span class="badge okstock" title="Este produto já está na lista de reposição">✅ Na lista · ${num(lr.qtd)} un.</span><button class="btn gray action estoqueAdicionarReposicao" data-c="${encodeURIComponent(c)}" type="button" title="Produto já está na lista de reposição">✓ Já na lista</button>`
+      ? `<span class="badge okstock" title="Este produto já está na lista de reposição">✅ Na lista · ${(lr.formaCompra&&lr.formaCompra!=='unidade')?(num(lr.qtdCompra)+' '+(lr.formaCompra==='caixa'?'cx.':'fardo(s)')+' = '+num(lr.qtd)+' un.'):num(lr.qtd)+' un.'}</span><button class="btn gray action estoqueAdicionarReposicao" data-c="${encodeURIComponent(c)}" type="button" title="Produto já está na lista de reposição">✓ Já na lista</button>`
       : `<button class="btn gray action estoqueAdicionarReposicao" data-c="${encodeURIComponent(c)}" type="button" title="Adicionar à lista de reposição">🛒 Repor</button>`;
     return `
     <div class="item between">
-      <div><b>${esc(p.nome)}</b><div class="small">${esc(c)} · custo ${money(p.custo)}</div></div>
+      <div><b>${esc(p.nome)}</b><div class="small">${esc(c)} · custo ${money(p.custo)}${(p.formaCompra&&p.formaCompra!=='unidade')?' · 📦 compra: '+esc(p.formaCompra)+' com '+Math.max(1,Math.floor(num(p.unidadesEmbalagem)||1))+' un.':''}</div></div>
       <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end">
         <span class="badge ${num(p.estoque)<=num(p.minimo)?'low':'okstock'}">${num(p.estoque)} un.</span>
         ${acaoReposicao}
@@ -4613,15 +4641,19 @@ $('listaEstoque').addEventListener('click',function(e){
   if(!p)return;
   const existente=listaReposicao.find(x=>!x.comprado&&x.codigo===codigo);
   if(existente){
-    alert('⚠️ "'+p.nome+'" já está na lista de reposição com '+num(existente.qtd)+' un.\n\nO produto não foi adicionado novamente.');
+    alert('⚠️ "'+p.nome+'" já está na lista de reposição com '+((existente.formaCompra&&existente.formaCompra!=='unidade')?(num(existente.qtdCompra)+' '+(existente.formaCompra==='caixa'?'caixa(s)':'fardo(s)')+' = '+num(existente.qtd)+' un.'):num(existente.qtd)+' un.')+'\n\nO produto não foi adicionado novamente.');
     return;
   }
-  const sugerida=Math.max(1,Math.floor(num(p.minimo)-num(p.estoque)));
-  const resposta=prompt('Quantidade para repor de "'+p.nome+'":',String(sugerida));
+  const forma=p.formaCompra||'unidade', por=Math.max(1,Math.floor(num(p.unidadesEmbalagem)||1));
+  const falta=Math.max(1,Math.floor(num(p.minimo)-num(p.estoque)));
+  const sugerida=forma==='unidade'?falta:Math.max(1,Math.ceil(falta/por));
+  const rotulo=forma==='unidade'?'unidades':(forma==='caixa'?'caixas':'fardos');
+  const resposta=prompt('Quantidade de '+rotulo+' para repor de "'+p.nome+'":',String(sugerida));
   if(resposta===null)return;
-  const qtd=Math.floor(num(String(resposta).replace(',','.')));
-  if(qtd<1){alert('Informe uma quantidade válida para reposição.');return;}
-  listaReposicao.push({id:'lr_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),codigo,nome:p.nome,qtd,custo:num(p.custo),obs:'',comprado:false,criadoEm:new Date().toISOString()});
+  const qtdCompra=Math.floor(num(String(resposta).replace(',','.')));
+  if(qtdCompra<1){alert('Informe uma quantidade válida para reposição.');return;}
+  const qtd=forma==='unidade'?qtdCompra:qtdCompra*por;
+  listaReposicao.push({id:'lr_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),codigo,nome:p.nome,qtd,qtdCompra,formaCompra:forma,unidadesEmbalagem:por,custo:num(p.custo),obs:'',comprado:false,criadoEm:new Date().toISOString()});
   persist();renderListaReposicao();renderEstoque();beep();
 });
 
@@ -4635,7 +4667,8 @@ function preencherSelectReposicao(){
 function atualizarInfoReposicao(){
   const c=$('reposicaoProduto')?.value||'',p=produtos[c];
   if(!p){if($('reposicaoProdutoInfo'))$('reposicaoProdutoInfo').textContent='';return;}
-  $('reposicaoProdutoInfo').innerHTML='Estoque atual: <b>'+num(p.estoque)+' un.</b> · custo cadastrado: <b>'+money(p.custo)+'</b>';
+  const forma=p.formaCompra||'unidade',por=Math.max(1,Math.floor(num(p.unidadesEmbalagem)||1));
+  $('reposicaoProdutoInfo').innerHTML='Estoque atual: <b>'+num(p.estoque)+' un.</b> · custo cadastrado: <b>'+money(p.custo)+'</b>'+(forma!=='unidade'?' · compra por <b>'+esc(forma)+'</b> com <b>'+por+' un.</b>':'');
   if(!$('reposicaoCusto').value)$('reposicaoCusto').value=num(p.custo)||'';
 }
 function renderListaReposicao(){
@@ -4646,20 +4679,21 @@ function renderListaReposicao(){
   const ordenada=[...pendentes,...comprados];
   $('listaReposicao').innerHTML=ordenada.length?ordenada.map(x=>{
     const p=produtos[x.codigo]||{};
-    return '<div class="item" style="'+(x.comprado?'opacity:.65':'')+'"><div class="between" style="gap:8px"><div><b>'+(x.comprado?'✅ ':'')+esc(x.nome)+'</b><div class="small">Estoque atual: '+num(p.estoque)+' un. · comprar: <b>'+num(x.qtd)+' un.</b> · estimativa '+money(num(x.qtd)*num(x.custo))+'</div>'+(x.obs?'<div class="small">📝 '+esc(x.obs)+'</div>':'')+'</div><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">'+(!x.comprado?'<button class="btn green action reposicaoComprado" data-id="'+esc(x.id)+'" type="button">✓ Comprado</button>':'')+'<button class="btn red action reposicaoExcluir" data-id="'+esc(x.id)+'" type="button">🗑</button></div></div></div>';
+    return '<div class="item" style="'+(x.comprado?'opacity:.65':'')+'"><div class="between" style="gap:8px"><div><b>'+(x.comprado?'✅ ':'')+esc(x.nome)+'</b><div class="small">Estoque atual: '+num(p.estoque)+' un. · comprar: <b>'+((x.formaCompra&&x.formaCompra!=='unidade')?(num(x.qtdCompra)+' '+(x.formaCompra==='caixa'?'caixa(s)':'fardo(s)')+' × '+num(x.unidadesEmbalagem)+' un. = '+num(x.qtd)+' un.'):num(x.qtd)+' un.')+'</b> · estimativa '+money(num(x.qtd)*num(x.custo))+'</div>'+(x.obs?'<div class="small">📝 '+esc(x.obs)+'</div>':'')+'</div><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">'+(!x.comprado?'<button class="btn green action reposicaoComprado" data-id="'+esc(x.id)+'" type="button">✓ Comprado</button>':'')+'<button class="btn red action reposicaoExcluir" data-id="'+esc(x.id)+'" type="button">🗑</button></div></div></div>';
   }).join(''):'Nenhum produto na lista de reposição.';
 }
 $('reposicaoProduto').addEventListener('change',function(){$('reposicaoCusto').value='';atualizarInfoReposicao();});
 $('adicionarReposicaoBtn').addEventListener('click',function(){
-  const codigo=$('reposicaoProduto').value,p=produtos[codigo],q=Math.floor(num($('reposicaoQtd').value)),custo=num($('reposicaoCusto').value),obs=$('reposicaoObs').value.trim();
+  const codigo=$('reposicaoProduto').value,p=produtos[codigo],qInformada=Math.floor(num($('reposicaoQtd').value)),custo=num($('reposicaoCusto').value),obs=$('reposicaoObs').value.trim();
+  const forma=p?.formaCompra||'unidade',por=Math.max(1,Math.floor(num(p?.unidadesEmbalagem)||1)),q=forma==='unidade'?qInformada:qInformada*por;
   if(!p){$('reposicaoMsg').innerHTML='<div class="msg err">⚠️ Escolha um produto cadastrado.</div>';return;}
-  if(q<1){$('reposicaoMsg').innerHTML='<div class="msg err">⚠️ Informe a quantidade que pretende comprar.</div>';return;}
+  if(qInformada<1){$('reposicaoMsg').innerHTML='<div class="msg err">⚠️ Informe a quantidade que pretende comprar.</div>';return;}
   const existente=listaReposicao.find(x=>!x.comprado&&x.codigo===codigo);
   if(existente){
     $('reposicaoMsg').innerHTML='<div class="msg err">⚠️ <b>'+esc(p.nome)+'</b> já está na lista de reposição com <b>'+num(existente.qtd)+' un.</b> O produto não foi adicionado novamente.</div>';
     return;
   }
-  listaReposicao.push({id:'lr_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),codigo,nome:p.nome,qtd:q,custo,obs,comprado:false,criadoEm:new Date().toISOString()});
+  listaReposicao.push({id:'lr_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),codigo,nome:p.nome,qtd:q,qtdCompra:qInformada,formaCompra:forma,unidadesEmbalagem:por,custo,obs,comprado:false,criadoEm:new Date().toISOString()});
   persist();renderListaReposicao();renderEstoque();
   $('reposicaoProduto').value='';$('reposicaoQtd').value='1';$('reposicaoCusto').value='';$('reposicaoObs').value='';$('reposicaoProdutoInfo').textContent='';
   $('reposicaoMsg').innerHTML='<div class="msg ok">✅ Produto adicionado à lista de reposição.</div>';beep();
