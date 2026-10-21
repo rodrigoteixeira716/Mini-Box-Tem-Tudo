@@ -293,6 +293,34 @@ body.sidebarCollapsed .sidebarBrand{display:none}
 .cardapioNome{font-size:16px;font-weight:900;margin-bottom:5px}.cardapioPreco{font-size:22px;font-weight:950;margin:6px 0}.cardapioQtd{font-weight:800;margin-top:7px}
 .cardapioStatus{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}.cardapioStatus.ok{background:#e8f7ee;color:#16733a}.cardapioStatus.low{background:#fff4d6;color:#8a5a00}.cardapioStatus.out{background:#fde8e8;color:#a12626}
 .cardapioFiltros{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.cardapioFiltros .btn.active{outline:3px solid rgba(0,0,0,.12)}
+
+
+/* CALCULADORA FLUTUANTE + PESQUISA DO ESTOQUE */
+.sidebarCalcBtn{display:grid;grid-template-columns:30px 1fr;align-items:center;width:100%;border:0;background:transparent;border-radius:11px;padding:9px 10px;text-align:left;font:inherit;font-weight:850;color:inherit;cursor:pointer;margin:4px 0}
+.sidebarCalcBtn:hover{background:#f6f7f8}
+body.sidebarCollapsed .sidebarCalcBtn{grid-template-columns:1fr;justify-items:center;padding:9px 5px}
+body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
+.estoquePesquisaWrap{position:relative;margin:10px 0 14px}
+.estoquePesquisaWrap input{padding-left:42px;margin:0}
+.estoquePesquisaIcon{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:17px}
+.calcOverlay{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:5000;display:flex;align-items:center;justify-content:center;padding:18px}
+.calcOverlay.hidden{display:none!important}
+.calcWindow{width:min(470px,96vw);background:#fff;border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.28);padding:18px;border:1px solid #e7e7e7}
+.calcHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.calcHeader h2{margin:0;font-size:22px}
+.calcClose{width:44px;height:44px;border:0;border-radius:12px;background:#f0f1f2;font-size:21px;font-weight:900;cursor:pointer}
+.calcDisplay{background:#17191c;color:#fff;border-radius:16px;padding:18px 16px;margin-bottom:13px;min-height:92px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;overflow:hidden}
+.calcExpression{font-size:14px;color:#c8ccd0;min-height:20px;word-break:break-all;text-align:right;width:100%}
+.calcValue{font-size:34px;line-height:1.2;font-weight:950;word-break:break-all;text-align:right;width:100%}
+.calcKeys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.calcKey{min-height:58px;border:0;border-radius:14px;background:#f1f3f5;font-size:21px;font-weight:900;cursor:pointer;color:#222}
+.calcKey:hover{filter:brightness(.97)}
+.calcKey.op{background:#fff0df;color:#a54e00}
+.calcKey.eq{background:linear-gradient(135deg,#ff7900,#ff9e00);color:#fff}
+.calcKey.clear{background:#fdeaea;color:#a52626}
+@media(max-width:900px){body.sidebarCollapsed .sidebarCalcBtn{grid-template-columns:30px 1fr;justify-items:stretch;padding:9px 10px}body.sidebarCollapsed .sidebarCalcBtn .sideText{display:inline}.calcWindow{width:min(430px,96vw)}}
+@media(max-width:420px){.calcWindow{padding:14px}.calcKey{min-height:54px}.calcValue{font-size:30px}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
@@ -475,6 +503,9 @@ body.sidebarCollapsed .sidebarBrand{display:none}
       <button class="sidebarSub" data-go-tab="menu" data-target="ancAdminPendentes">Dias pendentes</button>
     </div>
   </div>
+
+
+  <button id="abrirCalculadoraBtn" class="sidebarCalcBtn" type="button" title="Abrir calculadora sobre a tela atual"><span class="sideIcon">🧮</span><span class="sideText">Calculadora</span></button>
 
   <div class="sidebarGroup">
     <button class="sidebarSectionOnly" type="button"><span class="sideIcon">⚙️</span><span class="sideText">Administração</span><span class="sideArrow">⌄</span></button>
@@ -873,6 +904,10 @@ body.sidebarCollapsed .sidebarBrand{display:none}
   </div>
   <div class="card">
     <h3 id="ancEstoqueAtual">Estoque atual</h3>
+    <div class="estoquePesquisaWrap">
+      <span class="estoquePesquisaIcon">🔎</span>
+      <input id="pesquisaEstoque" type="search" autocomplete="off" placeholder="Pesquisar por nome ou código do produto..." aria-label="Pesquisar estoque atual">
+    </div>
     <div id="listaEstoque"></div>
   </div>
   <div class="card">
@@ -1480,6 +1515,30 @@ body.sidebarCollapsed .sidebarBrand{display:none}
     <div class="modal-actions">
       <button id="lembreteFecharAgoraBtn" class="btn green" type="button">💰 FECHAR AGORA</button>
       <button id="lembreteDepoisBtn" class="btn gray" type="button">⏳ LEMBRAR EM 30 MIN</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="calculadoraOverlay" class="calcOverlay hidden" role="dialog" aria-modal="true" aria-labelledby="calcTitulo">
+  <div class="calcWindow">
+    <div class="calcHeader">
+      <h2 id="calcTitulo">🧮 Calculadora</h2>
+      <button id="fecharCalculadoraBtn" class="calcClose" type="button" aria-label="Fechar calculadora">✕</button>
+    </div>
+    <div class="calcDisplay" aria-live="polite">
+      <div id="calcExpression" class="calcExpression"></div>
+      <div id="calcValue" class="calcValue">0</div>
+    </div>
+    <div id="calcKeys" class="calcKeys">
+      <button class="calcKey clear" type="button" data-calc="clear">C</button>
+      <button class="calcKey" type="button" data-calc="back">⌫</button>
+      <button class="calcKey op" type="button" data-calc="percent">%</button>
+      <button class="calcKey op" type="button" data-calc="/">÷</button>
+      <button class="calcKey" type="button" data-calc="7">7</button><button class="calcKey" type="button" data-calc="8">8</button><button class="calcKey" type="button" data-calc="9">9</button><button class="calcKey op" type="button" data-calc="*">×</button>
+      <button class="calcKey" type="button" data-calc="4">4</button><button class="calcKey" type="button" data-calc="5">5</button><button class="calcKey" type="button" data-calc="6">6</button><button class="calcKey op" type="button" data-calc="-">−</button>
+      <button class="calcKey" type="button" data-calc="1">1</button><button class="calcKey" type="button" data-calc="2">2</button><button class="calcKey" type="button" data-calc="3">3</button><button class="calcKey op" type="button" data-calc="+">+</button>
+      <button class="calcKey" type="button" data-calc="0">0</button><button class="calcKey" type="button" data-calc="00">00</button><button class="calcKey" type="button" data-calc=".">,</button><button class="calcKey eq" type="button" data-calc="equals">=</button>
     </div>
   </div>
 </div>
@@ -4614,7 +4673,8 @@ $('registrarEntradaBtn').addEventListener('click',function(){
   }
 });
 function renderEstoque(){
-  const a=Object.entries(produtos).filter(([,p])=>p.ativo!==false).sort((a,b)=>num(a[1].estoque)-num(b[1].estoque));
+  const termoEstoque=($('pesquisaEstoque')?.value||'').trim().toLocaleLowerCase('pt-BR');
+  const a=Object.entries(produtos).filter(([c,p])=>p.ativo!==false&&(!termoEstoque||String(p.nome||'').toLocaleLowerCase('pt-BR').includes(termoEstoque)||String(c||'').toLocaleLowerCase('pt-BR').includes(termoEstoque))).sort((a,b)=>num(a[1].estoque)-num(b[1].estoque));
   $('listaEstoque').innerHTML=a.length?a.map(([c,p])=>{
     const lr=listaReposicao.find(x=>!x.comprado&&x.codigo===c);
     const acaoReposicao=lr
@@ -4628,7 +4688,7 @@ function renderEstoque(){
         ${acaoReposicao}
       </div>
     </div>`;
-  }).join(''):'Nenhum produto cadastrado.';
+  }).join(''):(termoEstoque?'Nenhum produto encontrado para esta pesquisa.':'Nenhum produto cadastrado.');
   $('listaEntradas').innerHTML=entradas.length?entradas.slice().reverse().slice(0,20).map(e=>`
     <div class="item"><div class="between"><b>${esc(e.n)}</b><b>${(e.tipo==='inventario'||e.tipo==='consumo')?(num(e.q)>0?'+':'')+num(e.q):( '+'+num(e.q))} un.</b></div>
     <div class="small">${new Date(e.d).toLocaleString('pt-BR')} · ${e.tipo==='inventario'?'📦 Ajuste por inventário · '+num(e.estoqueAnterior)+' → '+num(e.estoqueNovo):e.tipo==='consumo'?'🥤 Retirada para consumo · '+num(e.estoqueAnterior)+' → '+num(e.estoqueNovo):'custo '+money(e.custo)+(e.fornecedor?' · '+esc(e.fornecedor):'')}</div></div>`).join(''):'Nenhuma entrada registrada.';
@@ -6053,6 +6113,64 @@ if(!Array.isArray(fiados))fiados=[];
 $('apagarBtn').addEventListener('click',function(){
   if(confirm('Apagar TODOS os dados comerciais do Mini Box (produtos, vendas, estoque, máquinas, clientes, fiados e fechamentos)?\n\nA conta de login na nuvem será preservada. Faça backup antes.')){
     produtos={};vendas=[];entradas=[];fechamentos=[];maquinas=[];clientes=[];fiados=[];listaReposicao=[];inventarioAtual=null;saidasConsumo=[];vencimentos=[];combos=[];carrinho=[];persist();renderCarrinho();atualizarTudo();
+  }
+});
+
+
+// Pesquisa instantânea do Estoque atual
+$('pesquisaEstoque')?.addEventListener('input',renderEstoque);
+
+// Calculadora flutuante: abre sobre a função atual sem trocar de tela
+const calcOverlay=$('calculadoraOverlay'),calcValue=$('calcValue'),calcExpression=$('calcExpression');
+let calcExpr='',calcFinalizado=false;
+function calcFormatar(txt){return String(txt||'0').replace(/\*/g,'×').replace(/\//g,'÷').replace(/\./g,',');}
+function calcAtualizar(){calcValue.textContent=calcFormatar(calcExpr||'0');}
+function abrirCalculadora(){calcOverlay.classList.remove('hidden');if(window.innerWidth<=900)fecharSidebarMobile();setTimeout(()=>$('fecharCalculadoraBtn').focus(),20);}
+function fecharCalculadora(){calcOverlay.classList.add('hidden');}
+function calcResultado(){
+  if(!calcExpr)return;
+  const limpa=calcExpr.replace(/[^0-9+\-*/.()]/g,'');
+  if(!limpa||limpa!==calcExpr)return;
+  try{
+    const r=Function('"use strict";return ('+limpa+')')();
+    if(!Number.isFinite(r))throw new Error('resultado inválido');
+    calcExpression.textContent=calcFormatar(calcExpr)+' =';
+    calcExpr=String(Math.round((r+Number.EPSILON)*10000000000)/10000000000);
+    calcFinalizado=true;calcAtualizar();
+  }catch(e){calcValue.textContent='Erro';calcFinalizado=true;}
+}
+$('abrirCalculadoraBtn').addEventListener('click',abrirCalculadora);
+$('fecharCalculadoraBtn').addEventListener('click',fecharCalculadora);
+calcOverlay.addEventListener('click',e=>{if(e.target===calcOverlay)fecharCalculadora();});
+$('calcKeys').addEventListener('click',function(e){
+  const b=e.target.closest('[data-calc]');if(!b)return;const v=b.dataset.calc;
+  if(v==='clear'){calcExpr='';calcFinalizado=false;calcExpression.textContent='';calcAtualizar();return;}
+  if(v==='back'){if(calcFinalizado){calcExpr='';calcFinalizado=false;calcExpression.textContent='';}else calcExpr=calcExpr.slice(0,-1);calcAtualizar();return;}
+  if(v==='equals'){calcResultado();return;}
+  if(v==='percent'){
+    if(!calcExpr)return;
+    const m=calcExpr.match(/(\d+(?:\.\d+)?)$/);if(!m)return;
+    const pct=String(Number(m[1])/100);calcExpr=calcExpr.slice(0,-m[1].length)+pct;calcFinalizado=false;calcAtualizar();return;
+  }
+  const operador=['+','-','*','/'].includes(v);
+  if(calcFinalizado){if(!operador){calcExpr='';calcExpression.textContent='';}calcFinalizado=false;}
+  if(operador){if(!calcExpr&&v!=='-')return;if(/[+\-*/]$/.test(calcExpr))calcExpr=calcExpr.slice(0,-1)+v;else calcExpr+=v;}
+  else if(v==='.'){
+    const atual=(calcExpr.split(/[+\-*/]/).pop()||'');if(atual.includes('.'))return;calcExpr+=atual?'0'.replace('0','.'):'0.';
+  }else calcExpr+=v;
+  calcAtualizar();
+});
+document.addEventListener('keydown',function(e){
+  if(calcOverlay.classList.contains('hidden'))return;
+  if(e.key==='Escape'){fecharCalculadora();return;}
+  if(e.key==='Enter'||e.key==='='){e.preventDefault();calcResultado();return;}
+  if(e.key==='Backspace'){e.preventDefault();calcExpr=calcExpr.slice(0,-1);calcFinalizado=false;calcAtualizar();return;}
+  if(/^[0-9.+\-*/]$/.test(e.key)){
+    e.preventDefault();const key=e.key;
+    if(calcFinalizado&&!/[+\-*/]/.test(key)){calcExpr='';calcExpression.textContent='';calcFinalizado=false;}
+    if(key==='.'&&(calcExpr.split(/[+\-*/]/).pop()||'').includes('.'))return;
+    if(/[+\-*/]/.test(key)&&/[+\-*/]$/.test(calcExpr))calcExpr=calcExpr.slice(0,-1)+key;else calcExpr+=key;
+    calcAtualizar();
   }
 });
 
