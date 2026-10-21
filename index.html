@@ -539,6 +539,33 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
     </div>
   </div>
 
+  <div class="card" id="cardMetaFaturamento">
+    <div class="between" style="gap:12px;align-items:flex-start">
+      <div>
+        <h3 style="margin:0">🎯 Meta de faturamento do mês</h3>
+        <div class="small" id="metaMesTitulo">Acompanhe o progresso do mês atual.</div>
+      </div>
+      <button id="metaEditarBtn" class="btn gray action" type="button">✏️ DEFINIR META</button>
+    </div>
+    <div id="metaEditor" class="note hidden" style="margin-top:12px">
+      <label>Meta de faturamento para este mês</label>
+      <div class="grid2">
+        <input id="metaValorInput" type="number" min="0" step="0.01" placeholder="Ex.: 4000,00">
+        <button id="metaSalvarBtn" class="btn primary" type="button">💾 SALVAR META</button>
+      </div>
+      <div class="small">A meta é apenas para acompanhamento e não altera vendas, caixa, lucro ou relatórios.</div>
+    </div>
+    <div id="metaSemValor" class="msg" style="margin-top:12px">Defina uma meta para acompanhar o faturamento do mês.</div>
+    <div id="metaConteudo" class="hidden" style="margin-top:14px">
+      <div class="between" style="gap:10px;flex-wrap:wrap"><b id="metaProgressoTexto" style="font-size:20px">R$ 0,00 / R$ 0,00</b><b id="metaPercentual" style="font-size:20px">0%</b></div>
+      <div style="height:18px;background:#eceff3;border-radius:999px;overflow:hidden;margin:10px 0"><div id="metaBarra" style="height:100%;width:0%;background:linear-gradient(90deg,#ff8a00,#ffb000);border-radius:999px;transition:width .3s ease"></div></div>
+      <div class="grid2">
+        <div class="metric"><small>Falta para a meta</small><b id="metaFalta">R$ 0,00</b></div>
+        <div class="metric"><small>Necessário por dia</small><b id="metaPorDia">R$ 0,00</b><span class="sub">Até o fim do mês</span></div>
+      </div>
+    </div>
+  </div>
+
   <div class="card iaFinanceiraCard">
     <div class="iaFinanceiraTopo">
       <div class="iaFinanceiraTitulo">
@@ -834,6 +861,19 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
         <div id="produtoUnidadesEmbalagemWrap" class="hidden"><label>Unidades por caixa/fardo</label><input id="produtoUnidadesEmbalagem" type="number" min="1" step="1" value="1"></div>
       </div>
       <div class="small">Isso altera apenas a forma de reposição. Estoque, vendas, custo e lucro continuam sendo calculados por unidade.</div>
+    </div>
+    <div class="note" style="margin-top:12px" id="calcPrecoProdutoBox">
+      <b>🧮 Calculadora de preço</b>
+      <div class="small">Ferramenta auxiliar: nada é alterado automaticamente. Você decide quando aplicar os valores calculados.</div>
+      <div class="grid2" style="margin-top:10px">
+        <div><label>Custo da caixa/fardo (opcional)</label><input id="calcCustoEmbalagem" type="number" min="0" step="0.01" placeholder="Ex.: 28,80"></div>
+        <div><label>Margem desejada sobre a venda (%)</label><input id="calcMargemDesejada" type="number" min="0" max="99.99" step="0.01" placeholder="Ex.: 40"></div>
+      </div>
+      <div id="calcPrecoResumo" class="msg" style="margin-top:10px">Informe custo/preço acima para visualizar lucro e margem.</div>
+      <div class="sale-actions" style="margin-top:8px">
+        <button id="calcAplicarCustoBtn" class="btn gray action hidden" type="button">📦 USAR CUSTO UNITÁRIO CALCULADO</button>
+        <button id="calcAplicarPrecoBtn" class="btn blue action hidden" type="button">💲 USAR PREÇO SUGERIDO</button>
+      </div>
     </div>
     <div class="note" style="margin-top:12px">
       <label style="display:flex;gap:8px;align-items:center;margin:0;cursor:pointer"><input id="produtoPromocaoAtiva" type="checkbox" style="width:auto"> <b>🏷️ Promoção por quantidade</b></label>
@@ -1608,7 +1648,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 const num=v=>{ const n=Number(v); return Number.isFinite(n)?n:0; };
 
 let produtos={}, vendas=[], entradas=[], fechamentos=[], maquinas=[], usuarios=[], clientes=[], fiados=[], listaReposicao=[], inventarioAtual=null, saidasConsumo=[], vencimentos=[], combos=[], carrinho=[];
-let caixaConfig={ativo:true,hora:'22:00'};
+let caixaConfig={ativo:true,hora:'22:00',metas:{}};
 let scanner=null, produtoEditando=null;
 let leituraCandidata='', leituraRepeticoes=0, ultimaLeituraEm=0, scannerProcessando=false;
 
@@ -1628,6 +1668,7 @@ try{combos=JSON.parse(localStorage.getItem(CBK)||'[]')||[]}catch(e){combos=[]}
 try{caixaConfig={...caixaConfig,...(JSON.parse(localStorage.getItem(CXCFGK)||'{}')||{})}}catch(e){}
 caixaConfig.ativo=caixaConfig.ativo!==false;
 if(!/^\d{2}:\d{2}$/.test(String(caixaConfig.hora||'')))caixaConfig.hora='22:00';
+if(!caixaConfig.metas||typeof caixaConfig.metas!=='object')caixaConfig.metas={};
 if(!Array.isArray(vendas))vendas=[];
 if(!Array.isArray(entradas))entradas=[];
 if(!Array.isArray(fechamentos))fechamentos=[];
@@ -1779,7 +1820,7 @@ function restaurarDadosLocaisAposDemo(){
   try{fiados=JSON.parse(localStorage.getItem(FRK)||'[]')||[]}catch(e){fiados=[]}
   try{listaReposicao=JSON.parse(localStorage.getItem(LRK)||'[]')||[]}catch(e){listaReposicao=[]}
   try{combos=JSON.parse(localStorage.getItem(CBK)||'[]')||[]}catch(e){combos=[]}
-  caixaConfig={ativo:true,hora:'22:00'};
+  caixaConfig={ativo:true,hora:'22:00',metas:{}};
   try{caixaConfig={...caixaConfig,...(JSON.parse(localStorage.getItem(CXCFGK)||'{}')||{})}}catch(e){}
   caixaConfig.ativo=caixaConfig.ativo!==false;
   if(!/^\d{2}:\d{2}$/.test(String(caixaConfig.hora||'')))caixaConfig.hora='22:00';
@@ -5146,6 +5187,58 @@ async function analisarFinanceiroInterno(){
   box.innerHTML=insights.join('');
   $('iaFinanceiraRodape').textContent='Análise local atualizada em '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' · inclui sinais históricos de clima × vendas · nenhuma informação é enviada para uma IA externa.';
 }
+function chaveMetaMes(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function renderMetaFaturamento(faturamentoMes,agora=new Date()){
+  if(!$('metaConteudo'))return;
+  if(!caixaConfig.metas||typeof caixaConfig.metas!=='object')caixaConfig.metas={};
+  const chave=chaveMetaMes(agora),meta=Math.max(0,num(caixaConfig.metas[chave]));
+  const nomeMes=agora.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  $('metaMesTitulo').textContent='Meta de '+nomeMes.charAt(0).toUpperCase()+nomeMes.slice(1);
+  $('metaValorInput').value=meta>0?meta:'';
+  $('metaSemValor').classList.toggle('hidden',meta>0);$('metaConteudo').classList.toggle('hidden',!(meta>0));
+  if(!(meta>0))return;
+  const fat=Math.max(0,num(faturamentoMes)),pct=meta?fat/meta*100:0,falta=Math.max(0,meta-fat);
+  const ultimoDia=new Date(agora.getFullYear(),agora.getMonth()+1,0).getDate();
+  const diasRestantes=Math.max(1,ultimoDia-agora.getDate()+1);
+  $('metaProgressoTexto').textContent=money(fat)+' / '+money(meta);
+  $('metaPercentual').textContent=pct.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
+  $('metaBarra').style.width=Math.min(100,pct)+'%';
+  $('metaFalta').textContent=falta>0?money(falta):'🎉 Meta atingida!';
+  $('metaPorDia').textContent=falta>0?money(falta/diasRestantes):money(0);
+}
+$('metaEditarBtn').addEventListener('click',()=>{$('metaEditor').classList.toggle('hidden');if(!$('metaEditor').classList.contains('hidden'))$('metaValorInput').focus();});
+$('metaSalvarBtn').addEventListener('click',()=>{
+  if(MODO_DEMO){bloquearAcaoDemo();return;}
+  const v=num($('metaValorInput').value);if(v<0){alert('Informe uma meta válida.');return;}
+  if(!caixaConfig.metas||typeof caixaConfig.metas!=='object')caixaConfig.metas={};
+  const chave=chaveMetaMes(new Date());if(v>0)caixaConfig.metas[chave]=v;else delete caixaConfig.metas[chave];
+  persist();$('metaEditor').classList.add('hidden');renderPainel();beep();
+});
+
+function atualizarCalculadoraPrecoProduto(){
+  if(!$('calcPrecoResumo'))return;
+  const custoCampo=Math.max(0,num($('produtoCusto').value)),preco=Math.max(0,num($('produtoPreco').value));
+  const forma=$('produtoFormaCompra').value||'unidade',por=Math.max(1,Math.floor(num($('produtoUnidadesEmbalagem').value)||1));
+  const custoEmb=Math.max(0,num($('calcCustoEmbalagem').value)),margemDesejada=num($('calcMargemDesejada').value);
+  const custoCalculado=(forma!=='unidade'&&custoEmb>0)?custoEmb/por:0;
+  const custoBase=custoCalculado>0?custoCalculado:custoCampo;
+  const lucro=preco-custoBase,margem=preco>0?(lucro/preco*100):0,markup=custoBase>0?(lucro/custoBase*100):0;
+  let html='';
+  if(custoCalculado>0)html+='📦 '+money(custoEmb)+' ÷ '+por+' un. = <b>'+money(custoCalculado)+' por unidade</b><br>';
+  if(preco>0)html+='Venda <b>'+money(preco)+'</b> · lucro unitário <b>'+money(lucro)+'</b> · margem <b>'+margem.toLocaleString('pt-BR',{maximumFractionDigits:2})+'%</b> · acréscimo sobre custo <b>'+markup.toLocaleString('pt-BR',{maximumFractionDigits:2})+'%</b>';
+  if(!html)html='Informe custo/preço acima para visualizar lucro e margem.';
+  let sugerido=0;if(custoBase>0&&margemDesejada>0&&margemDesejada<100)sugerido=custoBase/(1-margemDesejada/100);
+  if(sugerido>0)html+='<br>🎯 Com margem desejada de <b>'+margemDesejada.toLocaleString('pt-BR',{maximumFractionDigits:2})+'%</b>, preço sugerido: <b>'+money(sugerido)+'</b>.';
+  else if(margemDesejada>=100)html+='<br>⚠️ A margem desejada deve ser menor que 100%.';
+  $('calcPrecoResumo').innerHTML=html;
+  $('calcAplicarCustoBtn').classList.toggle('hidden',!(custoCalculado>0));$('calcAplicarCustoBtn').dataset.valor=String(custoCalculado||0);
+  $('calcAplicarPrecoBtn').classList.toggle('hidden',!(sugerido>0));$('calcAplicarPrecoBtn').dataset.valor=String(sugerido||0);
+}
+['produtoCusto','produtoPreco','produtoFormaCompra','produtoUnidadesEmbalagem','calcCustoEmbalagem','calcMargemDesejada'].forEach(id=>$(id)?.addEventListener('input',atualizarCalculadoraPrecoProduto));
+$('produtoFormaCompra')?.addEventListener('change',atualizarCalculadoraPrecoProduto);
+$('calcAplicarCustoBtn')?.addEventListener('click',function(){const v=num(this.dataset.valor);if(v>0){$('produtoCusto').value=v.toFixed(2);atualizarCalculadoraPrecoProduto();}});
+$('calcAplicarPrecoBtn')?.addEventListener('click',function(){const v=num(this.dataset.valor);if(v>0){$('produtoPreco').value=v.toFixed(2);atualizarCalculadoraPrecoProduto();}});
+
 function renderPainel(){
   const agora=new Date();
   const iniHoje=inicioDia(agora),fimHoje=new Date(iniHoje);fimHoje.setDate(fimHoje.getDate()+1);
@@ -5171,6 +5264,7 @@ function renderPainel(){
   $('dashLucroLiquidoMes').textContent=money(tf.lucroLiquido);
   $('dashTotalDia').textContent=money(hoje.reduce((s,v)=>s+num(v.t),0));
   $('dashQtdMes').textContent=mes.length;
+  renderMetaFaturamento(tf.fat,agora);
   $('dashTaxasMes').textContent=money(tf.taxas);
   $('dashTicketMes').textContent=money(mes.length?tf.fat/mes.length:0);
   $('dashFiadoRecebido').textContent=money(tf.recebFiado.reduce((s,p)=>s+num(p.valor),0));
@@ -6191,7 +6285,7 @@ document.addEventListener('click',function(e){
 },true);
 document.addEventListener('submit',function(e){if(MODO_DEMO){e.preventDefault();e.stopImmediatePropagation();bloquearAcaoDemo();}},true);
 
-function atualizarTudo(){renderPainel();renderProdutos();renderCombos();renderCardapio();renderEstoque();preencherSelectReposicao();renderListaReposicao();renderInventario();renderConsumos();renderVencimentos();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();if(MODO_DEMO)setTimeout(()=>aplicarBloqueiosDemo(),0);}
+function atualizarTudo(){atualizarCalculadoraPrecoProduto();renderPainel();renderProdutos();renderCombos();renderCardapio();renderEstoque();preencherSelectReposicao();renderListaReposicao();renderInventario();renderConsumos();renderVencimentos();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();if(MODO_DEMO)setTimeout(()=>aplicarBloqueiosDemo(),0);}
 renderComboEdicao();renderCarrinho();iniciarAutenticacao();
 });
 </script>
