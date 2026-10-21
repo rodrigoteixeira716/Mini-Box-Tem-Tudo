@@ -4587,19 +4587,24 @@ $('registrarEntradaBtn').addEventListener('click',function(){
 });
 function renderEstoque(){
   const a=Object.entries(produtos).filter(([,p])=>p.ativo!==false).sort((a,b)=>num(a[1].estoque)-num(b[1].estoque));
-  $('listaEstoque').innerHTML=a.length?a.map(([c,p])=>`
+  $('listaEstoque').innerHTML=a.length?a.map(([c,p])=>{
+    const lr=listaReposicao.find(x=>!x.comprado&&x.codigo===c);
+    const acaoReposicao=lr
+      ? `<span class="badge okstock" title="Este produto já está na lista de reposição">✅ Na lista · ${num(lr.qtd)} un.</span><button class="btn gray action estoqueAdicionarReposicao" data-c="${encodeURIComponent(c)}" type="button" title="Produto já está na lista de reposição">✓ Já na lista</button>`
+      : `<button class="btn gray action estoqueAdicionarReposicao" data-c="${encodeURIComponent(c)}" type="button" title="Adicionar à lista de reposição">🛒 Repor</button>`;
+    return `
     <div class="item between">
       <div><b>${esc(p.nome)}</b><div class="small">${esc(c)} · custo ${money(p.custo)}</div></div>
       <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end">
         <span class="badge ${num(p.estoque)<=num(p.minimo)?'low':'okstock'}">${num(p.estoque)} un.</span>
-        <button class="btn gray action estoqueAdicionarReposicao" data-c="${encodeURIComponent(c)}" type="button" title="Adicionar à lista de reposição">🛒 Repor</button>
+        ${acaoReposicao}
       </div>
-    </div>`).join(''):'Nenhum produto cadastrado.';
+    </div>`;
+  }).join(''):'Nenhum produto cadastrado.';
   $('listaEntradas').innerHTML=entradas.length?entradas.slice().reverse().slice(0,20).map(e=>`
     <div class="item"><div class="between"><b>${esc(e.n)}</b><b>${(e.tipo==='inventario'||e.tipo==='consumo')?(num(e.q)>0?'+':'')+num(e.q):( '+'+num(e.q))} un.</b></div>
     <div class="small">${new Date(e.d).toLocaleString('pt-BR')} · ${e.tipo==='inventario'?'📦 Ajuste por inventário · '+num(e.estoqueAnterior)+' → '+num(e.estoqueNovo):e.tipo==='consumo'?'🥤 Retirada para consumo · '+num(e.estoqueAnterior)+' → '+num(e.estoqueNovo):'custo '+money(e.custo)+(e.fornecedor?' · '+esc(e.fornecedor):'')}</div></div>`).join(''):'Nenhuma entrada registrada.';
 }
-
 
 $('listaEstoque').addEventListener('click',function(e){
   const btn=e.target.closest('.estoqueAdicionarReposicao');
@@ -4607,21 +4612,17 @@ $('listaEstoque').addEventListener('click',function(e){
   const codigo=decodeURIComponent(btn.dataset.c||''),p=produtos[codigo];
   if(!p)return;
   const existente=listaReposicao.find(x=>!x.comprado&&x.codigo===codigo);
-  const sugerida=existente?Math.max(1,Math.floor(num(existente.qtd))):Math.max(1,Math.floor(num(p.minimo)-num(p.estoque)));
+  if(existente){
+    alert('⚠️ "'+p.nome+'" já está na lista de reposição com '+num(existente.qtd)+' un.\n\nO produto não foi adicionado novamente.');
+    return;
+  }
+  const sugerida=Math.max(1,Math.floor(num(p.minimo)-num(p.estoque)));
   const resposta=prompt('Quantidade para repor de "'+p.nome+'":',String(sugerida));
   if(resposta===null)return;
   const qtd=Math.floor(num(String(resposta).replace(',','.')));
   if(qtd<1){alert('Informe uma quantidade válida para reposição.');return;}
-  if(existente){
-    existente.qtd=qtd;
-    existente.custo=num(p.custo);
-    existente.atualizadoEm=new Date().toISOString();
-  }else{
-    listaReposicao.push({id:'lr_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),codigo,nome:p.nome,qtd,custo:num(p.custo),obs:'',comprado:false,criadoEm:new Date().toISOString()});
-  }
-  persist();renderListaReposicao();beep();
-  btn.textContent='✅ Na lista';
-  setTimeout(()=>{if(btn.isConnected)btn.textContent='🛒 Repor';},1200);
+  listaReposicao.push({id:'lr_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),codigo,nome:p.nome,qtd,custo:num(p.custo),obs:'',comprado:false,criadoEm:new Date().toISOString()});
+  persist();renderListaReposicao();renderEstoque();beep();
 });
 
 function preencherSelectReposicao(){
@@ -4654,20 +4655,23 @@ $('adicionarReposicaoBtn').addEventListener('click',function(){
   if(!p){$('reposicaoMsg').innerHTML='<div class="msg err">⚠️ Escolha um produto cadastrado.</div>';return;}
   if(q<1){$('reposicaoMsg').innerHTML='<div class="msg err">⚠️ Informe a quantidade que pretende comprar.</div>';return;}
   const existente=listaReposicao.find(x=>!x.comprado&&x.codigo===codigo);
-  if(existente){existente.qtd=q;existente.custo=custo;existente.obs=obs;existente.atualizadoEm=new Date().toISOString();}
-  else listaReposicao.push({id:'lr_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),codigo,nome:p.nome,qtd:q,custo,obs,comprado:false,criadoEm:new Date().toISOString()});
-  persist();renderListaReposicao();
+  if(existente){
+    $('reposicaoMsg').innerHTML='<div class="msg err">⚠️ <b>'+esc(p.nome)+'</b> já está na lista de reposição com <b>'+num(existente.qtd)+' un.</b> O produto não foi adicionado novamente.</div>';
+    return;
+  }
+  listaReposicao.push({id:'lr_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),codigo,nome:p.nome,qtd:q,custo,obs,comprado:false,criadoEm:new Date().toISOString()});
+  persist();renderListaReposicao();renderEstoque();
   $('reposicaoProduto').value='';$('reposicaoQtd').value='1';$('reposicaoCusto').value='';$('reposicaoObs').value='';$('reposicaoProdutoInfo').textContent='';
   $('reposicaoMsg').innerHTML='<div class="msg ok">✅ Produto adicionado à lista de reposição.</div>';beep();
 });
 $('listaReposicao').addEventListener('click',function(e){
   const comprado=e.target.closest('.reposicaoComprado'), excluir=e.target.closest('.reposicaoExcluir');
-  if(comprado){const x=listaReposicao.find(i=>i.id===comprado.dataset.id);if(x){x.comprado=true;x.compradoEm=new Date().toISOString();persist();renderListaReposicao();beep();}return;}
-  if(excluir){const x=listaReposicao.find(i=>i.id===excluir.dataset.id);if(x&&confirm('Remover "'+x.nome+'" da lista de reposição?')){listaReposicao=listaReposicao.filter(i=>i.id!==x.id);persist();renderListaReposicao();}}
+  if(comprado){const x=listaReposicao.find(i=>i.id===comprado.dataset.id);if(x){x.comprado=true;x.compradoEm=new Date().toISOString();persist();renderListaReposicao();renderEstoque();beep();}return;}
+  if(excluir){const x=listaReposicao.find(i=>i.id===excluir.dataset.id);if(x&&confirm('Remover "'+x.nome+'" da lista de reposição?')){listaReposicao=listaReposicao.filter(i=>i.id!==x.id);persist();renderListaReposicao();renderEstoque();}}
 });
 $('limparCompradosReposicaoBtn').addEventListener('click',function(){
   if(!listaReposicao.some(x=>x.comprado)){alert('Não há itens marcados como comprados.');return;}
-  if(confirm('Remover da lista todos os itens já marcados como comprados?')){listaReposicao=listaReposicao.filter(x=>!x.comprado);persist();renderListaReposicao();}
+  if(confirm('Remover da lista todos os itens já marcados como comprados?')){listaReposicao=listaReposicao.filter(x=>!x.comprado);persist();renderListaReposicao();renderEstoque();}
 });
 $('compartilharReposicaoBtn').addEventListener('click',async function(){
   const lista=listaReposicao.filter(x=>!x.comprado);
