@@ -1120,14 +1120,14 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
     <label>Dia do fechamento</label><input id="caixaDataRef" type="date">
     <div class="note">Você pode fechar o caixa de hoje ou corrigir um dia pendente anterior. O sistema usa as vendas e recebimentos do dia escolhido.</div>
     <div id="caixaEsperado" class="msg"></div>
-    <label>Fundo / troco inicial em dinheiro</label><input id="caixaFundo" type="number" min="0" step="0.01" value="0">
+    <label>Fundo / troco inicial em dinheiro</label><input id="caixaFundo" type="text" inputmode="numeric" autocomplete="off" value="0,00">
     <div class="grid2">
-      <div><label>Dinheiro contado</label><input id="caixaDinheiro" type="number" min="0" step="0.01" value="0"></div>
-      <div><label>PIX maquininha conferido</label><input id="caixaPix" type="number" min="0" step="0.01" value="0"></div>
-      <div><label>PIX QR Code conferido</label><input id="caixaPixQr" type="number" min="0" step="0.01" value="0"></div>
-      <div><label>Débito conferido</label><input id="caixaDebito" type="number" min="0" step="0.01" value="0"></div>
-      <div><label>Crédito conferido</label><input id="caixaCredito" type="number" min="0" step="0.01" value="0"></div>
-      <div><label>Vale / Outros</label><input id="caixaOutros" type="number" min="0" step="0.01" value="0"></div>
+      <div><label>Dinheiro contado</label><input id="caixaDinheiro" type="text" inputmode="numeric" autocomplete="off" value="0,00"></div>
+      <div><label>PIX maquininha conferido</label><input id="caixaPix" type="text" inputmode="numeric" autocomplete="off" value="0,00"></div>
+      <div><label>PIX QR Code conferido</label><input id="caixaPixQr" type="text" inputmode="numeric" autocomplete="off" value="0,00"></div>
+      <div><label>Débito conferido</label><input id="caixaDebito" type="text" inputmode="numeric" autocomplete="off" value="0,00"></div>
+      <div><label>Crédito conferido</label><input id="caixaCredito" type="text" inputmode="numeric" autocomplete="off" value="0,00"></div>
+      <div><label>Vale / Outros</label><input id="caixaOutros" type="text" inputmode="numeric" autocomplete="off" value="0,00"></div>
     </div>
     <button id="calcularCaixaBtn" class="btn blue" style="width:100%;margin-top:12px" type="button">🧮 CONFERIR CAIXA</button>
     <div id="caixaResultado"></div>
@@ -1484,15 +1484,15 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
     <div id="editFechamentoData" class="msg"></div>
 
     <label>Fundo / troco inicial</label>
-    <input id="editCaixaFundo" type="number" min="0" step="0.01">
+    <input id="editCaixaFundo" type="text" inputmode="numeric" autocomplete="off">
 
     <div class="grid2">
-      <div><label>Dinheiro contado</label><input id="editCaixaDinheiro" type="number" min="0" step="0.01"></div>
-      <div><label>PIX maquininha conferido</label><input id="editCaixaPix" type="number" min="0" step="0.01"></div>
-      <div><label>PIX QR Code conferido</label><input id="editCaixaPixQr" type="number" min="0" step="0.01"></div>
-      <div><label>Débito conferido</label><input id="editCaixaDebito" type="number" min="0" step="0.01"></div>
-      <div><label>Crédito conferido</label><input id="editCaixaCredito" type="number" min="0" step="0.01"></div>
-      <div><label>Vale / Outros</label><input id="editCaixaOutros" type="number" min="0" step="0.01"></div>
+      <div><label>Dinheiro contado</label><input id="editCaixaDinheiro" type="text" inputmode="numeric" autocomplete="off"></div>
+      <div><label>PIX maquininha conferido</label><input id="editCaixaPix" type="text" inputmode="numeric" autocomplete="off"></div>
+      <div><label>PIX QR Code conferido</label><input id="editCaixaPixQr" type="text" inputmode="numeric" autocomplete="off"></div>
+      <div><label>Débito conferido</label><input id="editCaixaDebito" type="text" inputmode="numeric" autocomplete="off"></div>
+      <div><label>Crédito conferido</label><input id="editCaixaCredito" type="text" inputmode="numeric" autocomplete="off"></div>
+      <div><label>Vale / Outros</label><input id="editCaixaOutros" type="text" inputmode="numeric" autocomplete="off"></div>
     </div>
 
     <div id="editCaixaResultado" class="msg"></div>
@@ -1632,6 +1632,36 @@ const $=id=>document.getElementById(id);
 const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const num=v=>{ const n=Number(v); return Number.isFinite(n)?n:0; };
+
+// CAMPOS MONETÁRIOS DO CAIXA — digitação automática em centavos (2000 => 20,00)
+function valorMoedaInput(el){
+  if(!el)return 0;
+  if(el.dataset && el.dataset.valorMoeda!==undefined){
+    const n=Number(el.dataset.valorMoeda);return Number.isFinite(n)?n:0;
+  }
+  const txt=String(el.value||'').trim();
+  if(!txt)return 0;
+  const normalizado=txt.includes(',')?txt.replace(/\./g,'').replace(',','.') : txt;
+  const n=Number(normalizado);return Number.isFinite(n)?n:0;
+}
+function definirMoedaInput(el,valor){
+  if(!el)return;
+  const n=Math.max(0,num(valor));
+  el.dataset.valorMoeda=String(n);
+  el.value=n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function ativarMoedaAutomatica(id){
+  const el=$(id);if(!el)return;
+  definirMoedaInput(el,valorMoedaInput(el));
+  el.addEventListener('input',function(){
+    const digitos=String(this.value||'').replace(/\D/g,'');
+    const valor=digitos?Number(digitos)/100:0;
+    this.dataset.valorMoeda=String(valor);
+    this.value=valor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  },true);
+  el.addEventListener('focus',function(){try{this.setSelectionRange(this.value.length,this.value.length);}catch(e){} });
+}
+['caixaFundo','caixaDinheiro','caixaPix','caixaPixQr','caixaDebito','caixaCredito','caixaOutros','editCaixaFundo','editCaixaDinheiro','editCaixaPix','editCaixaPixQr','editCaixaDebito','editCaixaCredito','editCaixaOutros'].forEach(ativarMoedaAutomatica);
 
 let produtos={}, vendas=[], entradas=[], fechamentos=[], maquinas=[], usuarios=[], clientes=[], fiados=[], listaReposicao=[], inventarioAtual=null, saidasConsumo=[], vencimentos=[], combos=[], carrinho=[];
 let caixaConfig={ativo:true,hora:'22:00'};
@@ -5730,9 +5760,9 @@ $('salvarConfigCaixaBtn').addEventListener('click',function(){
 
 function calcularCaixa(){
   const ref=$('caixaDataRef').value||chaveDataLocal(new Date());
-  const f=formaPagamentoDoDia(ref),fundo=num($('caixaFundo').value);
+  const f=formaPagamentoDoDia(ref),fundo=valorMoedaInput($('caixaFundo'));
   const esperado=f['Dinheiro']+f['PIX']+f['PIX QR Code']+f['Cartão de débito']+f['Cartão de crédito']+f['Vale/Outros']+fundo;
-  const informado=num($('caixaDinheiro').value)+num($('caixaPix').value)+num($('caixaPixQr').value)+num($('caixaDebito').value)+num($('caixaCredito').value)+num($('caixaOutros').value);
+  const informado=valorMoedaInput($('caixaDinheiro'))+valorMoedaInput($('caixaPix'))+valorMoedaInput($('caixaPixQr'))+valorMoedaInput($('caixaDebito'))+valorMoedaInput($('caixaCredito'))+valorMoedaInput($('caixaOutros'));
   const diferenca=informado-esperado;
   $('caixaResultado').innerHTML='<div class="msg '+(Math.abs(diferenca)<0.01?'ok':'err')+'"><b>'+dataChaveBR(ref)+'</b><br><b>Esperado: '+money(esperado)+'</b><br>Conferido: '+money(informado)+'<br>Diferença: <b>'+money(diferenca)+'</b></div>';
   return {fundo,esperado,informado,diferenca,formas:f,referenciaDia:ref};
@@ -5749,12 +5779,12 @@ $('salvarCaixaBtn').addEventListener('click',function(){
     operadorId:usuarioAtual()?.id||'',
     operadorNome:usuarioAtual()?.nome||usuarioAtual()?.usuario||'',
     valoresInformados:{
-      dinheiro:num($('caixaDinheiro').value),
-      pix:num($('caixaPix').value),
-      pixQr:num($('caixaPixQr').value),
-      debito:num($('caixaDebito').value),
-      credito:num($('caixaCredito').value),
-      outros:num($('caixaOutros').value)
+      dinheiro:valorMoedaInput($('caixaDinheiro')) ,
+      pix:valorMoedaInput($('caixaPix')) ,
+      pixQr:valorMoedaInput($('caixaPixQr')) ,
+      debito:valorMoedaInput($('caixaDebito')) ,
+      credito:valorMoedaInput($('caixaCredito')) ,
+      outros:valorMoedaInput($('caixaOutros'))
     }
   });
   limparSnoozeCaixa();persist();renderCaixa();beep();alert('Fechamento de '+dataChaveBR(ref)+' salvo!');
@@ -5791,13 +5821,13 @@ function calcularEdicaoFechamento(){
   if(!Number.isInteger(index) || index<0 || index>=fechamentos.length)return null;
 
   const c=fechamentos[index];
-  const fundo=num($('editCaixaFundo').value);
-  const dinheiro=num($('editCaixaDinheiro').value);
-  const pix=num($('editCaixaPix').value);
-  const pixQr=num($('editCaixaPixQr').value);
-  const debito=num($('editCaixaDebito').value);
-  const credito=num($('editCaixaCredito').value);
-  const outros=num($('editCaixaOutros').value);
+  const fundo=valorMoedaInput($('editCaixaFundo'));
+  const dinheiro=valorMoedaInput($('editCaixaDinheiro'));
+  const pix=valorMoedaInput($('editCaixaPix'));
+  const pixQr=valorMoedaInput($('editCaixaPixQr'));
+  const debito=valorMoedaInput($('editCaixaDebito'));
+  const credito=valorMoedaInput($('editCaixaCredito'));
+  const outros=valorMoedaInput($('editCaixaOutros'));
 
   // Ao editar um fechamento histórico, preservamos o "esperado" original.
   // Apenas o fundo altera o total esperado em relação ao fundo original.
@@ -5830,13 +5860,13 @@ function abrirEditarFechamento(index){
   $('editFechamentoData').innerHTML=
     'Fechamento de <b>'+dataChaveBR(chaveFechamento(c))+'</b> · registrado em '+new Date(c.d).toLocaleString('pt-BR');
 
-  $('editCaixaFundo').value=num(c.fundo);
-  $('editCaixaDinheiro').value=v.dinheiro;
-  $('editCaixaPix').value=v.pix;
-  $('editCaixaPixQr').value=v.pixQr;
-  $('editCaixaDebito').value=v.debito;
-  $('editCaixaCredito').value=v.credito;
-  $('editCaixaOutros').value=v.outros;
+  definirMoedaInput($('editCaixaFundo'),num(c.fundo));
+  definirMoedaInput($('editCaixaDinheiro'),v.dinheiro);
+  definirMoedaInput($('editCaixaPix'),v.pix);
+  definirMoedaInput($('editCaixaPixQr'),v.pixQr);
+  definirMoedaInput($('editCaixaDebito'),v.debito);
+  definirMoedaInput($('editCaixaCredito'),v.credito);
+  definirMoedaInput($('editCaixaOutros'),v.outros);
 
   $('modalEditarFechamento').classList.remove('hidden');
   calcularEdicaoFechamento();
