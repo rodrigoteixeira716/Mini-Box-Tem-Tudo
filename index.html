@@ -4590,13 +4590,39 @@ function renderEstoque(){
   $('listaEstoque').innerHTML=a.length?a.map(([c,p])=>`
     <div class="item between">
       <div><b>${esc(p.nome)}</b><div class="small">${esc(c)} · custo ${money(p.custo)}</div></div>
-      <span class="badge ${num(p.estoque)<=num(p.minimo)?'low':'okstock'}">${num(p.estoque)} un.</span>
+      <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end">
+        <span class="badge ${num(p.estoque)<=num(p.minimo)?'low':'okstock'}">${num(p.estoque)} un.</span>
+        <button class="btn gray action estoqueAdicionarReposicao" data-c="${encodeURIComponent(c)}" type="button" title="Adicionar à lista de reposição">🛒 Repor</button>
+      </div>
     </div>`).join(''):'Nenhum produto cadastrado.';
   $('listaEntradas').innerHTML=entradas.length?entradas.slice().reverse().slice(0,20).map(e=>`
     <div class="item"><div class="between"><b>${esc(e.n)}</b><b>${(e.tipo==='inventario'||e.tipo==='consumo')?(num(e.q)>0?'+':'')+num(e.q):( '+'+num(e.q))} un.</b></div>
     <div class="small">${new Date(e.d).toLocaleString('pt-BR')} · ${e.tipo==='inventario'?'📦 Ajuste por inventário · '+num(e.estoqueAnterior)+' → '+num(e.estoqueNovo):e.tipo==='consumo'?'🥤 Retirada para consumo · '+num(e.estoqueAnterior)+' → '+num(e.estoqueNovo):'custo '+money(e.custo)+(e.fornecedor?' · '+esc(e.fornecedor):'')}</div></div>`).join(''):'Nenhuma entrada registrada.';
 }
 
+
+$('listaEstoque').addEventListener('click',function(e){
+  const btn=e.target.closest('.estoqueAdicionarReposicao');
+  if(!btn)return;
+  const codigo=decodeURIComponent(btn.dataset.c||''),p=produtos[codigo];
+  if(!p)return;
+  const existente=listaReposicao.find(x=>!x.comprado&&x.codigo===codigo);
+  const sugerida=existente?Math.max(1,Math.floor(num(existente.qtd))):Math.max(1,Math.floor(num(p.minimo)-num(p.estoque)));
+  const resposta=prompt('Quantidade para repor de "'+p.nome+'":',String(sugerida));
+  if(resposta===null)return;
+  const qtd=Math.floor(num(String(resposta).replace(',','.')));
+  if(qtd<1){alert('Informe uma quantidade válida para reposição.');return;}
+  if(existente){
+    existente.qtd=qtd;
+    existente.custo=num(p.custo);
+    existente.atualizadoEm=new Date().toISOString();
+  }else{
+    listaReposicao.push({id:'lr_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),codigo,nome:p.nome,qtd,custo:num(p.custo),obs:'',comprado:false,criadoEm:new Date().toISOString()});
+  }
+  persist();renderListaReposicao();beep();
+  btn.textContent='✅ Na lista';
+  setTimeout(()=>{if(btn.isConnected)btn.textContent='🛒 Repor';},1200);
+});
 
 function preencherSelectReposicao(){
   const sel=$('reposicaoProduto');if(!sel)return;
