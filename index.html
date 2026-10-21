@@ -1663,7 +1663,7 @@ function ativarMoedaAutomatica(id){
 }
 ['caixaFundo','caixaDinheiro','caixaPix','caixaPixQr','caixaDebito','caixaCredito','caixaOutros','editCaixaFundo','editCaixaDinheiro','editCaixaPix','editCaixaPixQr','editCaixaDebito','editCaixaCredito','editCaixaOutros'].forEach(ativarMoedaAutomatica);
 
-let produtos={}, vendas=[], entradas=[], fechamentos=[], maquinas=[], usuarios=[], clientes=[], fiados=[], listaReposicao=[], inventarioAtual=null, saidasConsumo=[], vencimentos=[], combos=[], carrinho=[];
+let produtos={}, vendas=[], entradas=[], fechamentos=[], maquinas=[], usuarios=[], clientes=[], fiados=[], listaReposicao=[], inventarioAtual=null, saidasConsumo=[], vencimentos=[], combos=[], carrinho=[], metasFaturamento={};
 let caixaConfig={ativo:true,hora:'22:00'};
 let scanner=null, produtoEditando=null;
 let leituraCandidata='', leituraRepeticoes=0, ultimaLeituraEm=0, scannerProcessando=false;
@@ -1943,6 +1943,7 @@ function estadoLocal(){
     vencimentos,
     combos,
     caixaConfig,
+    metasFaturamento,
     atualizadoEm:new Date().toISOString()
   };
 }
@@ -1969,6 +1970,7 @@ function aplicarEstadoNuvem(d){
     vencimentos=Array.isArray(d.vencimentos)?d.vencimentos:[];
     combos=Array.isArray(d.combos)?d.combos:[];
     caixaConfig={ativo:true,hora:'22:00',...(d.caixaConfig&&typeof d.caixaConfig==='object'?d.caixaConfig:{})};
+    if(d.metasFaturamento&&typeof d.metasFaturamento==='object'&&!Array.isArray(d.metasFaturamento)) metasFaturamento={...d.metasFaturamento};
     caixaConfig.ativo=caixaConfig.ativo!==false;
     if(!/^\d{2}:\d{2}$/.test(String(caixaConfig.hora||'')))caixaConfig.hora='22:00';
     migrarProdutos();
@@ -5238,8 +5240,21 @@ async function analisarFinanceiroInterno(){
   $('iaFinanceiraRodape').textContent='Análise local atualizada em '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' · inclui sinais históricos de clima × vendas · nenhuma informação é enviada para uma IA externa.';
 }
 
+function chaveMetaMes(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function chaveMetaFaturamento(d=new Date()){return 'miniBoxMetaFaturamento_'+d.getFullYear()+'_'+String(d.getMonth()+1).padStart(2,'0');}
-function obterMetaFaturamento(d=new Date()){try{return Math.max(0,num(localStorage.getItem(chaveMetaFaturamento(d))||0));}catch(e){return 0;}}
+function obterMetaFaturamento(d=new Date()){
+  const k=chaveMetaMes(d);
+  if(Object.prototype.hasOwnProperty.call(metasFaturamento,k))return Math.max(0,num(metasFaturamento[k]));
+  try{
+    const antiga=Math.max(0,num(localStorage.getItem(chaveMetaFaturamento(d))||0));
+    if(antiga>0){
+      metasFaturamento[k]=antiga;
+      if(usuarioNuvem&&lojaIdNuvem&&!aplicandoNuvem)agendarSyncNuvem();
+      return antiga;
+    }
+  }catch(e){}
+  return 0;
+}
 function renderMetaFaturamento(faturamento,agora=new Date()){
   if(!$('metaFaturamentoCard'))return;
   const meta=obterMetaFaturamento(agora);
@@ -5260,7 +5275,10 @@ if($('definirMetaBtn'))$('definirMetaBtn').addEventListener('click',()=>{
   if(entrada===null)return;
   const valor=Number(String(entrada).replace(/\./g,'').replace(',','.'));
   if(!Number.isFinite(valor)||valor<0){alert('Informe uma meta válida.');return;}
-  try{if(valor===0)localStorage.removeItem(chaveMetaFaturamento(agora));else localStorage.setItem(chaveMetaFaturamento(agora),String(valor));}catch(e){}
+  const k=chaveMetaMes(agora);
+  if(valor===0)delete metasFaturamento[k];else metasFaturamento[k]=valor;
+  try{localStorage.removeItem(chaveMetaFaturamento(agora));}catch(e){}
+  persist(true);
   renderPainel();
 });
 function renderPainel(){
