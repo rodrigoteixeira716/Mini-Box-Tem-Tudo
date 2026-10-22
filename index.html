@@ -1706,6 +1706,8 @@ function migrarProdutos(){
       estoque:Number.isFinite(Number(p.estoque))?Number(p.estoque):0,
       minimo:Number.isFinite(Number(p.minimo))?Number(p.minimo):3,
       ativo:p.ativo!==false,
+      formaCompra:p.formaCompra,
+      unidadesEmbalagem:p.unidadesEmbalagem,
       promocaoQtdAtiva:p.promocaoQtdAtiva===true,
       promocaoQtdMinima:Math.max(0,Math.floor(num(p.promocaoQtdMinima))),
       promocaoPrecoUnitario:Math.max(0,num(p.promocaoPrecoUnitario))
