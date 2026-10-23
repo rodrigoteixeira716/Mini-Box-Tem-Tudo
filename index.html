@@ -321,6 +321,19 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
 @media(max-width:900px){body.sidebarCollapsed .sidebarCalcBtn{grid-template-columns:30px 1fr;justify-items:stretch;padding:9px 10px}body.sidebarCollapsed .sidebarCalcBtn .sideText{display:inline}.calcWindow{width:min(430px,96vw)}}
 @media(max-width:420px){.calcWindow{padding:14px}.calcKey{min-height:54px}.calcValue{font-size:30px}}
 
+
+/* ===== PDV CARDAPIO 13.5.5.32 ===== */
+.pdvCardapioTopo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.pdvCardapioTopo .searchBox{flex:1;min-width:220px;margin:0}
+.pdvCardapioGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.pdvProduto{border:1px solid #e1e4e8;border-radius:14px;padding:12px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.pdvProdutoNome{font-weight:900;font-size:15px;min-height:38px}.pdvProdutoPreco{font-size:20px;font-weight:950;margin:5px 0}.pdvProdutoEstoque{font-size:12px;color:#666}
+.pdvProduto button{width:100%;margin-top:8px}.pdvProduto.semEstoque{opacity:.62}
+.pdvPedido{position:sticky;bottom:8px;background:#fff;border:2px solid #ff8300;border-radius:16px;padding:12px;margin-top:14px;box-shadow:0 6px 24px rgba(0,0,0,.14);z-index:5}
+.pdvPedidoLinha{display:grid;grid-template-columns:1fr auto;gap:8px;padding:8px 0;border-bottom:1px solid #eee}.pdvPedidoLinha:last-child{border-bottom:0}
+.pdvQtdBtns{display:flex;gap:5px;align-items:center;justify-content:flex-end}.pdvQtdBtns button{min-width:34px;padding:7px}
+.pdvPedidoTotal{font-size:22px;font-weight:950;text-align:right;margin:10px 0}
+@media(max-width:430px){.pdvCardapioGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.pdvProduto{padding:10px}.pdvProdutoNome{font-size:13px}.pdvProdutoPreco{font-size:18px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
@@ -435,7 +448,7 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
     <button class="sidebarMain" data-menu-tab="venda"><span class="sideIcon">🛒</span><span class="sideText">Vendas</span><span class="sideArrow">⌄</span></button>
     <div class="sidebarSubs">
       <button class="sidebarSub" data-go-tab="venda" data-target="ancVendaAdicionar">Nova venda / scanner / finalizar</button>
-      <button class="sidebarSub" data-go-tab="venda" data-target="ancPdvCardapio">🍔 PDV Cardápio</button>
+      <button class="sidebarSub" data-go-tab="pdvcardapio" data-target="ancPdvCardapio">🍔 PDV Cardápio</button>
     </div>
   </div>
 
@@ -762,35 +775,27 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
     <br>
     <button id="finalizarBtn" class="btn green" style="width:100%;font-size:17px" type="button">✅ REGISTRAR VENDA</button>
   </div>
+</section>
 
-  <div class="card" id="pdvCardapioCard">
+
+
+<section id="pdvcardapio" class="hidden">
+  <div class="card">
     <h2 id="ancPdvCardapio">🍔 PDV Cardápio</h2>
-    <div class="note">Atendimento rápido enquanto o cliente escolhe. Toque nos produtos para montar o pedido; ao finalizar, o mesmo carrinho segue para a venda normal, com pagamentos, taxas e baixa de estoque.</div>
-    <div class="pdvCardapioLayout">
-      <div class="pdvCatalogo">
-        <div class="searchBox"><span class="searchIcon">🔎</span><input id="pdvBusca" placeholder="Buscar produto ou combo"></div>
-        <div class="pdvFiltros">
-          <button class="btn primary pdvFiltro active" data-pdv-filtro="todos" type="button">Todos</button>
-          <button class="btn gray pdvFiltro" data-pdv-filtro="produtos" type="button">Produtos</button>
-          <button class="btn gray pdvFiltro" data-pdv-filtro="combos" type="button">🎁 Combos</button>
-          <button class="btn gray pdvFiltro" data-pdv-filtro="baixo" type="button">⚠️ Estoque baixo</button>
-        </div>
-        <div id="pdvResumoCatalogo" class="small"></div>
-        <div id="pdvProdutosGrid" class="pdvProdutosGrid"></div>
-      </div>
-      <aside class="pdvPedido">
-        <div class="between"><h3 style="margin:0">🧾 Pedido atual</h3><button id="pdvLimpar" class="btn gray action" type="button">Limpar</button></div>
-        <div id="pdvPedidoItens" class="pdvPedidoItens"></div>
-        <div class="pdvPedidoRodape">
-          <div class="between"><span>Itens</span><b id="pdvQtdItens">0</b></div>
-          <div class="between pdvTotalLinha"><span>Total</span><b id="pdvTotal">R$ 0,00</b></div>
-          <button id="pdvIrFinalizar" class="btn green" style="width:100%;font-size:17px;margin-top:10px" type="button">✅ IR PARA PAGAMENTO</button>
-        </div>
-      </aside>
+    <div class="note" style="margin-bottom:12px">Monte o pedido tocando nos produtos. O pedido usa o mesmo carrinho da venda normal e só é registrado depois da finalização.</div>
+    <div class="pdvCardapioTopo">
+      <div class="searchBox"><span class="searchIcon">🔎</span><input id="buscaPdvCardapio" placeholder="Buscar produto ou código"></div>
+      <button id="limparPdvPedido" class="btn gray" type="button">🗑️ Limpar pedido</button>
+    </div>
+    <div id="pdvCardapioLista" class="pdvCardapioGrid"></div>
+    <div class="pdvPedido">
+      <div class="between"><b>🧾 Pedido atual</b><span id="pdvQtdItens" class="small">0 itens</span></div>
+      <div id="pdvPedidoItens" style="margin-top:8px">Nenhum produto adicionado.</div>
+      <div class="pdvPedidoTotal">Total: <span id="pdvPedidoTotal">R$ 0,00</span></div>
+      <button id="pdvIrPagamento" class="btn green" style="width:100%;font-size:17px" type="button">✅ IR PARA PAGAMENTO</button>
     </div>
   </div>
 </section>
-
 
 <section id="fiados" class="hidden">
   <div class="card">
@@ -3124,12 +3129,12 @@ if($('climaHistoricoAtualizarBtn'))$('climaHistoricoAtualizarBtn').addEventListe
 // ===== FIM CLIMA =====
 
 function areaDaAba(tab){
-  return {painel:'painel',venda:'venda',produtos:'produtos',estoque:'estoque',vendas:'relatorios',fiados:'fiados',menu:'menu'}[tab];
+  return {painel:'painel',venda:'venda',pdvcardapio:'venda',produtos:'produtos',estoque:'estoque',vendas:'relatorios',fiados:'fiados',menu:'menu'}[tab];
 }
 function abrirAbaSidebar(tab){
   const area=areaDaAba(tab);
   if(!podeAcessar(area)){alert('Seu acesso não permite abrir esta área.');return false;}
-  ['painel','venda','cardapio','produtos','estoque','vendas','fiados','menu'].forEach(id=>$(id).classList.toggle('hidden',id!==tab));
+  ['painel','venda','pdvcardapio','cardapio','produtos','estoque','vendas','fiados','menu'].forEach(id=>$(id).classList.toggle('hidden',id!==tab));
   document.querySelectorAll('.sidebarMain').forEach(b=>b.classList.toggle('on',b.dataset.menuTab===tab));
   atualizarTudo();
   return true;
@@ -5679,24 +5684,7 @@ function imprimirComprovanteVenda(index){
   if(!w){alert('O Chrome bloqueou a janela de impressão. Permita pop-ups para este site e tente novamente.');return;}
   const seguro=String(texto).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   w.document.open();
-  w.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comprovante Mini Box</title><style>body{font-family:monospace;max-width:360px;margin:20px auto;padding:0 12px;white-space:pre-wrap;font-size:14px;line-height:1.45}.acoes{margin-top:20px}button{padding:12px;width:100%;font-size:16px}@media print{.acoes{display:none}body{margin:0}}
-/* PDV CARDÁPIO */
-.pdvCardapioLayout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.75fr);gap:16px;align-items:start;margin-top:14px}
-.pdvFiltros{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
-.pdvProdutosGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-top:12px}
-.pdvProdutoBtn{min-height:128px;border:1px solid var(--border,#dfe3e8);border-radius:15px;background:#fff;padding:13px;text-align:left;cursor:pointer;box-shadow:0 2px 9px rgba(0,0,0,.05);display:flex;flex-direction:column;justify-content:space-between;gap:7px;font:inherit;color:inherit}
-.pdvProdutoBtn:hover{border-color:#9aa9b7;transform:translateY(-1px)}
-.pdvProdutoBtn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.pdvProdutoNome{font-weight:900;font-size:15px;line-height:1.2}.pdvProdutoPreco{font-size:20px;font-weight:950}.pdvProdutoEstoque{font-size:11px;font-weight:800}
-.pdvPedido{border:1px solid var(--border,#dfe3e8);border-radius:16px;background:#fafbfc;padding:14px;position:sticky;top:12px}
-.pdvPedidoItens{display:grid;gap:8px;margin:12px 0;max-height:480px;overflow:auto}
-.pdvPedidoItem{background:#fff;border:1px solid var(--border,#e1e5e9);border-radius:12px;padding:10px}
-.pdvPedidoItemTop{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.pdvPedidoItemNome{font-weight:900;min-width:0}.pdvPedidoControles{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
-.pdvQtdBtn{width:38px;height:38px;border:0;border-radius:9px;font-size:20px;font-weight:900;cursor:pointer;background:#edf1f4}.pdvQtdNumero{min-width:34px;text-align:center;font-weight:950}
-.pdvPedidoRodape{border-top:1px solid var(--border,#dfe3e8);padding-top:11px}.pdvTotalLinha{font-size:20px;margin-top:7px}
-@media(max-width:850px){.pdvCardapioLayout{grid-template-columns:1fr}.pdvPedido{position:static}.pdvProdutosGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.pdvPedidoItens{max-height:none}}
-@media(max-width:380px){.pdvProdutosGrid{grid-template-columns:1fr}}
-</style></head><body>'+seguro+'<div class="acoes"><button onclick="window.print()">🖨️ IMPRIMIR</button></div></body></html>');
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comprovante Mini Box</title><style>body{font-family:monospace;max-width:360px;margin:20px auto;padding:0 12px;white-space:pre-wrap;font-size:14px;line-height:1.45}.acoes{margin-top:20px}button{padding:12px;width:100%;font-size:16px}@media print{.acoes{display:none}body{margin:0}}</style></head><body>'+seguro+'<div class="acoes"><button onclick="window.print()">🖨️ IMPRIMIR</button></div></body></html>');
   w.document.close();
 }
 $('compartilharComprovanteBtn').addEventListener('click',()=>{
@@ -6392,72 +6380,52 @@ document.addEventListener('click',function(e){
 },true);
 document.addEventListener('submit',function(e){if(MODO_DEMO){e.preventDefault();e.stopImmediatePropagation();bloquearAcaoDemo();}},true);
 
-function atualizarTudo(){renderPainel();renderProdutos();renderCombos();renderCardapio();renderEstoque();preencherSelectReposicao();renderListaReposicao();renderInventario();renderConsumos();renderVencimentos();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();if(MODO_DEMO)setTimeout(()=>aplicarBloqueiosDemo(),0);}
-renderComboEdicao();renderCarrinho();iniciarAutenticacao();
-});
 
-
-// ===== PDV CARDÁPIO ===========================================================
-let pdvFiltroAtual='todos';
-function pdvItensCatalogo(){
-  const itens=[];
-  Object.entries(produtos).filter(([,p])=>p.ativo!==false).forEach(([codigo,p])=>{
-    itens.push({tipo:'produto',codigo:String(codigo),nome:String(p.nome||'Produto'),preco:num(p.preco),estoque:Math.max(0,Math.floor(num(p.estoque))),minimo:num(p.minimo)});
-  });
-  combos.filter(c=>c.ativo!==false).forEach(c=>{
-    const qtd=quantidadeDisponivelComboCardapio(c);
-    itens.push({tipo:'combo',id:c.id,codigo:String(c.codigo||''),nome:String(c.nome||'Combo'),preco:num(c.preco),estoque:qtd,minimo:0});
-  });
-  return itens.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
-}
-function pdvQtdProdutoNoCarrinho(codigo){return carrinho.filter(x=>x.c===codigo).reduce((s,x)=>s+num(x.q),0);}
+// ===== PDV CARDAPIO 13.5.5.32 - isolado sobre o carrinho existente =====
+function pdvItensQuantidade(){return carrinho.reduce((s,x)=>s+num(x.q),0);}
 function pdvAdicionarProduto(codigo){
-  const p=produtos[codigo];if(!p||p.ativo===false)return;
-  const ja=pdvQtdProdutoNoCarrinho(codigo);
-  if(ja+1>num(p.estoque)){alert('Estoque insuficiente para adicionar mais '+p.nome+'.');return;}
-  const ex=carrinho.find(x=>x.c===codigo&&!x.comboInstancia);
-  if(ex){ex.q+=1;ex.p=precoUnitarioProduto(p,ex.q);ex.precoNormal=num(p.preco);ex.promocaoAplicada=promocaoQuantidadeValida(p)&&ex.q>=num(p.promocaoQtdMinima);}
-  else carrinho.push({c:codigo,n:p.nome,p:precoUnitarioProduto(p,1),precoNormal:num(p.preco),custo:num(p.custo),q:1,promocaoAplicada:false});
-  renderCarrinho();
-}
-function pdvAlterarItem(idx,delta){
-  const x=carrinho[idx];if(!x)return;
-  if(x.comboInstancia){
-    if(delta<0)carrinho=carrinho.filter(i=>i.comboInstancia!==x.comboInstancia);
-    else alert('Para adicionar outra unidade deste combo, toque novamente no combo no cardápio.');
-    renderCarrinho();return;
+  const p=produtos[codigo];
+  if(!p||p.ativo===false)return;
+  const existente=carrinho.find(x=>x.c===codigo && !x.comboInstancia);
+  if(existente){
+    existente.q+=1;
+    existente.p=precoUnitarioProduto(p,existente.q);
+    existente.precoNormal=num(p.preco);
+    existente.promocaoAplicada=promocaoQuantidadeValida(p)&&existente.q>=num(p.promocaoQtdMinima);
+  }else{
+    const preco=precoUnitarioProduto(p,1);
+    carrinho.push({c:codigo,n:p.nome,p:preco,precoNormal:num(p.preco),custo:num(p.custo),q:1,promocaoAplicada:false});
   }
-  const p=produtos[x.c];
-  if(delta>0&&p&&pdvQtdProdutoNoCarrinho(x.c)+1>num(p.estoque)){alert('Estoque insuficiente.');return;}
-  x.q=Math.max(0,num(x.q)+delta);
-  if(x.q<=0)carrinho.splice(idx,1);else if(p){x.p=precoUnitarioProduto(p,x.q);x.precoNormal=num(p.preco);x.promocaoAplicada=promocaoQuantidadeValida(p)&&x.q>=num(p.promocaoQtdMinima);}
-  renderCarrinho();
+  renderCarrinho();renderPdvCardapio();
+}
+function pdvAlterarQuantidade(idx,delta){
+  const item=carrinho[idx];if(!item)return;
+  if(item.comboInstancia){if(delta<0)carrinho=carrinho.filter(x=>x.comboInstancia!==item.comboInstancia);return renderCarrinho(),renderPdvCardapio();}
+  item.q=Math.max(0,num(item.q)+delta);
+  if(item.q<=0)carrinho.splice(idx,1);
+  else{const p=produtos[item.c];if(p){item.p=precoUnitarioProduto(p,item.q);item.precoNormal=num(p.preco);item.promocaoAplicada=promocaoQuantidadeValida(p)&&item.q>=num(p.promocaoQtdMinima);}}
+  renderCarrinho();renderPdvCardapio();
 }
 function renderPdvCardapio(){
-  const grid=$('pdvProdutosGrid'),pedido=$('pdvPedidoItens');if(!grid||!pedido)return;
-  const termo=String($('pdvBusca')?.value||'').trim().toLowerCase();
-  const todos=pdvItensCatalogo();
-  const lista=todos.filter(i=>{
-    const busca=!termo||i.nome.toLowerCase().includes(termo)||i.codigo.toLowerCase().includes(termo);
-    const filtro=pdvFiltroAtual==='todos'||(pdvFiltroAtual==='produtos'&&i.tipo==='produto')||(pdvFiltroAtual==='combos'&&i.tipo==='combo')||(pdvFiltroAtual==='baixo'&&i.tipo==='produto'&&i.estoque<=i.minimo);
-    return busca&&filtro;
-  });
-  $('pdvResumoCatalogo').textContent=lista.length+' item(ns) · toque para adicionar ao pedido';
-  grid.innerHTML=lista.length?lista.map(i=>`<button type="button" class="pdvProdutoBtn" data-pdv-tipo="${i.tipo}" data-pdv-codigo="${encodeURIComponent(i.codigo)}" data-pdv-id="${esc(i.id||'')}" ${i.estoque<=0?'disabled':''}><div><div class="pdvProdutoNome">${i.tipo==='combo'?'🎁 ':''}${esc(i.nome)}</div><div class="pdvProdutoEstoque">${i.estoque>0?(i.tipo==='combo'?i.estoque+' combo(s) possível(is)':i.estoque+' un. em estoque'):'🔴 ESGOTADO'}</div></div><div class="pdvProdutoPreco">${money(i.preco)}</div></button>`).join(''):'<div class="msg">Nenhum item encontrado.</div>';
-  if(!carrinho.length)pedido.innerHTML='<div class="msg">Toque em um produto para iniciar o pedido.</div>';
-  else pedido.innerHTML=carrinho.map((x,i)=>`<div class="pdvPedidoItem"><div class="pdvPedidoItemTop"><div class="pdvPedidoItemNome">${x.comboNome?'🎁 '+esc(x.comboNome)+' · ':''}${esc(x.n)}</div><b>${money(num(x.p)*num(x.q))}</b></div><div class="small">${money(x.p)} cada${x.promocaoAplicada?' · 🏷️ promoção aplicada':''}</div><div class="pdvPedidoControles">${x.comboInstancia?`<span class="badge okstock">Combo</span><span class="pdvQtdNumero">${num(x.q)}x</span><button type="button" class="btn red action pdvRemover" data-i="${i}">Remover combo</button>`:`<button type="button" class="pdvQtdBtn pdvMenos" data-i="${i}">−</button><span class="pdvQtdNumero">${num(x.q)}</span><button type="button" class="pdvQtdBtn pdvMais" data-i="${i}">+</button><button type="button" class="btn red action pdvRemover" data-i="${i}">Remover</button>`}</div></div>`).join('');
-  $('pdvQtdItens').textContent=String(carrinho.reduce((s,x)=>s+num(x.q),0));
-  $('pdvTotal').textContent=money(carrinho.reduce((s,x)=>s+num(x.p)*num(x.q),0));
+  const lista=$('pdvCardapioLista'),pedido=$('pdvPedidoItens');if(!lista||!pedido)return;
+  const termo=String($('buscaPdvCardapio')?.value||'').trim().toLowerCase();
+  const itens=Object.entries(produtos).filter(([c,p])=>p&&p.ativo!==false&&(!termo||String(p.nome||'').toLowerCase().includes(termo)||String(c).toLowerCase().includes(termo))).sort((a,b)=>String(a[1].nome||'').localeCompare(String(b[1].nome||''),'pt-BR'));
+  lista.innerHTML=itens.length?itens.map(([c,p])=>{const q=carrinho.filter(x=>x.c===c).reduce((s,x)=>s+num(x.q),0);return '<div class="pdvProduto '+(num(p.estoque)<=0?'semEstoque':'')+'"><div class="pdvProdutoNome">'+esc(p.nome)+'</div><div class="pdvProdutoPreco">'+money(num(p.preco))+'</div><div class="pdvProdutoEstoque">Estoque: '+num(p.estoque)+(q?' · no pedido: '+q:'')+'</div><button class="btn primary pdvAddProduto" type="button" data-codigo="'+esc(c)+'">➕ ADICIONAR</button></div>';}).join(''):'<div class="msg">Nenhum produto encontrado.</div>';
+  if(!carrinho.length)pedido.innerHTML='Nenhum produto adicionado.';
+  else pedido.innerHTML=carrinho.map((x,i)=>'<div class="pdvPedidoLinha"><div><b>'+num(x.q)+'x '+esc(x.n)+'</b><div class="small">'+money(num(x.p))+' cada · '+money(num(x.p)*num(x.q))+(x.comboNome?' · 🎁 '+esc(x.comboNome):'')+'</div></div><div class="pdvQtdBtns">'+(x.comboInstancia?'':'<button class="btn gray pdvQtd" type="button" data-i="'+i+'" data-d="-1">−</button><button class="btn gray pdvQtd" type="button" data-i="'+i+'" data-d="1">+</button>')+'<button class="btn gray pdvRemover" type="button" data-i="'+i+'">✕</button></div></div>').join('');
+  $('pdvQtdItens').textContent=pdvItensQuantidade()+' '+(pdvItensQuantidade()===1?'item':'itens');
+  $('pdvPedidoTotal').textContent=money(carrinho.reduce((s,x)=>s+num(x.p)*num(x.q),0));
 }
-if($('pdvBusca'))$('pdvBusca').addEventListener('input',renderPdvCardapio);
-document.querySelectorAll('.pdvFiltro').forEach(b=>b.addEventListener('click',()=>{pdvFiltroAtual=b.dataset.pdvFiltro;document.querySelectorAll('.pdvFiltro').forEach(x=>{x.classList.toggle('active',x===b);x.classList.toggle('primary',x===b);x.classList.toggle('gray',x!==b);});renderPdvCardapio();}));
-if($('pdvProdutosGrid'))$('pdvProdutosGrid').addEventListener('click',e=>{const b=e.target.closest('.pdvProdutoBtn');if(!b||b.disabled)return;if(b.dataset.pdvTipo==='combo')adicionarComboAoCarrinho(b.dataset.pdvId);else pdvAdicionarProduto(decodeURIComponent(b.dataset.pdvCodigo));renderPdvCardapio();});
-if($('pdvPedidoItens'))$('pdvPedidoItens').addEventListener('click',e=>{const mais=e.target.closest('.pdvMais'),menos=e.target.closest('.pdvMenos'),rem=e.target.closest('.pdvRemover');if(mais)pdvAlterarItem(Number(mais.dataset.i),1);else if(menos)pdvAlterarItem(Number(menos.dataset.i),-1);else if(rem){const i=Number(rem.dataset.i),x=carrinho[i];if(x?.comboInstancia)carrinho=carrinho.filter(y=>y.comboInstancia!==x.comboInstancia);else carrinho.splice(i,1);renderCarrinho();}renderPdvCardapio();});
-if($('pdvLimpar'))$('pdvLimpar').addEventListener('click',()=>{if(!carrinho.length)return;if(confirm('Limpar todos os itens do pedido atual?')){carrinho=[];renderCarrinho();renderPdvCardapio();}});
-if($('pdvIrFinalizar'))$('pdvIrFinalizar').addEventListener('click',()=>{if(!carrinho.length){alert('Adicione pelo menos um produto ao pedido.');return;}mostrarSomenteFuncao('venda','ancVendaItens');document.querySelectorAll('.sidebarSub').forEach(b=>b.classList.remove('active'));const sub=document.querySelector('.sidebarSub[data-go-tab="venda"][data-target="ancVendaAdicionar"]');if(sub)sub.classList.add('active');setTimeout(()=>$('ancVendaItens')?.scrollIntoView({behavior:'smooth',block:'start'}),80);});
-const pdvSub=document.querySelector('.sidebarSub[data-go-tab="venda"][data-target="ancPdvCardapio"]');if(pdvSub)pdvSub.addEventListener('click',()=>setTimeout(renderPdvCardapio,0));
-const _renderCarrinhoPDV=renderCarrinho;renderCarrinho=function(){_renderCarrinhoPDV();try{renderPdvCardapio();}catch(e){}};
-// ===== FIM PDV CARDÁPIO =======================================================
+if($('buscaPdvCardapio'))$('buscaPdvCardapio').addEventListener('input',renderPdvCardapio);
+if($('pdvCardapioLista'))$('pdvCardapioLista').addEventListener('click',e=>{const b=e.target.closest('.pdvAddProduto');if(b)pdvAdicionarProduto(b.dataset.codigo);});
+if($('pdvPedidoItens'))$('pdvPedidoItens').addEventListener('click',e=>{const q=e.target.closest('.pdvQtd'),r=e.target.closest('.pdvRemover');if(q)return pdvAlterarQuantidade(Number(q.dataset.i),Number(q.dataset.d));if(r){const i=Number(r.dataset.i),item=carrinho[i];if(item?.comboInstancia)carrinho=carrinho.filter(x=>x.comboInstancia!==item.comboInstancia);else carrinho.splice(i,1);renderCarrinho();renderPdvCardapio();}});
+if($('limparPdvPedido'))$('limparPdvPedido').addEventListener('click',()=>{if(!carrinho.length)return;if(confirm('Limpar todos os itens do pedido?')){carrinho=[];renderCarrinho();renderPdvCardapio();}});
+if($('pdvIrPagamento'))$('pdvIrPagamento').addEventListener('click',()=>{if(!carrinho.length){alert('Adicione pelo menos um produto.');return;}if(!abrirAbaSidebar('venda'))return;mostrarSomenteFuncao('venda','ancVendaItens');document.querySelectorAll('.sidebarSub').forEach(b=>b.classList.toggle('active',b.dataset.goTab==='venda'&&b.dataset.target==='ancVendaAdicionar'));renderCarrinho();setTimeout(()=>$('pagamento')?.scrollIntoView({behavior:'smooth',block:'center'}),100);});
+// ===== FIM PDV CARDAPIO =====
+
+function atualizarTudo(){renderPainel();renderPdvCardapio();renderProdutos();renderCombos();renderCardapio();renderEstoque();preencherSelectReposicao();renderListaReposicao();renderInventario();renderConsumos();renderVencimentos();renderVendas();renderCaixa();preencherSelectEntrada();renderMaquinas();renderFuncionarios();renderFiados();preencherClientesFiado();atualizarAreaTarifa();renderLembreteCaixa();if(MODO_DEMO)setTimeout(()=>aplicarBloqueiosDemo(),0);}
+renderComboEdicao();renderCarrinho();iniciarAutenticacao();
+});
 </script>
 </body>
 </html>
