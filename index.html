@@ -752,6 +752,8 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
       <option>Dinheiro</option><option>PIX</option><option>PIX QR Code</option><option>Cartão de débito</option>
       <option>Cartão de crédito</option><option>Vale/Outros</option><option value="Fiado">Fiado / Pagar depois</option>
       <option value="PIX + Dinheiro">PIX + Dinheiro</option>
+      <option value="Dinheiro + Débito">Dinheiro + Débito</option>
+      <option value="Dinheiro + Crédito">Dinheiro + Crédito</option>
       <option value="Crédito + Débito">Crédito + Débito</option>
       <option value="PIX + Débito">PIX + Débito</option>
       <option value="PIX + Crédito">PIX + Crédito</option>
@@ -1456,6 +1458,8 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
       <option>Dinheiro</option><option>PIX</option><option>PIX QR Code</option><option>Cartão de débito</option>
       <option>Cartão de crédito</option><option>Vale/Outros</option><option value="Fiado">Fiado / Pagar depois</option>
       <option value="PIX + Dinheiro">PIX + Dinheiro</option>
+      <option value="Dinheiro + Débito">Dinheiro + Débito</option>
+      <option value="Dinheiro + Crédito">Dinheiro + Crédito</option>
       <option value="Crédito + Débito">Crédito + Débito</option>
       <option value="PIX + Débito">PIX + Débito</option>
       <option value="PIX + Crédito">PIX + Crédito</option>
@@ -2460,6 +2464,8 @@ function percentualDaMaquina(maquina,pagamento,parcelas,bandeira){
 function formasSplit(pagamento){
   const mapa={
     'PIX + Dinheiro':['PIX','Dinheiro'],
+    'Dinheiro + Débito':['Dinheiro','Cartão de débito'],
+    'Dinheiro + Crédito':['Dinheiro','Cartão de crédito'],
     'Crédito + Débito':['Cartão de crédito','Cartão de débito'],
     'PIX + Débito':['PIX','Cartão de débito'],
     'PIX + Crédito':['PIX','Cartão de crédito']
@@ -2476,7 +2482,7 @@ function dadosTarifaForma(forma,valor,maquina,parcelas,bandeira){
 function dadosTarifaAtual(total){
   const pagamento=$('pagamento').value;
   const maquina=maquinaPorId($('maquinaVenda').value);
-  const parcelas=(pagamento==='Cartão de crédito'||pagamento==='Crédito + Débito'||pagamento==='PIX + Crédito')?Math.max(1,Math.floor(num($('parcelasVenda').value)||1)):1;
+  const parcelas=(pagamento==='Cartão de crédito'||pagamento==='Crédito + Débito'||pagamento==='PIX + Crédito'||pagamento==='Dinheiro + Crédito')?Math.max(1,Math.floor(num($('parcelasVenda').value)||1)):1;
   const bandeira=$('bandeiraVenda')?.value||'Mastercard';
   const fs=formasSplit(pagamento);
   if(fs){
