@@ -345,6 +345,7 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
 .alertaPanelHead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid #eee}
 .alertaPanelHead h3{margin:0}.alertaFechar{border:0;background:#f1f3f5;border-radius:10px;width:38px;height:38px;font-size:20px;cursor:pointer}
 .alertaResumo{padding:10px 18px;background:#fff8ef;border-bottom:1px solid #f4e5d4;font-size:13px}
+.alertaBuscaWrap{padding:10px 14px 4px;background:#fff}.alertaBusca{width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid #d0d5dd;border-radius:11px;font:inherit;outline:none}.alertaBusca:focus{border-color:#ff8500;box-shadow:0 0 0 3px rgba(255,133,0,.12)}
 .alertaLista{overflow:auto;padding:10px 14px 16px}
 .alertaItem{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;margin:7px 0;border:1px solid #eee;border-radius:14px}
 .alertaItemCritico{border-left:5px solid #d92d20}.alertaItemBaixo{border-left:5px solid #f79009}.alertaItemAtencao{border-left:5px solid #fdb022}
@@ -434,6 +435,7 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
   <div class="alertaPanel" role="dialog" aria-modal="true" aria-labelledby="alertaEstoqueTitulo">
     <div class="alertaPanelHead"><h3 id="alertaEstoqueTitulo">🔔 Alertas de estoque</h3><button id="fecharAlertasEstoque" class="alertaFechar" type="button" aria-label="Fechar">✕</button></div>
     <div id="alertaEstoqueResumo" class="alertaResumo"></div>
+    <div class="alertaBuscaWrap"><input id="alertaEstoqueBusca" class="alertaBusca" type="search" placeholder="🔎 Buscar produto nos alertas..." autocomplete="off"></div>
     <div id="alertaEstoqueLista" class="alertaLista"></div>
   </div>
 </div>
@@ -6402,19 +6404,22 @@ function obterAlertasEstoque(){
 function renderAlertasEstoque(){
   const badge=$('alertaEstoqueBadge'),lista=$('alertaEstoqueLista'),resumo=$('alertaEstoqueResumo');
   if(!badge||!lista||!resumo)return;
-  const alertas=obterAlertasEstoque();
-  badge.textContent=alertas.length>99?'99+':String(alertas.length);
-  badge.classList.toggle('hidden',alertas.length===0);
-  const sem=alertas.filter(a=>a.est<=0).length, baixos=alertas.length-sem;
-  resumo.innerHTML=alertas.length?'<b>'+alertas.length+' alerta(s)</b> · '+sem+' sem estoque · '+baixos+' com estoque baixo':'✅ Nenhum alerta de estoque no momento.';
+  const todosAlertas=obterAlertasEstoque();
+  badge.textContent=todosAlertas.length>99?'99+':String(todosAlertas.length);
+  badge.classList.toggle('hidden',todosAlertas.length===0);
+  const sem=todosAlertas.filter(a=>a.est<=0).length, baixos=todosAlertas.length-sem;
+  resumo.innerHTML=todosAlertas.length?'<b>'+todosAlertas.length+' alerta(s)</b> · '+sem+' sem estoque · '+baixos+' com estoque baixo':'✅ Nenhum alerta de estoque no momento.';
+  const termo=String($('alertaEstoqueBusca')?.value||'').trim().toLowerCase();
+  const alertas=termo?todosAlertas.filter(a=>String(a.p.nome||'').toLowerCase().includes(termo)||String(a.codigo||'').toLowerCase().includes(termo)):todosAlertas;
   lista.innerHTML=alertas.length?alertas.map(a=>{
     const lr=listaReposicao.find(x=>!x.comprado&&x.codigo===a.codigo);
     const desc=a.est<=0?'🔴 Sem estoque — 0 unidades':(a.est<=3?'🟠 Estoque crítico — '+a.est+' unidade(s)':'🟡 Estoque baixo — '+a.est+' unidade(s)');
     const cls=a.nivel==='critico'?'alertaItemCritico':(a.nivel==='baixo'?'alertaItemBaixo':'alertaItemAtencao');
     const acao=lr?'<button class="btn gray" type="button" disabled>✓ Já na lista</button>':'<button class="btn gray alertaAdicionarReposicao" type="button" data-c="'+encodeURIComponent(a.codigo)+'">🛒 Adicionar à reposição</button>';
     return '<div class="alertaItem '+cls+'"><div class="alertaInfo"><div class="alertaNome">'+esc(a.p.nome)+'</div><div class="alertaDesc">'+desc+' · código '+esc(a.codigo)+'</div></div><div class="alertaAcoes">'+acao+'</div></div>';
-  }).join(''):'<div class="msg ok">Tudo certo! Nenhum produto ativo está com 5 unidades ou menos.</div>';
+  }).join(''):(termo?'<div class="msg">🔎 Nenhum alerta encontrado para esta busca.</div>':'<div class="msg ok">Tudo certo! Nenhum produto ativo está com 5 unidades ou menos.</div>');
 }
+$('alertaEstoqueBusca')?.addEventListener('input',renderAlertasEstoque);
 function abrirAlertasEstoque(){renderAlertasEstoque();$('alertaEstoqueOverlay')?.classList.remove('hidden');$('alertaEstoqueOverlay')?.setAttribute('aria-hidden','false');}
 function fecharAlertasEstoque(){ $('alertaEstoqueOverlay')?.classList.add('hidden');$('alertaEstoqueOverlay')?.setAttribute('aria-hidden','true'); }
 $('alertaEstoqueBtn')?.addEventListener('click',abrirAlertasEstoque);
