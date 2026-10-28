@@ -2603,9 +2603,16 @@ function dataChaveBR(chave){
 }
 function chaveFechamento(c){return c?.referenciaDia||chaveDataLocal(c?.d);}
 function fechamentoDoDia(chave){return fechamentos.find(c=>chaveFechamento(c)===chave)||null;}
+// Venda fiada é faturamento/conta a receber, mas NÃO é entrada de caixa no dia da venda.
+// A checagem também usa o vínculo com fiados para proteger registros antigos ou com texto de pagamento diferente.
+function vendaEhFiada(v){
+  const forma=String(v?.p||'').trim().toLowerCase();
+  if(forma==='fiado' || forma.startsWith('fiado ' ) || forma.startsWith('fiado/'))return true;
+  return (fiados||[]).some(f=>String(f.vendaId||'')===String(v?.id||''));
+}
 function formaPagamentoDoDia(chave){
   const out={'Dinheiro':0,'PIX':0,'PIX QR Code':0,'Cartão de débito':0,'Cartão de crédito':0,'Vale/Outros':0};
-  vendas.filter(v=>chaveDataLocal(v.d)===chave && v.p!=='Fiado').forEach(v=>{
+  vendas.filter(v=>chaveDataLocal(v.d)===chave && !vendaEhFiada(v)).forEach(v=>{
     if(Array.isArray(v.pagamentosDivididos)&&v.pagamentosDivididos.length){
       v.pagamentosDivididos.forEach(pg=>{
         const p=pg.forma||'Vale/Outros'; if(out[p]==null)out[p]=0;
