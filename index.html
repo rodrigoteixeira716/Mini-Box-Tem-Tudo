@@ -1464,6 +1464,23 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
       <option value="PIX + Débito">PIX + Débito</option>
       <option value="PIX + Crédito">PIX + Crédito</option>
     </select>
+    <div id="editAreaMaquina" class="hidden">
+      <label>Máquina</label>
+      <select id="editMaquina"><option value="">Sem máquina / sem tarifa</option></select>
+    </div>
+    <div id="editAreaBandeira" class="hidden">
+      <label>Bandeira do cartão</label>
+      <select id="editBandeira"><option>Mastercard</option><option>Visa</option><option>Elo</option></select>
+    </div>
+    <div id="editAreaParcelas" class="hidden">
+      <label>Parcelas</label>
+      <select id="editParcelas">
+        <option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option>
+        <option value="5">5x</option><option value="6">6x</option><option value="7">7x</option><option value="8">8x</option>
+        <option value="9">9x</option><option value="10">10x</option><option value="11">11x</option><option value="12">12x</option>
+      </select>
+    </div>
+    <div id="editTarifaPreview" class="msg hidden"></div>
     <h3 style="margin-top:16px">Itens</h3>
     <div id="editItens"></div>
     <div class="total">Total calculado: <span id="editTotal">R$ 0,00</span></div>
@@ -5740,12 +5757,36 @@ function abrirEditarVenda(index){
   $('editVendaIndex').value=String(index);
   const d=new Date(v.d),local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
   $('editData').value=local;$('editPagamento').value=v.p||'Dinheiro';
+  $('editMaquina').innerHTML='<option value="">Sem máquina / sem tarifa</option>'+maquinas.map(m=>`<option value="${esc(m.id)}">${esc(m.nome)}</option>`).join('');
+  $('editMaquina').value=v.maquinaId||'';
+  $('editBandeira').value=v.bandeira||'Mastercard';
+  $('editParcelas').value=String(Math.max(1,Math.min(12,num(v.parcelas||1))));
   $('editValorCobrado').value=num(v.t).toFixed(2);
   $('editObservacao').value=v.observacao||'';
   $('editItens').innerHTML=(v.it||[]).map((x,j)=>`
     <div class="item"><b>${esc(x.n)}</b><div class="small">${esc(x.c)} · ${money(x.p)} cada</div>
     <label>Quantidade</label><input class="editQtd" data-i="${j}" type="number" min="0" value="${num(x.q)}"></div>`).join('')||'<div class="msg">Esta venda não possui itens detalhados.</div>';
-  atualizarTotalEdicao();$('modalVenda').classList.remove('hidden');
+  atualizarTotalEdicao();atualizarTarifaEdicao();$('modalVenda').classList.remove('hidden');
+}
+function atualizarTarifaEdicao(){
+  const forma=$('editPagamento').value;
+  const usaMaquina=forma==='PIX'||forma==='Cartão de débito'||forma==='Cartão de crédito';
+  const temCartao=forma==='Cartão de débito'||forma==='Cartão de crédito';
+  const credito=forma==='Cartão de crédito';
+  $('editAreaMaquina').classList.toggle('hidden',!usaMaquina);
+  $('editAreaBandeira').classList.toggle('hidden',!temCartao);
+  $('editAreaParcelas').classList.toggle('hidden',!credito);
+  $('editTarifaPreview').classList.toggle('hidden',!usaMaquina);
+  if(!usaMaquina){$('editMaquina').value='';$('editParcelas').value='1';$('editTarifaPreview').innerHTML='';return;}
+  const maq=maquinaPorId($('editMaquina').value);
+  const bandeira=$('editBandeira').value||'Mastercard';
+  const parcelas=credito?Math.max(1,num($('editParcelas').value)):1;
+  const valor=num($('editValorCobrado').value);
+  if(!maq){$('editTarifaPreview').innerHTML='Sem máquina selecionada: <b>nenhuma tarifa será descontada</b>.';return;}
+  const perc=percentualDaMaquina(maq,forma,parcelas,bandeira);
+  const taxa=Number((valor*perc/100).toFixed(2));
+  const liquido=Number((valor-taxa).toFixed(2));
+  $('editTarifaPreview').innerHTML='<b>'+esc(maq.nome)+'</b>'+(temCartao?' · <b>'+esc(bandeira)+'</b>':'')+(credito?' · <b>'+parcelas+'x</b>':'')+'<br>Taxa: <b>'+perc.toFixed(2).replace('.',',')+'%</b> · desconto: <b>'+money(taxa)+'</b><br>Você recebe líquido: <b>'+money(liquido)+'</b>';
 }
 function atualizarTotalEdicao(){
   const index=Number($('editVendaIndex').value);if(!Number.isInteger(index)||index<0||index>=vendas.length)return;
@@ -5760,7 +5801,8 @@ function atualizarTotalEdicao(){
     : '⚠️ Diferença entre calculado e cobrado: <b>'+(dif>0?'+':'')+money(dif)+'</b>';
 }
 $('editItens').addEventListener('input',e=>{if(e.target.classList.contains('editQtd'))atualizarTotalEdicao();});
-$('editValorCobrado').addEventListener('input',atualizarTotalEdicao);
+$('editValorCobrado').addEventListener('input',()=>{atualizarTotalEdicao();atualizarTarifaEdicao();});
+['editPagamento','editMaquina','editBandeira','editParcelas'].forEach(id=>$(id).addEventListener('change',atualizarTarifaEdicao));
 $('fecharModalBtn').addEventListener('click',()=> $('modalVenda').classList.add('hidden'));
 $('salvarVendaEditBtn').addEventListener('click',function(){
   const index=Number($('editVendaIndex').value);if(!Number.isInteger(index)||index<0||index>=vendas.length){alert('Venda não encontrada.');return;}
@@ -5791,9 +5833,17 @@ $('salvarVendaEditBtn').addEventListener('click',function(){
   v.t=Number(cobrado.toFixed(2));
   v.diferencaCobrada=diferenca;
   v.observacao=obs;
-  const maq=maquinaPorId(v.maquinaId);
   const usaMaquina=v.p==='PIX'||v.p==='Cartão de débito'||v.p==='Cartão de crédito';
-  const perc=usaMaquina&&maq?percentualDaMaquina(maq,v.p,v.parcelas||1):0;
+  const temCartao=v.p==='Cartão de débito'||v.p==='Cartão de crédito';
+  const credito=v.p==='Cartão de crédito';
+  const maq=usaMaquina?maquinaPorId($('editMaquina').value):null;
+  const bandeira=temCartao?($('editBandeira').value||'Mastercard'):'';
+  const parcelas=credito?Math.max(1,num($('editParcelas').value)):1;
+  const perc=usaMaquina&&maq?percentualDaMaquina(maq,v.p,parcelas,bandeira):0;
+  v.maquinaId=maq?.id||'';
+  v.maquinaNome=maq?.nome||'';
+  v.bandeira=bandeira;
+  v.parcelas=parcelas;
   v.taxaPercentual=perc;
   v.taxaValor=Number((v.t*perc/100).toFixed(2));
   v.liquido=Number((v.t-v.taxaValor).toFixed(2));
