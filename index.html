@@ -516,6 +516,7 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
     <div class="sidebarSubs">
       <button class="sidebarSub" data-go-tab="vendas" data-target="ancRelatoriosVisao">Resumo diário / compartilhar</button>
       <button class="sidebarSub" data-go-tab="vendas" data-target="ancRelatoriosPeriodo">Relatório por período</button>
+      <button class="sidebarSub" data-go-tab="vendas" data-target="ancRelatoriosProdutosVendidos">📦 Produtos vendidos</button>
       <button class="sidebarSub" data-go-tab="vendas" data-target="ancRelatoriosResumo">Resumo financeiro</button>
       <button class="sidebarSub" data-go-tab="vendas" data-target="ancRelatoriosPagamentos">Formas de pagamento</button>
       <button class="sidebarSub" data-go-tab="vendas" data-target="ancRelatoriosHorarios">Horários de movimento</button>
@@ -1142,6 +1143,26 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
     <div id="rpHorarios" class="reportTableWrap"></div>
     <h3 id="ancRelatoriosVendas" style="margin-top:16px">📋 Vendas encontradas</h3>
     <div id="rpLista" class="reportTableWrap"></div>
+  </div>
+
+  <div class="card">
+    <h2 id="ancRelatoriosProdutosVendidos">📦 Produtos vendidos</h2>
+    <div class="small">Veja quanto vendeu de cada produto no período. A lista é ordenada automaticamente do mais vendido para o menos vendido.</div>
+    <div class="grid2" style="margin-top:10px">
+      <div><label>Período</label><select id="pvPeriodo"><option value="hoje">Hoje</option><option value="ontem">Ontem</option><option value="7">Últimos 7 dias</option><option value="mes" selected>Mês atual</option><option value="personalizado">Personalizado</option><option value="tudo">Todo o histórico</option></select></div>
+      <div><label>Buscar produto</label><input id="pvBusca" placeholder="Nome ou código"></div>
+    </div>
+    <div id="pvDatasPersonalizadas" class="grid2 hidden" style="margin-top:10px">
+      <div><label>Data inicial</label><input id="pvDataIni" type="date"></div>
+      <div><label>Data final</label><input id="pvDataFim" type="date"></div>
+    </div>
+    <div class="grid3" style="margin-top:10px">
+      <div class="msg">Produtos diferentes<br><b id="pvProdutosQtd">0</b></div>
+      <div class="msg">Unidades vendidas<br><b id="pvUnidades">0</b></div>
+      <div class="msg">Faturamento dos itens<br><b id="pvFaturamento">R$ 0,00</b></div>
+    </div>
+    <div id="pvResumo" class="msg" style="margin-top:10px"></div>
+    <div id="pvLista" class="reportTableWrap" style="margin-top:10px"></div>
   </div>
 
   <div class="card">
@@ -5509,7 +5530,41 @@ function renderVendas(){
   renderVendasMensais();
   renderVendasDiarias();
   renderRelatorioPeriodo();
+  renderProdutosVendidos();
 }
+// RELATÓRIO DE PRODUTOS VENDIDOS
+function pvListaPeriodo(){
+  const periodo=$('pvPeriodo')?.value||'mes';
+  if(periodo!=='personalizado')return vendasDoPeriodo(periodo);
+  const di=$('pvDataIni')?.value||'',df=$('pvDataFim')?.value||'';
+  return vendas.filter(v=>{const d=new Date(v.d);if(Number.isNaN(d.getTime()))return false;const k=rpISOData(d);return (!di||k>=di)&&(!df||k<=df);});
+}
+function renderProdutosVendidos(){
+  if(!$('pvLista'))return;
+  const lista=pvListaPeriodo(),mapa={};
+  lista.forEach(v=>(v.it||[]).forEach(x=>{
+    const codigo=String(x.c||'').trim(),nome=String(x.n||'Produto').trim()||'Produto',chave=codigo||nome.toLocaleLowerCase('pt-BR');
+    if(!mapa[chave])mapa[chave]={codigo,nome,qtd:0,faturamento:0,custo:0,lucro:0};
+    const q=num(x.q),preco=num(x.p),custoUnit=x.custo!=null?num(x.custo):num(produtos[codigo]?.custo);
+    mapa[chave].qtd+=q;mapa[chave].faturamento+=preco*q;mapa[chave].custo+=custoUnit*q;mapa[chave].lucro+=(preco-custoUnit)*q;
+  }));
+  let rows=Object.values(mapa).sort((a,b)=>b.qtd-a.qtd||b.faturamento-a.faturamento||a.nome.localeCompare(b.nome,'pt-BR'));
+  const busca=String($('pvBusca')?.value||'').trim().toLocaleLowerCase('pt-BR');
+  if(busca)rows=rows.filter(r=>r.nome.toLocaleLowerCase('pt-BR').includes(busca)||r.codigo.toLocaleLowerCase('pt-BR').includes(busca));
+  const un=rows.reduce((s,r)=>s+r.qtd,0),fat=rows.reduce((s,r)=>s+r.faturamento,0);
+  $('pvProdutosQtd').textContent=rows.length;$('pvUnidades').textContent=num(un);$('pvFaturamento').textContent=money(fat);
+  const nomes={hoje:'Hoje',ontem:'Ontem','7':'Últimos 7 dias',mes:'Mês atual',tudo:'Todo o histórico',personalizado:'Período personalizado'};
+  $('pvResumo').innerHTML='<b>'+esc(nomes[$('pvPeriodo').value]||'Período')+'</b> · '+lista.length+' venda(s) considerada(s)'+(busca?' · busca: <b>'+esc($('pvBusca').value)+'</b>':'')+'.';
+  $('pvLista').innerHTML=rows.length?`<table class="reportTable"><thead><tr><th>#</th><th>Produto</th><th>Código</th><th>Unidades</th><th>Faturamento</th><th>Custo</th><th>Lucro bruto</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td><b>${i===0?'🏆 ':''}${esc(r.nome)}</b></td><td>${esc(r.codigo||'—')}</td><td><b>${num(r.qtd)}</b></td><td>${money(r.faturamento)}</td><td>${money(r.custo)}</td><td>${money(r.lucro)}</td></tr>`).join('')}</tbody></table>`:'<div class="msg">Nenhum produto vendido neste período.</div>';
+}
+if($('pvPeriodo'))$('pvPeriodo').addEventListener('change',function(){
+  const personalizado=this.value==='personalizado';$('pvDatasPersonalizadas').classList.toggle('hidden',!personalizado);
+  if(personalizado){const hoje=rpISOData(new Date());if(!$('pvDataIni').value)$('pvDataIni').value=hoje;if(!$('pvDataFim').value)$('pvDataFim').value=hoje;}
+  renderProdutosVendidos();
+});
+if($('pvBusca'))$('pvBusca').addEventListener('input',renderProdutosVendidos);
+['pvDataIni','pvDataFim'].forEach(id=>{if($(id))$(id).addEventListener('change',renderProdutosVendidos);});
+
 // RELATÓRIO PERSONALIZADO POR PERÍODO
 function rpISOData(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function rpAplicarPreset(){
