@@ -1553,6 +1553,22 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
   </div>
 </div>
 
+<div id="modalEditarFiado" class="modal hidden">
+  <div class="modalBox">
+    <h2>✏️ Editar compra fiada</h2>
+    <input type="hidden" id="editFiadoId">
+    <div id="editFiadoInfo" class="msg"></div>
+    <div class="note" style="margin-bottom:10px">Altere as quantidades abaixo. O sistema ajustará o estoque somente pela diferença e atualizará a venda vinculada, a dívida e os relatórios.</div>
+    <div id="editFiadoItens"></div>
+    <div class="total" style="margin-top:10px">Novo total: <span id="editFiadoTotal">R$ 0,00</span></div>
+    <label>Vencimento</label><input id="editFiadoVencimento" type="date">
+    <div class="grid2" style="margin-top:12px">
+      <button id="salvarEditFiadoBtn" class="btn green" type="button">💾 SALVAR ALTERAÇÕES</button>
+      <button id="cancelarEditFiadoBtn" class="btn gray" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div id="modalPagamentoFiado" class="modal hidden">
   <div class="modalBox">
     <h2>💰 Registrar pagamento</h2>
@@ -4177,6 +4193,52 @@ function atualizarPagamentoFiadoPreview(){
 ['pagFiadoForma','pagFiadoMaquina','pagFiadoBandeira','pagFiadoParcelas','pagFiadoValor'].forEach(id=>$(id).addEventListener('change',atualizarPagamentoFiadoPreview));
 $('pagFiadoValor').addEventListener('input',atualizarPagamentoFiadoPreview);
 
+function abrirEditarFiado(id){
+  const f=fiados.find(x=>String(x.id)===String(id));if(!f)return;
+  const venda=vendas.find(v=>String(v.id)===String(f.vendaId));
+  if(!venda){alert('A venda original vinculada a este fiado não foi localizada. Por segurança, a edição dos produtos foi bloqueada.');return;}
+  const itens=(venda.it||f.itens||[]);
+  if(!itens.length){alert('Esta compra fiada não possui itens detalhados para editar.');return;}
+  $('editFiadoId').value=f.id;
+  $('editFiadoInfo').innerHTML='<b>'+esc(f.clienteNome)+'</b><br>Total atual: '+money(f.total)+' · Pago: '+money(f.pago)+' · Saldo: '+money(saldoFiado(f));
+  $('editFiadoVencimento').value=f.vencimento||'';
+  $('editFiadoItens').innerHTML=itens.map((x,j)=>`<div class="item"><b>${esc(x.n)}</b><div class="small">${esc(x.c)} · ${money(x.p)} cada · estoque atual: ${produtos[x.c]?num(produtos[x.c].estoque):'—'}</div><label>Quantidade</label><input class="editFiadoQtd" data-i="${j}" type="number" min="0" step="1" value="${num(x.q)}"></div>`).join('');
+  atualizarTotalEditarFiado();
+  $('modalEditarFiado').classList.remove('hidden');
+}
+function atualizarTotalEditarFiado(){
+  const id=$('editFiadoId').value,f=fiados.find(x=>String(x.id)===String(id));if(!f)return;
+  const venda=vendas.find(v=>String(v.id)===String(f.vendaId));if(!venda)return;
+  let total=0;(venda.it||[]).forEach((x,j)=>{const inp=document.querySelector('.editFiadoQtd[data-i="'+j+'"]');total+=num(x.p)*Math.max(0,num(inp?inp.value:x.q));});
+  $('editFiadoTotal').textContent=money(total);
+}
+$('editFiadoItens').addEventListener('input',e=>{if(e.target.classList.contains('editFiadoQtd'))atualizarTotalEditarFiado();});
+$('cancelarEditFiadoBtn').addEventListener('click',()=>{$('modalEditarFiado').classList.add('hidden');});
+$('salvarEditFiadoBtn').addEventListener('click',()=>{
+  const f=fiados.find(x=>String(x.id)===String($('editFiadoId').value));if(!f)return;
+  const venda=vendas.find(v=>String(v.id)===String(f.vendaId));if(!venda){alert('Venda original não localizada. Nada foi alterado.');return;}
+  const orig=(venda.it||[]).map(x=>({...x})),novos=[];
+  document.querySelectorAll('.editFiadoQtd').forEach(inp=>{const j=Number(inp.dataset.i),q=Math.max(0,Math.floor(num(inp.value)));if(q>0&&orig[j])novos.push({...orig[j],q});});
+  if(!novos.length){alert('A compra fiada precisa ter pelo menos um produto.');return;}
+  // Valida primeiro o estoque necessário para aumentos, sem alterar nada ainda.
+  for(let j=0;j<orig.length;j++){
+    const antigo=orig[j],inp=document.querySelector('.editFiadoQtd[data-i="'+j+'"]'),novaQ=Math.max(0,Math.floor(num(inp?inp.value:antigo.q))),dif=novaQ-num(antigo.q);
+    if(dif>0&&produtos[antigo.c]&&num(produtos[antigo.c].estoque)<dif){alert('Estoque insuficiente para aumentar '+antigo.n+'.\nDisponível agora: '+num(produtos[antigo.c].estoque)+' unidade(s).\nNecessário a mais: '+dif+'.');return;}
+  }
+  const novoTotal=Number(novos.reduce((s,x)=>s+num(x.p)*num(x.q),0).toFixed(2));
+  if(novoTotal+0.009<num(f.pago)){alert('O novo total ('+money(novoTotal)+') não pode ficar menor que o valor já pago ('+money(f.pago)+').');return;}
+  // Ajusta estoque apenas pela diferença entre quantidade antiga e nova.
+  orig.forEach((antigo,j)=>{
+    const inp=document.querySelector('.editFiadoQtd[data-i="'+j+'"]'),novaQ=Math.max(0,Math.floor(num(inp?inp.value:antigo.q))),dif=novaQ-num(antigo.q);
+    if(produtos[antigo.c])produtos[antigo.c].estoque=num(produtos[antigo.c].estoque)-dif;
+  });
+  venda.it=novos.map(x=>({...x}));
+  venda.totalCalculado=novoTotal;venda.t=novoTotal;venda.diferencaCobrada=0;
+  f.itens=novos.map(x=>({...x}));f.total=novoTotal;f.vencimento=$('editFiadoVencimento').value||'';f.status=saldoFiado(f)<=0.009?'pago':'pendente';
+  persist();$('modalEditarFiado').classList.add('hidden');atualizarTudo();beep();
+  alert('Compra fiada atualizada com segurança!\nNovo total: '+money(novoTotal)+'\nNovo saldo: '+money(saldoFiado(f)));
+});
+
 $('listaFiados').addEventListener('click',e=>{
   const pay=e.target.closest('.pagarFiadoBtn'), cob=e.target.closest('.cobrarFiadoBtn'), ed=e.target.closest('.editarFiadoBtn'), del=e.target.closest('.excluirFiadoBtn');
   const btn=pay||cob||ed||del;if(!btn)return;
@@ -4194,10 +4256,7 @@ $('listaFiados').addEventListener('click',e=>{
     window.open('https://wa.me/'+telefone+'?text='+encodeURIComponent(texto),'_blank');return;
   }
   if(ed){
-    const novo=prompt('Novo vencimento (AAAA-MM-DD). Deixe vazio para sem vencimento:',f.vencimento||'');
-    if(novo===null)return;
-    if(novo && !/^\d{4}-\d{2}-\d{2}$/.test(novo)){alert('Use o formato AAAA-MM-DD.');return;}
-    f.vencimento=novo;persist();renderFiados();return;
+    abrirEditarFiado(f.id);return;
   }
   if(del){
     const pagamentos=(f.pagamentos||[]);
