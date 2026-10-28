@@ -1558,7 +1558,10 @@ body.sidebarCollapsed .sidebarCalcBtn .sideText{display:none}
     <h2>✏️ Editar compra fiada</h2>
     <input type="hidden" id="editFiadoId">
     <div id="editFiadoInfo" class="msg"></div>
-    <div class="note" style="margin-bottom:10px">Altere as quantidades abaixo. O sistema ajustará o estoque somente pela diferença e atualizará a venda vinculada, a dívida e os relatórios.</div>
+    <div class="note" style="margin-bottom:10px">Corrija a compra completa: altere quantidades, remova produtos lançados por engano ou adicione produtos esquecidos. O estoque será ajustado somente pela diferença.</div>
+    <label>Adicionar produto</label>
+    <input id="editFiadoBuscaProduto" placeholder="🔎 Buscar por nome ou código..." autocomplete="off">
+    <div id="editFiadoResultadosProduto" style="max-height:180px;overflow:auto;margin:6px 0 12px"></div>
     <div id="editFiadoItens"></div>
     <div class="total" style="margin-top:10px">Novo total: <span id="editFiadoTotal">R$ 0,00</span></div>
     <label>Vencimento</label><input id="editFiadoVencimento" type="date">
@@ -4193,6 +4196,17 @@ function atualizarPagamentoFiadoPreview(){
 ['pagFiadoForma','pagFiadoMaquina','pagFiadoBandeira','pagFiadoParcelas','pagFiadoValor'].forEach(id=>$(id).addEventListener('change',atualizarPagamentoFiadoPreview));
 $('pagFiadoValor').addEventListener('input',atualizarPagamentoFiadoPreview);
 
+let editFiadoItensTemp=[];
+function renderEditarFiadoItens(){
+  $('editFiadoItens').innerHTML=editFiadoItensTemp.map((x,j)=>`<div class="item"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b>${esc(x.n)}</b><div class="small">${esc(x.c)} · ${money(x.p)} cada · estoque atual: ${produtos[x.c]?num(produtos[x.c].estoque):'—'}</div></div><button class="btn red editFiadoRemover" data-i="${j}" type="button" style="padding:7px 10px">🗑️</button></div><label>Quantidade</label><input class="editFiadoQtd" data-i="${j}" type="number" min="1" step="1" value="${num(x.q)}"></div>`).join('');
+  atualizarTotalEditarFiado();
+}
+function renderBuscaEditarFiado(){
+  const q=String($('editFiadoBuscaProduto').value||'').trim().toLowerCase();
+  if(!q){$('editFiadoResultadosProduto').innerHTML='';return;}
+  const achados=Object.entries(produtos).filter(([c,p])=>p&&p.ativo!==false&&(String(c).toLowerCase().includes(q)||String(p.nome||'').toLowerCase().includes(q))).slice(0,20);
+  $('editFiadoResultadosProduto').innerHTML=achados.length?achados.map(([c,p])=>`<button class="btn gray editFiadoAdicionarProduto" data-c="${esc(c)}" type="button" style="width:100%;text-align:left;margin:3px 0">➕ ${esc(p.nome)} <span class="small">· ${esc(c)} · ${money(p.preco)} · estoque ${num(p.estoque)}</span></button>`).join(''):'<div class="small">Nenhum produto encontrado.</div>';
+}
 function abrirEditarFiado(id){
   const f=fiados.find(x=>String(x.id)===String(id));if(!f)return;
   const venda=vendas.find(v=>String(v.id)===String(f.vendaId));
@@ -4202,40 +4216,52 @@ function abrirEditarFiado(id){
   $('editFiadoId').value=f.id;
   $('editFiadoInfo').innerHTML='<b>'+esc(f.clienteNome)+'</b><br>Total atual: '+money(f.total)+' · Pago: '+money(f.pago)+' · Saldo: '+money(saldoFiado(f));
   $('editFiadoVencimento').value=f.vencimento||'';
-  $('editFiadoItens').innerHTML=itens.map((x,j)=>`<div class="item"><b>${esc(x.n)}</b><div class="small">${esc(x.c)} · ${money(x.p)} cada · estoque atual: ${produtos[x.c]?num(produtos[x.c].estoque):'—'}</div><label>Quantidade</label><input class="editFiadoQtd" data-i="${j}" type="number" min="0" step="1" value="${num(x.q)}"></div>`).join('');
-  atualizarTotalEditarFiado();
+  editFiadoItensTemp=itens.map(x=>({...x,q:Math.max(1,Math.floor(num(x.q)))}));
+  $('editFiadoBuscaProduto').value='';$('editFiadoResultadosProduto').innerHTML='';
+  renderEditarFiadoItens();
   $('modalEditarFiado').classList.remove('hidden');
 }
 function atualizarTotalEditarFiado(){
-  const id=$('editFiadoId').value,f=fiados.find(x=>String(x.id)===String(id));if(!f)return;
-  const venda=vendas.find(v=>String(v.id)===String(f.vendaId));if(!venda)return;
-  let total=0;(venda.it||[]).forEach((x,j)=>{const inp=document.querySelector('.editFiadoQtd[data-i="'+j+'"]');total+=num(x.p)*Math.max(0,num(inp?inp.value:x.q));});
+  document.querySelectorAll('.editFiadoQtd').forEach(inp=>{const j=Number(inp.dataset.i);if(editFiadoItensTemp[j])editFiadoItensTemp[j].q=Math.max(1,Math.floor(num(inp.value)||1));});
+  const total=editFiadoItensTemp.reduce((s,x)=>s+num(x.p)*num(x.q),0);
   $('editFiadoTotal').textContent=money(total);
 }
+$('editFiadoBuscaProduto').addEventListener('input',renderBuscaEditarFiado);
+$('editFiadoResultadosProduto').addEventListener('click',e=>{
+  const b=e.target.closest('.editFiadoAdicionarProduto');if(!b)return;
+  const c=b.dataset.c,p=produtos[c];if(!p)return;
+  const existente=editFiadoItensTemp.find(x=>String(x.c)===String(c));
+  if(existente)existente.q=Math.max(1,num(existente.q))+1;
+  else editFiadoItensTemp.push({c,n:p.nome,q:1,p:num(p.preco),custo:num(p.custo)});
+  $('editFiadoBuscaProduto').value='';$('editFiadoResultadosProduto').innerHTML='';renderEditarFiadoItens();
+});
 $('editFiadoItens').addEventListener('input',e=>{if(e.target.classList.contains('editFiadoQtd'))atualizarTotalEditarFiado();});
-$('cancelarEditFiadoBtn').addEventListener('click',()=>{$('modalEditarFiado').classList.add('hidden');});
+$('editFiadoItens').addEventListener('click',e=>{const b=e.target.closest('.editFiadoRemover');if(!b)return;editFiadoItensTemp.splice(Number(b.dataset.i),1);renderEditarFiadoItens();});
+$('cancelarEditFiadoBtn').addEventListener('click',()=>{$('modalEditarFiado').classList.add('hidden');editFiadoItensTemp=[];});
 $('salvarEditFiadoBtn').addEventListener('click',()=>{
   const f=fiados.find(x=>String(x.id)===String($('editFiadoId').value));if(!f)return;
   const venda=vendas.find(v=>String(v.id)===String(f.vendaId));if(!venda){alert('Venda original não localizada. Nada foi alterado.');return;}
-  const orig=(venda.it||[]).map(x=>({...x})),novos=[];
-  document.querySelectorAll('.editFiadoQtd').forEach(inp=>{const j=Number(inp.dataset.i),q=Math.max(0,Math.floor(num(inp.value)));if(q>0&&orig[j])novos.push({...orig[j],q});});
+  atualizarTotalEditarFiado();
+  const orig=(venda.it||[]).map(x=>({...x}));
+  const novos=editFiadoItensTemp.filter(x=>num(x.q)>0).map(x=>({...x,q:Math.max(1,Math.floor(num(x.q)))}));
   if(!novos.length){alert('A compra fiada precisa ter pelo menos um produto.');return;}
-  // Valida primeiro o estoque necessário para aumentos, sem alterar nada ainda.
-  for(let j=0;j<orig.length;j++){
-    const antigo=orig[j],inp=document.querySelector('.editFiadoQtd[data-i="'+j+'"]'),novaQ=Math.max(0,Math.floor(num(inp?inp.value:antigo.q))),dif=novaQ-num(antigo.q);
-    if(dif>0&&produtos[antigo.c]&&num(produtos[antigo.c].estoque)<dif){alert('Estoque insuficiente para aumentar '+antigo.n+'.\nDisponível agora: '+num(produtos[antigo.c].estoque)+' unidade(s).\nNecessário a mais: '+dif+'.');return;}
+  const qtdPorCodigo=arr=>arr.reduce((m,x)=>(m[x.c]=(m[x.c]||0)+num(x.q),m),{});
+  const qo=qtdPorCodigo(orig),qn=qtdPorCodigo(novos),codigos=new Set([...Object.keys(qo),...Object.keys(qn)]);
+  for(const c of codigos){
+    const dif=(qn[c]||0)-(qo[c]||0);
+    if(dif>0){
+      if(!produtos[c]){alert('O produto '+c+' não existe mais no cadastro. Nada foi alterado.');return;}
+      if(num(produtos[c].estoque)<dif){alert('Estoque insuficiente para '+(produtos[c].nome||c)+'.\nDisponível agora: '+num(produtos[c].estoque)+' unidade(s).\nNecessário a mais: '+dif+'.');return;}
+    }
   }
   const novoTotal=Number(novos.reduce((s,x)=>s+num(x.p)*num(x.q),0).toFixed(2));
   if(novoTotal+0.009<num(f.pago)){alert('O novo total ('+money(novoTotal)+') não pode ficar menor que o valor já pago ('+money(f.pago)+').');return;}
-  // Ajusta estoque apenas pela diferença entre quantidade antiga e nova.
-  orig.forEach((antigo,j)=>{
-    const inp=document.querySelector('.editFiadoQtd[data-i="'+j+'"]'),novaQ=Math.max(0,Math.floor(num(inp?inp.value:antigo.q))),dif=novaQ-num(antigo.q);
-    if(produtos[antigo.c])produtos[antigo.c].estoque=num(produtos[antigo.c].estoque)-dif;
-  });
+  // Só depois de todas as validações movimenta estoque pela diferença líquida de cada código.
+  for(const c of codigos){const dif=(qn[c]||0)-(qo[c]||0);if(produtos[c])produtos[c].estoque=num(produtos[c].estoque)-dif;}
   venda.it=novos.map(x=>({...x}));
   venda.totalCalculado=novoTotal;venda.t=novoTotal;venda.diferencaCobrada=0;
   f.itens=novos.map(x=>({...x}));f.total=novoTotal;f.vencimento=$('editFiadoVencimento').value||'';f.status=saldoFiado(f)<=0.009?'pago':'pendente';
-  persist();$('modalEditarFiado').classList.add('hidden');atualizarTudo();beep();
+  persist();$('modalEditarFiado').classList.add('hidden');editFiadoItensTemp=[];atualizarTudo();beep();
   alert('Compra fiada atualizada com segurança!\nNovo total: '+money(novoTotal)+'\nNovo saldo: '+money(saldoFiado(f)));
 });
 
